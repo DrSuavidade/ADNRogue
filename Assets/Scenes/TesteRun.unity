@@ -1639,10 +1639,14 @@ MonoBehaviour:
   animator: {fileID: 1379197466}
   modelRoot: {fileID: 0}
   rollKey: 32
-  rollDuration: 1.5
-  rollCooldown: 3
+  rollDuration: 1.4
+  rollCooldown: 2.5
   rollDistance: 10
   snapRollToEightWay: 1
+  diagonalBoostEnabled: 1
+  diagonalBoostMax: 3
+  diagonalBoostPower: 3
+  animAxisDeadzone: 0.05
 --- !u!143 &1711833319
 CharacterController:
   m_ObjectHideFlags: 0

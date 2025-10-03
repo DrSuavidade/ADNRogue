@@ -48,6 +48,21 @@ public class PlayerController : MonoBehaviour
     int enemyLayer;
 
     float nextFireTime = 0f;
+    float baseAnimatorSpeed = 1f;
+
+    [Header("Animation – Diagonal Boost")]
+    [SerializeField, Tooltip("Enable extra playback speed ONLY on diagonals.")]
+    bool diagonalBoostEnabled = true;
+
+    [SerializeField, Tooltip("Max animator speed multiplier at a perfect diagonal (e.g., 1.6–1.8).")]
+    float diagonalBoostMax = 1.7f;
+
+    [SerializeField, Tooltip("Response curve exponent (>1 boosts diagonals more aggressively).")]
+    float diagonalBoostPower = 1.25f;
+
+    [SerializeField, Tooltip("Deadzone for axes before considering movement.")]
+    float animAxisDeadzone = 0.05f;
+
 
     // cache for restoring the model orientation after roll
     Quaternion modelPreRollRotation;
@@ -68,9 +83,10 @@ public class PlayerController : MonoBehaviour
         playerHealth = GetComponent<PlayerHealth>();
 
         playerLayer = LayerMask.NameToLayer("Player");
-        enemyLayer  = LayerMask.NameToLayer("Enemy");
+        enemyLayer = LayerMask.NameToLayer("Enemy");
 
         if (modelRoot == null && animator != null) modelRoot = animator.transform;
+        if (animator != null) baseAnimatorSpeed = animator.speed;
     }
 
     void Update()
@@ -315,6 +331,32 @@ public class PlayerController : MonoBehaviour
         // Optional scalar (safe even if not used in the controller)
         float speed01 = Mathf.Clamp01(currentMoveWorld.magnitude / Mathf.Max(0.0001f, moveSpeed));
         animator.SetFloat(AnimSpeed, speed01);
+
+        if (!isRolling && diagonalBoostEnabled && (animX != 0f || animY != 0f))
+        {
+            float ax = Mathf.Abs(animX);
+            float ay = Mathf.Abs(animY);
+
+            // If one axis is basically zero -> straight, no boost
+            if (ax < animAxisDeadzone || ay < animAxisDeadzone)
+            {
+                animator.speed = baseAnimatorSpeed;
+            }
+            else
+            {
+                // axisMax is ~0.707 at a perfect 45° diagonal and approaches 1.0 near straight
+                float axisMax = Mathf.Max(ax, ay);
+                // Base boost = 1 / axisMax (≈1.414 at perfect diagonal)
+                float baseBoost = 1f / Mathf.Max(axisMax, 0.0001f);
+                // Exponent to push diagonals harder without affecting near-straights much
+                float boosted = Mathf.Pow(baseBoost, diagonalBoostPower);
+                animator.speed = baseAnimatorSpeed * Mathf.Min(boosted, diagonalBoostMax);
+            }
+        }
+        else
+        {
+            animator.speed = baseAnimatorSpeed;
+        }
     }
 
     // -------------------- Helpers --------------------
