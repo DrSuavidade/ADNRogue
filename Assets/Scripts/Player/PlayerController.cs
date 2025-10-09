@@ -30,6 +30,13 @@ public class PlayerController : MonoBehaviour
     [Tooltip("Snap roll direction to 8-way (45° increments) relative to camera.")]
     [SerializeField] bool snapRollToEightWay = true;
 
+    [Header("Gravity")]
+    [SerializeField] float gravityY = -35f;       // tune to taste
+    [SerializeField] float groundedGravityY = -2f; // small downward to keep grounded contact
+
+    float verticalVelocityY = 0f;
+
+
     // -------------------- Runtime state --------------------
     CharacterController cc;
     Camera mainCam;
@@ -123,6 +130,19 @@ public class PlayerController : MonoBehaviour
 
         if (moveWorld.sqrMagnitude > 0f)
             cc.Move(moveWorld * moveSpeed * Time.deltaTime);
+
+        if (cc.isGrounded)
+        {
+            // keep slight downward pull so CC stays snapped to ground
+            if (verticalVelocityY < 0f) verticalVelocityY = groundedGravityY;
+        }
+        else
+        {
+            verticalVelocityY += gravityY * Time.deltaTime;
+        }
+
+        // Apply vertical after horizontal (CC sums multiple Move calls per frame)
+        cc.Move(new Vector3(0f, verticalVelocityY, 0f) * Time.deltaTime);
 
         // Face rules (keep aim forward unless disabled)
         if (!isRolling)
@@ -251,6 +271,14 @@ public class PlayerController : MonoBehaviour
 
     void HandleRollingMovement()
     {
+        if (cc.isGrounded)
+        {
+            if (verticalVelocityY < 0f) verticalVelocityY = groundedGravityY;
+        }
+        else
+        {
+            verticalVelocityY += gravityY * Time.deltaTime;
+        }
         // Move strictly along the chosen direction
         cc.Move(rollDirection * rollSpeed * Time.deltaTime);
 
