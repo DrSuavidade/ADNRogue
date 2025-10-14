@@ -167,8 +167,8 @@ MonoBehaviour:
   impactEffectPrefab: {fileID: 25857733397299485, guid: 1168fe8bd7731c6488c329322accff4f, type: 3}
   enableChainLightning: 1
   chainLightningRadius: 6
-  chainLightningKillAll: 1
-  chainLightningDamage: 10
+  chainLightningKillAll: 0
+  chainLightningDamage: 2
   chainLightningEffectPrefab: {fileID: 285656054538791525, guid: dc0dcd1aa86e1e74c94eafd8a4beb5c7, type: 3}
 --- !u!136 &4076745888941996120
 CapsuleCollider:
