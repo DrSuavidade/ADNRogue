@@ -8,27 +8,23 @@ public class EnemyAI : MonoBehaviour
     public PlayerHealth playerHealth;
 
     [Header("Behavior")]
-    [Tooltip("When enabled, this enemy never moves (no wander, no chase). It can still attack if you enter its attack range.")]
     public bool stayStationary = false;
-
-    [Tooltip("When stationary, rotate to face the player while attacking.")]
     public bool rotateInPlace = true;
 
     [Header("Wander Settings")]
-    public float wanderRadius     = 5f;
-    public float wanderInterval   = 3f;
-    public float wanderSpeed      = 2f;
+    public float wanderRadius = 5f;
+    public float wanderInterval = 3f;
+    public float wanderSpeed = 2f;
     public float idleWaitDuration = 1f;
 
     [Header("Chase & Attack")]
     public float detectionRadius = 20f;
-    public float chaseSpeed      = 4f;    
-    public float attackRange     = 1.5f;
-    public float attackRate      = 1f;
-    public float damagePerHit    = 10f;
+    public float chaseSpeed = 4f;    
+    public float attackRange = 1.5f;
+    public float attackRate = 1f;
+    public float damagePerHit = 10f;
 
     [Header("Knockback Target (Optional)")]
-    [Tooltip("If set, knockback will be applied relative to this transform (e.g., the object that has the CharacterController). Leave empty to auto-resolve via Player hierarchy.")]
     public Transform knockbackRootOverride;
 
     [Header("Knockback")]
@@ -37,15 +33,7 @@ public class EnemyAI : MonoBehaviour
     public float knockbackUpward = 0.5f;
     public float knockbackMaxSpeed = 12f;
 
-    // When pushing CharacterController directly (no Rigidbody/Receiver found)
-    [Tooltip("How long to apply CC-based knockback if no Rigidbody/Receiver is found.")]
-    public float ccKnockbackDuration = 0.25f;
-    [Tooltip("How quickly CC knockback decays back to zero.")]
-    public float ccKnockbackDecay = 8f;
-
-
     [Header("Damage Pause")]
-    [Tooltip("Seconds to freeze AI when damaged")]
     public float damagePauseDuration = 0.5f; 
 
     Vector3 spawnPos;
@@ -58,11 +46,11 @@ public class EnemyAI : MonoBehaviour
 
     Transform player;
     float currentSpeed;
-    bool isIdleWaiting    = false;
-    float idleWaitTimer   = 0f;
+    bool isIdleWaiting = false;
+    float idleWaitTimer = 0f;
 
     // Damage pause fields
-    bool  isDamagePaused  = false;
+    bool isDamagePaused = false;
     float damagePauseTimer = 0f;
 
     void Start()
@@ -91,7 +79,7 @@ public class EnemyAI : MonoBehaviour
     {
         if (!isDamagePaused)
         {
-            isDamagePaused   = true;
+            isDamagePaused = true;
             damagePauseTimer = 0f;
         }
     }
@@ -126,11 +114,10 @@ public class EnemyAI : MonoBehaviour
         }
         else
         {
-            // If stationary, we do not wander; otherwise we wander as normal
             state = State.Wandering;
         }
 
-        // 3) Decide raw targetSpeed and targetPos
+        // 3) Movement
         float targetSpeed;
         Vector3 targetPos;
 
@@ -139,13 +126,12 @@ public class EnemyAI : MonoBehaviour
             case State.Chasing:
                 if (stayStationary)
                 {
-                    // Do not move when stationary
-                    targetPos   = transform.position;
+                    targetPos = transform.position;
                     targetSpeed = 0f;
                 }
                 else
                 {
-                    targetPos   = player.position;
+                    targetPos = player.position;
                     targetSpeed = chaseSpeed;
                 }
                 break;
@@ -153,25 +139,23 @@ public class EnemyAI : MonoBehaviour
             case State.Wandering:
                 if (stayStationary)
                 {
-                    // No wandering when stationary
-                    targetPos   = transform.position;
+                    targetPos = transform.position;
                     targetSpeed = 0f;
                 }
                 else
                 {
-                    targetPos   = wanderTarget;
+                    targetPos = wanderTarget;
                     targetSpeed = isIdleWaiting ? 0f : wanderSpeed;
                 }
                 break;
 
             default: // Attacking
-                targetPos   = transform.position;
+                targetPos = transform.position;
                 targetSpeed = 0f;
                 break;
         }
 
-        // 4) Move
-        currentSpeed = targetSpeed; // instant for clarity
+        currentSpeed = targetSpeed;
         if (currentSpeed > 0f)
         {
             Vector3 dir = targetPos - transform.position;
@@ -183,7 +167,7 @@ public class EnemyAI : MonoBehaviour
             }
         }
 
-        // 4b) Optional rotate in place while attacking (no movement)
+        // Rotate in place while attacking
         if (state == State.Attacking && rotateInPlace && player != null)
         {
             Vector3 face = player.position - transform.position;
@@ -192,7 +176,7 @@ public class EnemyAI : MonoBehaviour
                 transform.rotation = Quaternion.LookRotation(face.normalized);
         }
 
-        // 5) Animate
+        // Animate
         float normSpeed = chaseSpeed > 0f
             ? Mathf.Clamp01(currentSpeed / chaseSpeed)
             : 0f;
@@ -203,10 +187,15 @@ public class EnemyAI : MonoBehaviour
         if (state == State.Attacking && Time.time >= lastAttackTime + attackRate)
         {
             lastAttackTime = Time.time;
-            animator.SetTrigger("Attack");
+
+            // Escolher ataque: normal ou especial
+            if (Random.value < 0.7f) // 70% chance ataque normal
+                animator.SetTrigger("Attack");
+            else // 30% chance ataque B
+                animator.SetTrigger("AttackB");
         }
 
-        // 7) Wander + idle logic (only when not stationary)
+        // 7) Wander logic
         if (!stayStationary && state == State.Wandering)
         {
             if (!isIdleWaiting)
@@ -215,8 +204,8 @@ public class EnemyAI : MonoBehaviour
                 if (wanderTimer >= wanderInterval ||
                     Vector3.Distance(transform.position, wanderTarget) < 0.2f)
                 {
-                    isIdleWaiting  = true;
-                    idleWaitTimer  = 0f;
+                    isIdleWaiting = true;
+                    idleWaitTimer = 0f;
                 }
             }
             else
@@ -225,7 +214,7 @@ public class EnemyAI : MonoBehaviour
                 if (idleWaitTimer >= idleWaitDuration)
                 {
                     isIdleWaiting = false;
-                    wanderTimer   = 0f;
+                    wanderTimer = 0f;
                     PickWanderTarget();
                 }
             }
@@ -239,18 +228,15 @@ public class EnemyAI : MonoBehaviour
 
         if (!applyKnockback || player == null) return;
 
-        // 1) Compute impulse
+        // Knockback
         Vector3 dir = (player.position - transform.position);
         dir.y = 0f;
         if (dir.sqrMagnitude < 0.0001f) dir = transform.forward;
         dir.Normalize();
 
         Vector3 impulse = dir * knockbackForce + Vector3.up * knockbackUpward;
-
-        // 2) Choose the best root to apply knockback to
         Transform root = knockbackRootOverride != null ? knockbackRootOverride : player;
 
-        // 3) Try Receiver anywhere in hierarchy
         var receiver =
             root.GetComponentInChildren<KnockbackReceiver>() ??
             root.GetComponentInParent<KnockbackReceiver>();
@@ -261,7 +247,6 @@ public class EnemyAI : MonoBehaviour
             return;
         }
 
-        // 4) Try Rigidbody anywhere in hierarchy
         var rb =
             root.GetComponentInChildren<Rigidbody>() ??
             root.GetComponentInParent<Rigidbody>();
@@ -283,30 +268,25 @@ public class EnemyAI : MonoBehaviour
             return;
         }
 
-        // 5) As a universal fallback: push CharacterController via cc.Move over a few frames
         var cc =
             root.GetComponentInChildren<CharacterController>() ??
             root.GetComponentInParent<CharacterController>();
 
         if (cc != null && cc.enabled)
         {
-            StopCoroutine(nameof(CCKnockbackRoutine)); // ensure single instance
-            StartCoroutine(CCKnockbackRoutine(cc, impulse, ccKnockbackDuration, ccKnockbackDecay));
+            StopCoroutine(nameof(CCKnockbackRoutine));
+            StartCoroutine(CCKnockbackRoutine(cc, impulse, 0.25f, 8f));
         }
     }
 
-    // Decaying CC push that plays nicely with PlayerController's own cc.Move()
     IEnumerator CCKnockbackRoutine(CharacterController cc, Vector3 impulse, float duration, float decayRate)
     {
         float t = 0f;
-        Vector3 vel = impulse; // treat impulse as instantaneous velocity
+        Vector3 vel = impulse;
 
         while (t < duration && cc != null && cc.enabled)
         {
-            // Move additively (CharacterController sums multiple Move calls per frame)
             cc.Move(vel * Time.deltaTime);
-
-            // Exponential decay
             float k = Mathf.Clamp01(decayRate * Time.deltaTime);
             vel = Vector3.Lerp(vel, Vector3.zero, k);
 
@@ -314,7 +294,6 @@ public class EnemyAI : MonoBehaviour
             yield return null;
         }
     }
-
 
     void PickWanderTarget()
     {
@@ -324,12 +303,11 @@ public class EnemyAI : MonoBehaviour
 
     void OnDrawGizmosSelected()
     {
-        // Only draw wander/detection when not stationary to avoid confusion in editor
         if (!stayStationary)
         {
-            Gizmos.color = Color.yellow;  Gizmos.DrawWireSphere(transform.position, wanderRadius);
+            Gizmos.color = Color.yellow; Gizmos.DrawWireSphere(transform.position, wanderRadius);
             Gizmos.color = Color.magenta; Gizmos.DrawWireSphere(transform.position, detectionRadius);
         }
-        Gizmos.color = Color.red;     Gizmos.DrawWireSphere(transform.position, attackRange);
+        Gizmos.color = Color.red; Gizmos.DrawWireSphere(transform.position, attackRange);
     }
 }
