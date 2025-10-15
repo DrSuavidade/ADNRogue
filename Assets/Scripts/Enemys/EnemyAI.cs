@@ -183,16 +183,19 @@ public class EnemyAI : MonoBehaviour
         if (animator != null)
             animator.SetFloat("Speed", normSpeed);
 
-        // 6) Attack timing
+        // 6) Attack timing  (🆕 inclui AttackC)
         if (state == State.Attacking && Time.time >= lastAttackTime + attackRate)
         {
             lastAttackTime = Time.time;
 
-            // Escolher ataque: normal ou especial
-            if (Random.value < 0.7f) // 70% chance ataque normal
+            // Ajusta as percentagens como quiseres:
+            float roll = Random.value;          // 0..1
+            if (roll < 0.6f)                    // 60% → Attack
                 animator.SetTrigger("Attack");
-            else // 30% chance ataque B
+            else if (roll < 0.85f)              // 25% → AttackB
                 animator.SetTrigger("AttackB");
+            else                                 // 15% → AttackC
+                animator.SetTrigger("AttackC");
         }
 
         // 7) Wander logic
