@@ -36,6 +36,8 @@ public class PlayerController : MonoBehaviour
 
     float verticalVelocityY = 0f;
 
+    [SerializeField] GunSlots gunSlots;
+
 
     // -------------------- Runtime state --------------------
     CharacterController cc;
@@ -91,6 +93,8 @@ public class PlayerController : MonoBehaviour
 
         playerLayer = LayerMask.NameToLayer("Player");
         enemyLayer = LayerMask.NameToLayer("Enemy");
+
+        if (gunSlots == null) gunSlots = GetComponent<GunSlots>();
 
         if (modelRoot == null && animator != null) modelRoot = animator.transform;
         if (animator != null) baseAnimatorSpeed = animator.speed;
@@ -209,6 +213,7 @@ public class PlayerController : MonoBehaviour
             b.damage = dmg;
             b.knockbackForce = (stats != null) ? stats.knockbackForce : 0f;
             b.isCrit = crit;
+            gunSlots?.ApplyToBullet(b);
         }
         else Debug.LogWarning("Bullet prefab missing Bullet component.", bullet);
     }

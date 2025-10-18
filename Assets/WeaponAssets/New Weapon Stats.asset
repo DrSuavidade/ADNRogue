@@ -12,7 +12,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 4bde70125a8f77a499a28aaa2a44acb7, type: 3}
   m_Name: New Weapon Stats
   m_EditorClassIdentifier: 
-  fireRate: 0.2
+  fireRate: 0.18
   projectileSpeed: 10
   damage: 1
   projectileSize: 1
