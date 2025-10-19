@@ -172,6 +172,63 @@ BoxCollider:
   serializedVersion: 3
   m_Size: {x: 3.8942323, y: 12.202992, z: 92.89104}
   m_Center: {x: 0.33062094, y: 5.601496, z: 1.948822}
+--- !u!1001 &70676660
+PrefabInstance:
+  m_ObjectHideFlags: 0
+  serializedVersion: 2
+  m_Modification:
+    serializedVersion: 3
+    m_TransformParent: {fileID: 0}
+    m_Modifications:
+    - target: {fileID: 2696679037523104782, guid: e4b063766821bf84aa81279dfc55e73c, type: 3}
+      propertyPath: m_LocalPosition.x
+      value: -3.499737
+      objectReference: {fileID: 0}
+    - target: {fileID: 2696679037523104782, guid: e4b063766821bf84aa81279dfc55e73c, type: 3}
+      propertyPath: m_LocalPosition.y
+      value: 0.021513939
+      objectReference: {fileID: 0}
+    - target: {fileID: 2696679037523104782, guid: e4b063766821bf84aa81279dfc55e73c, type: 3}
+      propertyPath: m_LocalPosition.z
+      value: 1.4172351
+      objectReference: {fileID: 0}
+    - target: {fileID: 2696679037523104782, guid: e4b063766821bf84aa81279dfc55e73c, type: 3}
+      propertyPath: m_LocalRotation.w
+      value: 0.079617925
+      objectReference: {fileID: 0}
+    - target: {fileID: 2696679037523104782, guid: e4b063766821bf84aa81279dfc55e73c, type: 3}
+      propertyPath: m_LocalRotation.x
+      value: -0.00032898472
+      objectReference: {fileID: 0}
+    - target: {fileID: 2696679037523104782, guid: e4b063766821bf84aa81279dfc55e73c, type: 3}
+      propertyPath: m_LocalRotation.y
+      value: 0.9968253
+      objectReference: {fileID: 0}
+    - target: {fileID: 2696679037523104782, guid: e4b063766821bf84aa81279dfc55e73c, type: 3}
+      propertyPath: m_LocalRotation.z
+      value: 0.00052240095
+      objectReference: {fileID: 0}
+    - target: {fileID: 2696679037523104782, guid: e4b063766821bf84aa81279dfc55e73c, type: 3}
+      propertyPath: m_LocalEulerAnglesHint.x
+      value: -0.063
+      objectReference: {fileID: 0}
+    - target: {fileID: 2696679037523104782, guid: e4b063766821bf84aa81279dfc55e73c, type: 3}
+      propertyPath: m_LocalEulerAnglesHint.y
+      value: 170.867
+      objectReference: {fileID: 0}
+    - target: {fileID: 2696679037523104782, guid: e4b063766821bf84aa81279dfc55e73c, type: 3}
+      propertyPath: m_LocalEulerAnglesHint.z
+      value: -0.033
+      objectReference: {fileID: 0}
+    - target: {fileID: 3325723471878475444, guid: e4b063766821bf84aa81279dfc55e73c, type: 3}
+      propertyPath: m_Name
+      value: Praying
+      objectReference: {fileID: 0}
+    m_RemovedComponents: []
+    m_RemovedGameObjects: []
+    m_AddedGameObjects: []
+    m_AddedComponents: []
+  m_SourcePrefab: {fileID: 100100000, guid: e4b063766821bf84aa81279dfc55e73c, type: 3}
 --- !u!1 &139883320
 GameObject:
   m_ObjectHideFlags: 0
@@ -395,59 +452,6 @@ BoxCollider:
   serializedVersion: 3
   m_Size: {x: 6.8523674, y: 12.202992, z: 79.022156}
   m_Center: {x: 10.846182, y: 5.601496, z: -4.451935}
---- !u!1 &274551598
-GameObject:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  serializedVersion: 6
-  m_Component:
-  - component: {fileID: 274551599}
-  - component: {fileID: 274551600}
-  m_Layer: 0
-  m_Name: CameraRig
-  m_TagString: Untagged
-  m_Icon: {fileID: 0}
-  m_NavMeshLayer: 0
-  m_StaticEditorFlags: 0
-  m_IsActive: 1
---- !u!4 &274551599
-Transform:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 274551598}
-  serializedVersion: 2
-  m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
-  m_LocalPosition: {x: 0, y: 1.4, z: 0}
-  m_LocalScale: {x: 1, y: 1, z: 1}
-  m_ConstrainProportionsScale: 0
-  m_Children: []
-  m_Father: {fileID: 1722785227}
-  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
---- !u!114 &274551600
-MonoBehaviour:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 274551598}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: e13ae829cf382d2428cc29cfd04728d8, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: 
-  followTarget: {fileID: 1711833323}
-  mouseXSensitivity: 200
-  mouseYSensitivity: 150
-  minPitch: -35
-  maxPitch: 65
-  invertY: 0
-  lockCursor: 1
-  requireRightMouse: 1
-  followOffset: {x: 0, y: 1.6, z: 0}
 --- !u!1 &278393232
 GameObject:
   m_ObjectHideFlags: 0
@@ -1503,7 +1507,7 @@ Transform:
   m_GameObject: {fileID: 1295566611}
   serializedVersion: 2
   m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
-  m_LocalPosition: {x: 0.5, y: 3.3000002, z: -7}
+  m_LocalPosition: {x: 0.5, y: 3.4, z: -7}
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_ConstrainProportionsScale: 0
   m_Children: []
@@ -1522,7 +1526,7 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   Damping: {x: 0.1, y: 0.5, z: 0.3}
-  ShoulderOffset: {x: 0.5, y: 1.5, z: 0}
+  ShoulderOffset: {x: 0.5, y: 3, z: 0}
   VerticalArmLength: 0.4
   CameraSide: 1
   CameraDistance: 7
@@ -1555,7 +1559,7 @@ MonoBehaviour:
   m_StreamingVersion: 20241001
   m_LegacyPriority: 0
   Target:
-    TrackingTarget: {fileID: 274551599}
+    TrackingTarget: {fileID: 1711833323}
     LookAtTarget: {fileID: 0}
     CustomLookAtTarget: 0
   Lens:
@@ -1794,6 +1798,7 @@ MonoBehaviour:
   snapRollToEightWay: 1
   gravityY: -35
   groundedGravityY: -2
+  gunSlots: {fileID: 0}
   diagonalBoostEnabled: 1
   diagonalBoostMax: 3
   diagonalBoostPower: 3
@@ -1933,7 +1938,6 @@ Transform:
   m_Children:
   - {fileID: 2033279392}
   - {fileID: 1295566612}
-  - {fileID: 274551599}
   m_Father: {fileID: 0}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
 --- !u!1 &1783557924
@@ -2309,7 +2313,7 @@ Transform:
   m_GameObject: {fileID: 2033279389}
   serializedVersion: 2
   m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
-  m_LocalPosition: {x: 0.5, y: 3.3000002, z: -7}
+  m_LocalPosition: {x: 0.5, y: 3.4, z: -7}
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_ConstrainProportionsScale: 0
   m_Children: []
@@ -2571,3 +2575,4 @@ SceneRoots:
   - {fileID: 653344347}
   - {fileID: 1000782800}
   - {fileID: 1468202677}
+  - {fileID: 70676660}
