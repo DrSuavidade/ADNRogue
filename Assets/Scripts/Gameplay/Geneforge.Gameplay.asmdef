@@ -1,0 +1,16 @@
+{
+    "name": "Geneforge.Gameplay",
+    "rootNamespace": "Geneforge",
+    "references": [
+        "GUID:8ffd6cebf53695342895c583c6cca16f"
+    ],
+    "includePlatforms": [],
+    "excludePlatforms": [],
+    "allowUnsafeCode": false,
+    "overrideReferences": false,
+    "precompiledReferences": [],
+    "autoReferenced": true,
+    "defineConstraints": [],
+    "versionDefines": [],
+    "noEngineReferences": false
+}
