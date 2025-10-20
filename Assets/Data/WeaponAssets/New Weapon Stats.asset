@@ -19,3 +19,12 @@ MonoBehaviour:
   knockbackForce: 1
   critChance: 0.375
   critMultiplier: 2
+  projectilesPerShot: 1
+  spreadAngle: 10
+  projectileLifetime: 5.3
+  pierceCount: 1
+  bounceCount: 0
+  homingStrength: 0.109
+  aoeRadius: 2
+  accuracy: 0.984
+  inaccuracyHalfAngle: 46

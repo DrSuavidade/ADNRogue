@@ -1831,6 +1831,10 @@ PrefabInstance:
       propertyPath: m_Name
       value: Rex Magaita
       objectReference: {fileID: 0}
+    - target: {fileID: 6905768579150644540, guid: 992038e850f014c4aac21a41f6939381, type: 3}
+      propertyPath: m_IsActive
+      value: 0
+      objectReference: {fileID: 0}
     m_RemovedComponents: []
     m_RemovedGameObjects: []
     m_AddedGameObjects: []
