@@ -1,7 +1,7 @@
 using UnityEngine;
 using UnityEngine.UI;
 using Geneforge.Gameplay.Weapons.Slots;     // GunSlots
-using Geneforge.Gameplay.Abilities.Essences; // AnimalEssence
+using Geneforge.Gameplay.Abilities; // AnimalEssence
 
 namespace Geneforge.UI
 {

@@ -15,3 +15,5 @@ MonoBehaviour:
   displayName: 
   description: 
   icon: {fileID: 0}
+  modifiers: []
+  specialAbility: {fileID: 0}

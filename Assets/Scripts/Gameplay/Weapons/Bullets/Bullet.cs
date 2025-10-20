@@ -1,217 +1,300 @@
 using UnityEngine;
 using System.Collections;
-using System.Collections.Generic;
 using Geneforge.Gameplay.Characters.Enemies;
+using Geneforge.Gameplay.Weapons.Stats;
 
-
-namespace Geneforge.Gameplay.Weapons.Bullets 
+namespace Geneforge.Gameplay.Weapons.Bullets
 {
     public class Bullet : MonoBehaviour
     {
-        public float lifeTime = 3f;
+        Enemy lastEnemyHit;
+
         [HideInInspector] public float damage = 1f;
-        [HideInInspector] public float knockbackForce = 0f;  // e.g. 1 → 0.1f, 0.5 → 0.05f
+        [HideInInspector] public float knockbackForce = 0f;
         [HideInInspector] public bool isCrit = false;
+
+        public float lifeTime = 3f;
         public GameObject impactEffectPrefab;
 
-        // Chain lightning settings (on-hit)
-        [Header("Chain Lightning (On Hit)")]
-        [Tooltip("Enable chain lightning when this projectile hits any enemy")]
-        public bool enableChainLightning = true;
+        // Runtime behavior from WeaponStats
+        int pierceRemaining = 0;
+        int bounceRemaining = 0;
+        float homingStrength = 0f;
+        float aoeRadius = 0f;
 
-        [Tooltip("Radius to search the next enemy per hop")]
-        public float chainLightningRadius = 6f;
+        // Debug visual for AoE (testing)
+        [Header("Debug")]
+        [SerializeField] bool showAoeRingOnHit = true;
 
-        [Tooltip("Damage dealt on each chained hop (separado do dano inicial da bala)")]
-        public float chainLightningDamage = 10f;
-
-        [Tooltip("VFX usado para cada ligação ou impacto. Se tiver LineRenderer, é usado como 'raio' entre alvos.")]
-        public GameObject chainLightningEffectPrefab;
-
-        // 🔹 NOVO: parâmetros para comportamento tipo Electro Spirit (saltos sequenciais)
-        [Header("Electro Spirit Style")]
-        [Tooltip("Número máximo de saltos após o primeiro inimigo atingido")]
-        public int chainMaxJumps = 12;
-
-        [Tooltip("Atraso entre cada salto (efeito de 'travadinha' entre alvos)")]
-        public float chainDelayBetweenJumps = 0.32f;
-
-        // Internos
-        private bool _chainRunning = false;
+        Rigidbody rb;
+        Collider myCol;
+        Vector3 lastVel; // for restoring direction after pierce
 
         void Awake()
         {
-            // Destroi só a bala ao fim de X; os efeitos instanciados são independentes
-            Destroy(transform.root.gameObject, lifeTime);
+            rb = GetComponent<Rigidbody>();
+            myCol = GetComponent<Collider>();
+        }
+
+        // Minimal homing: uses only homingStrength
+        void Update()
+        {
+            if (homingStrength <= 0f || rb == null) return;
+
+            // find nearest enemy each frame (simple + robust)
+            const float radius = 12f;
+            Geneforge.Gameplay.Characters.Enemies.Enemy best = null;
+            float bestDist = float.PositiveInfinity;
+
+            foreach (var col in Physics.OverlapSphere(transform.position, radius, ~0, QueryTriggerInteraction.Ignore))
+            {
+                var e = col.GetComponent<Geneforge.Gameplay.Characters.Enemies.Enemy>();
+                if (e == null) continue;
+                float d = (e.transform.position - transform.position).sqrMagnitude;
+                if (d < bestDist) { bestDist = d; best = e; }
+            }
+            if (best == null) return;
+
+            // steer current velocity toward target
+            Vector3 desired = (best.transform.position - transform.position).normalized;
+        #if UNITY_6000_0_OR_NEWER
+            Vector3 curDir  = rb.linearVelocity.sqrMagnitude > 1e-6f ? rb.linearVelocity.normalized : transform.forward;
+            float speed     = rb.linearVelocity.magnitude;
+        #else
+            Vector3 curDir  = rb.velocity.sqrMagnitude > 1e-6f ? rb.velocity.normalized : transform.forward;
+            float speed     = rb.velocity.magnitude;
+        #endif
+
+            // turn rate scales with homingStrength (0..1). 360°/s at strength=1.
+            float turnRad = (360f * Mathf.Deg2Rad) * Mathf.Clamp01(homingStrength) * Time.deltaTime;
+
+            Vector3 newDir = Vector3.RotateTowards(curDir, desired, turnRad, 0f);
+        #if UNITY_6000_0_OR_NEWER
+            rb.linearVelocity = newDir * speed;
+        #else
+            rb.velocity = newDir * speed;
+        #endif
+            transform.forward = newDir;
+        }
+
+
+        void FixedUpdate()
+        {
+#if UNITY_6000_0_OR_NEWER
+            lastVel = rb ? rb.linearVelocity : lastVel;
+#else
+            lastVel = rb ? rb.velocity : lastVel;
+#endif
+        }
+
+        public void Launch(Vector3 dir, float speed)
+        {
+            if (rb)
+            {
+#if UNITY_6000_0_OR_NEWER
+                rb.linearVelocity = dir.normalized * speed;
+#else
+                rb.velocity = dir.normalized * speed;
+#endif
+                transform.forward = dir.normalized;
+            }
+            else transform.forward = dir.normalized;
+
+            // lifetime
+            StopAllCoroutines();
+            StartCoroutine(DieAfter(lifeTime));
+        }
+
+        IEnumerator DieAfter(float t) { yield return new WaitForSeconds(t); Destroy(gameObject); }
+
+        public void ApplyRuntimeStats(WeaponStats ws)
+        {
+            if (ws == null) return;
+            lifeTime = ws.projectileLifetime;
+            pierceRemaining = ws.pierceCount;
+            bounceRemaining = ws.bounceCount;
+            homingStrength = Mathf.Clamp01(ws.homingStrength);
+            aoeRadius = Mathf.Max(0f, ws.aoeRadius);
+        }
+
+        // ---------------- Collisions: support trigger or non-trigger ----------------
+        void OnTriggerEnter(Collider other)
+        {
+            // If your bullets/enemies use triggers, handle here
+            var enemy = other.GetComponent<Enemy>();
+            if (enemy != null) { HandleHitEnemy(enemy, other.ClosestPoint(transform.position)); return; }
+            // No bounce on trigger surfaces (no normal) — just destroy unless you want special cases
         }
 
         void OnCollisionEnter(Collision collision)
         {
-            // 1) Impact VFX (como tinhas)
-            if (impactEffectPrefab != null && collision.contacts.Length > 0)
-            {
-                var cp = collision.contacts[0];
-                var fx = Instantiate(impactEffectPrefab, cp.point, Quaternion.LookRotation(cp.normal));
-                var ps = fx.GetComponent<ParticleSystem>();
-                if (ps != null)
-                {
-                    var main = ps.main;
-                    Destroy(fx, main.duration + main.startLifetime.constantMax);
-                }
-                else Destroy(fx, 2f);
-            }
-
-            // 2) Dano + knockback no primeiro alvo atingido
             var enemy = collision.collider.GetComponent<Enemy>();
+            var point = (collision.contacts.Length > 0) ? collision.contacts[0].point : transform.position;
+
             if (enemy != null)
             {
-                enemy.TakeDamage(damage, isCrit);
-
-                if (knockbackForce > 0f)
-                {
-                    Vector3 dir = transform.forward; dir.y = 0f;
-                    enemy.ApplyKnockback(dir, knockbackForce);
-                }
-
-                // 3) Em vez de AOE, iniciamos a COROUTINE de saltos sequenciais
-                if (enableChainLightning && !_chainRunning)
-                {
-                    StartCoroutine(ChainLightningSequence(enemy.transform));
-                    // Desativamos o visual/colisão da bala para não interferir, e destruímos no fim da cadeia
-                    HideAndDisableBullet();
-                    return;
-                }
-            }
-
-            // Se não iniciou cadeia, destruímos já a bala
-            Destroy(transform.root.gameObject);
-        }
-
-        // 🔹 Eletro Spirit: salta de inimigo em inimigo dentro do raio, sempre para o mais próximo, com delay entre saltos
-        private IEnumerator ChainLightningSequence(Transform firstTarget)
-        {
-            _chainRunning = true;
-
-            // Conjunto de alvos já atingidos (para não repetir)
-            var visited = new HashSet<Transform>();
-            Transform current = firstTarget;
-
-            visited.Add(current);
-
-            // VFX no primeiro impacto (opcional)
-            SpawnImpactVFXAt(current.position);
-
-            int jumps = 0;
-
-            while (current != null && jumps < chainMaxJumps)
-            {
-                // Procurar próximo inimigo mais próximo dentro do raio
-                Collider[] hits = Physics.OverlapSphere(current.position, chainLightningRadius);
-                Transform next = null;
-                float bestDist = Mathf.Infinity;
-
-                for (int i = 0; i < hits.Length; i++)
-                {
-                    var col = hits[i];
-                    var otherEnemy = col.GetComponent<Enemy>();
-                    if (otherEnemy == null) continue;
-
-                    Transform t = otherEnemy.transform;
-                    if (visited.Contains(t)) continue;
-
-                    float d = Vector3.Distance(current.position, t.position);
-                    if (d < bestDist)
-                    {
-                        bestDist = d;
-                        next = t;
-                    }
-                }
-
-                if (next == null) break; // acabou a cadeia (nenhum válido no raio)
-
-                // Dano no próximo
-                var nextEnemy = next.GetComponent<Enemy>();
-                if (nextEnemy != null)
-                    nextEnemy.TakeDamage(chainLightningDamage);
-
-                // VFX de ligação (raio) entre current → next
-                SpawnLinkVFX(current.position, next.position);
-
-                visited.Add(next);
-                current = next;
-                jumps++;
-
-                // Pequena pausa entre saltos para “vender” o efeito
-                if (chainDelayBetweenJumps > 0f)
-                    yield return new WaitForSeconds(chainDelayBetweenJumps);
-                else
-                    yield return null;
-            }
-
-            // Fim: destruir a bala (agora já escondida/desativada)
-            Destroy(transform.root.gameObject);
-        }
-
-        // --- Helpers de VFX ---
-        void SpawnImpactVFXAt(Vector3 pos)
-        {
-            if (chainLightningEffectPrefab == null) return;
-
-            // Se o prefab for um ParticleSystem de impacto, instanciamos no ponto
-            var fx = Instantiate(chainLightningEffectPrefab, pos, Quaternion.identity);
-            var ps = fx.GetComponent<ParticleSystem>();
-            if (ps != null)
-            {
-                var main = ps.main;
-                Destroy(fx, main.duration + main.startLifetime.constantMax);
-            }
-            else
-            {
-                // Se não tiver PS, auto-destroi rápido
-                Destroy(fx, 0.35f);
-            }
-        }
-
-        void SpawnLinkVFX(Vector3 from, Vector3 to)
-        {
-            if (chainLightningEffectPrefab == null) return;
-
-            var fx = Instantiate(chainLightningEffectPrefab);
-            // Se o prefab tiver LineRenderer, usamos como “raio”
-            var lr = fx.GetComponent<LineRenderer>();
-            if (lr != null)
-            {
-                if (lr.positionCount != 2) lr.positionCount = 2;
-                lr.useWorldSpace = true;
-                lr.SetPosition(0, from);
-                lr.SetPosition(1, to);
-                Destroy(fx, 0.3f);
+                HandleHitEnemy(enemy, point);
                 return;
             }
 
-            // Caso contrário, colocamos no meio só para ter um efeito (fallback)
-            fx.transform.position = (from + to) * 0.5f;
-            var ps = fx.GetComponent<ParticleSystem>();
-            if (ps != null)
+            // Environment bounce
+            if (bounceRemaining > 0 && rb != null && collision.contacts.Length > 0)
             {
-                var main = ps.main;
-                Destroy(fx, main.duration + main.startLifetime.constantMax);
+                Vector3 n = collision.contacts[0].normal;
+#if UNITY_6000_0_OR_NEWER
+                var v = rb.linearVelocity;
+                rb.linearVelocity = Vector3.Reflect(v, n);
+#else
+                var v = rb.velocity;
+                rb.velocity = Vector3.Reflect(v, n);
+#endif
+                transform.forward = GetVelocityDir();
+                bounceRemaining--;
+                return;
             }
-            else Destroy(fx, 0.35f);
+
+            Destroy(gameObject);
         }
 
-        // Esconde a bala e desliga colisão para deixar a coroutine correr até ao fim
-        void HideAndDisableBullet()
+        void HandleHitEnemy(Enemy enemy, Vector3 hitPoint)
         {
-            var col = GetComponent<Collider>();
-            if (col) col.enabled = false;
+            // Damage & knockback
+            enemy.TakeDamage(damage, isCrit);
+            lastEnemyHit = enemy;
+            if (knockbackForce > 0f)
+            {
+                Vector3 dir = transform.forward; dir.y = 0f;
+                enemy.ApplyKnockback(dir.normalized, knockbackForce);
+            }
 
-            var rend = GetComponentInChildren<Renderer>();
-            if (rend) rend.enabled = false;
+            // AoE splash + simple debug ring
+            if (aoeRadius > 0f)
+            {
+                var hits = Physics.OverlapSphere(hitPoint, aoeRadius);
+                for (int i = 0; i < hits.Length; i++)
+                {
+                    var other = hits[i].GetComponent<Enemy>();
+                    if (other != null && other != enemy) other.TakeDamage(damage, false);
+                }
 
-            // se a bala tiver RigidBody, pára-a
-            var rb = GetComponent<Rigidbody>();
-            if (rb) { rb.linearVelocity = Vector3.zero; rb.isKinematic = true; }
+                if (showAoeRingOnHit) StartCoroutine(AoeRingFollow(enemy.transform, aoeRadius, 0.5f));
+            }
+
+            // Pierce: keep going straight, don’t reflect off enemy
+            if (pierceRemaining > 0)
+            {
+                pierceRemaining--;
+
+                // Restore pre-collision velocity so we don't get deflected by physics
+                if (rb)
+                {
+#if UNITY_6000_0_OR_NEWER
+                    rb.linearVelocity = lastVel;
+#else
+                    rb.velocity = lastVel;
+#endif
+                }
+
+                // Ignore this enemy's collider briefly to avoid immediate re-collide
+                if (myCol && enemy.TryGetComponent<Collider>(out var eCol))
+                    StartCoroutine(TemporarilyIgnore(eCol, 0.08f));
+                return; // continue flying
+            }
+
+            Destroy(gameObject);
+        }
+
+        IEnumerator AoeRingFollow(Transform target, float radius, float seconds)
+        {
+            if (target == null) yield break;
+
+            // create ring
+            var go = new GameObject("AoE_Debug_Ring");
+            var lr = go.AddComponent<LineRenderer>();
+            lr.useWorldSpace = false;                  // local circle; we'll move the GO
+            lr.loop = true;
+            lr.positionCount = 64;
+            lr.widthMultiplier = 0.05f;
+            lr.shadowCastingMode = UnityEngine.Rendering.ShadowCastingMode.Off;
+            lr.receiveShadows = false;
+            lr.material = new Material(Shader.Find("Sprites/Default"));
+            lr.startColor = lr.endColor = new Color(1f, 1f, 1f, 0.7f);
+
+            // build local-space circle ON XZ PLANE (parallel to ground)
+            Vector3[] pts = new Vector3[lr.positionCount];
+            for (int i = 0; i < pts.Length; i++)
+            {
+                float t = (i / (float)pts.Length) * Mathf.PI * 2f;
+                pts[i] = new Vector3(Mathf.Cos(t) * radius, 0f, Mathf.Sin(t) * radius);
+            }
+            lr.SetPositions(pts);
+
+            // ensure orientation parallel to Y=0
+            go.transform.rotation = Quaternion.identity;
+
+            // hard-destroy after 'seconds' no matter what (even if this MonoBehaviour dies)
+            Destroy(go, seconds);
+
+            float tSec = 0f;
+            while (tSec < seconds && target != null)
+            {
+                // place near the enemy's feet (ground-projected)
+                Vector3 p = target.position;
+                go.transform.position = ProjectToGround(p) + Vector3.up * 0.02f;
+
+                // no spin, stay parallel to ground
+                // go.transform.rotation = Quaternion.identity; // not needed each frame, but harmless
+
+                tSec += Time.deltaTime;
+                yield return null;
+            }
+
+            // if the coroutine is still alive, clean material + GO explicitly
+            if (lr != null && lr.material != null) Destroy(lr.material);
+            if (go) Destroy(go);
+        }
+
+        // helper: project to ground under a point
+        Vector3 ProjectToGround(Vector3 around)
+        {
+            if (Physics.Raycast(around + Vector3.up * 2f, Vector3.down, out var hit, 4f, ~0, QueryTriggerInteraction.Ignore))
+                return hit.point;
+            return new Vector3(around.x, 0f, around.z);
+        }
+
+
+        IEnumerator TemporarilyIgnore(Collider other, float seconds)
+        {
+            if (myCol && other)
+            {
+                Physics.IgnoreCollision(myCol, other, true);
+                yield return new WaitForSeconds(seconds);
+                if (myCol && other) Physics.IgnoreCollision(myCol, other, false);
+            }
+        }
+
+        IEnumerator AoeRing(Vector3 center, float radius, float seconds)
+        {
+            // cheap, no-alloc debug ring using a temporary primitive
+            var go = GameObject.CreatePrimitive(PrimitiveType.Sphere);
+            Destroy(go.GetComponent<Collider>());
+            go.transform.position = center;
+            go.transform.localScale = Vector3.one * (radius * 2f);
+            var mr = go.GetComponent<MeshRenderer>();
+            if (mr != null) mr.material.color = new Color(1f, 1f, 1f, 0.1f);
+            yield return new WaitForSeconds(seconds);
+            if (go) Destroy(go);
+        }
+
+        Vector3 GetVelocityDir()
+        {
+            if (!rb) return transform.forward;
+#if UNITY_6000_0_OR_NEWER
+            var v = rb.linearVelocity;
+#else
+            var v = rb.velocity;
+#endif
+            return v.sqrMagnitude > 1e-6f ? v.normalized : transform.forward;
         }
     }
 }

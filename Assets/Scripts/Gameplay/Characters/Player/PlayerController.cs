@@ -1,4 +1,5 @@
 using UnityEngine;
+using System.Collections.Generic;
 using Geneforge.Gameplay.Weapons.Bullets;
 using Geneforge.Gameplay.Weapons.Stats;
 using Geneforge.Gameplay.Weapons.Slots;
@@ -188,40 +189,83 @@ namespace Geneforge.Gameplay.Characters.Player
                 return;
             }
 
-            GameObject bullet = Instantiate(bulletPrefab, firePoint.position, firePoint.rotation);
+            // --- Active stat snapshot ---
+            int shots  = Mathf.Max(1, stats != null ? stats.projectilesPerShot : 1);
+            float spread = stats != null ? stats.spreadAngle : 0f;
 
+            // [Accuracy] 0 -> max jitter; 1 -> no jitter
+            float inaccuracyHalf = 0f;
             if (stats != null)
-                bullet.transform.localScale = Vector3.one * stats.projectileSize;
+                inaccuracyHalf = (1f - Mathf.Clamp01(stats.accuracy)) * stats.inaccuracyHalfAngle;
 
-            Rigidbody rb = bullet.GetComponent<Rigidbody>();
-            if (rb != null)
-            {
-                float speed = (stats != null) ? stats.projectileSpeed : 20f;
-#if UNITY_6000_0_OR_NEWER
-                rb.linearVelocity = firePoint.forward * speed;
-#else
-            rb.velocity = firePoint.forward * speed;
-#endif
-            }
-            else Debug.LogWarning("Bullet prefab needs a Rigidbody.", bullet);
+            // Lateral spacing so they don't spawn on top of each other.
+            float spacing = (stats != null ? stats.projectileSize : 1f) * 0.35f;
 
-            Bullet b = bullet.GetComponent<Bullet>();
-            if (b != null)
+            List<Collider> volleyColliders = new List<Collider>();
+
+            Vector3 forward = firePoint.forward;
+            Vector3 axis    = firePoint.up;     // yaw axis
+            Vector3 right   = firePoint.right;  // lateral lanes
+
+            for (int i = 0; i < shots; i++)
             {
-                float dmg = (stats != null) ? stats.damage : 1f;
-                bool crit = false;
-                if (stats != null && Random.value <= stats.critChance)
+                float t = (shots == 1) ? 0f : i / (shots - 1f);
+                float angle = (shots == 1) ? 0f : Mathf.Lerp(-spread * 0.5f, spread * 0.5f, t);
+                Quaternion rot = Quaternion.AngleAxis(angle, axis);
+                Vector3 dir = rot * forward;
+
+                // [Accuracy] random yaw jitter per projectile
+                if (inaccuracyHalf > 0f)
                 {
-                    dmg *= stats.critMultiplier;
-                    crit = true;
+                    float jitter = Random.Range(-inaccuracyHalf, inaccuracyHalf);
+                    dir = Quaternion.AngleAxis(jitter, axis) * dir;
                 }
-                b.damage = dmg;
-                b.knockbackForce = (stats != null) ? stats.knockbackForce : 0f;
-                b.isCrit = crit;
-                gunSlots?.ApplyToBullet(b);
+
+                // Centered lateral lanes: -N..+N along 'right'
+                float lane = (i - (shots - 1) * 0.5f);
+                Vector3 spawnPos = firePoint.position + right * (lane * spacing);
+
+                GameObject bulletGO = Instantiate(bulletPrefab, spawnPos, Quaternion.LookRotation(dir, axis));
+
+                if (stats != null)
+                    bulletGO.transform.localScale = Vector3.one * stats.projectileSize;
+
+                Bullet b = bulletGO.GetComponent<Bullet>();
+                if (b != null)
+                {
+                    float dmg = (stats != null) ? stats.damage : 1f;
+                    bool crit = false;
+                    if (stats != null && Random.value <= stats.critChance)
+                    {
+                        dmg *= stats.critMultiplier;
+                        crit = true;
+                    }
+                    b.damage = dmg;
+                    b.knockbackForce = (stats != null) ? stats.knockbackForce : 0f;
+                    b.isCrit = crit;
+
+                    if (stats != null) b.ApplyRuntimeStats(stats);
+
+                    float speed = (stats != null) ? stats.projectileSpeed : 20f;
+                    b.Launch(dir, speed);
+
+                    gunSlots?.ApplyToBullet(b);
+
+                    var cols = bulletGO.GetComponentsInChildren<Collider>();
+                    if (cols != null && cols.Length > 0) volleyColliders.AddRange(cols);
+                }
+                else Debug.LogWarning("Bullet prefab missing Bullet component.", bulletGO);
             }
-            else Debug.LogWarning("Bullet prefab missing Bullet component.", bullet);
+
+            // Disable collisions between bullets spawned in the same volley
+            for (int a = 0; a < volleyColliders.Count; a++)
+                for (int bIdx = a + 1; bIdx < volleyColliders.Count; bIdx++)
+                    if (volleyColliders[a] && volleyColliders[bIdx])
+                        Physics.IgnoreCollision(volleyColliders[a], volleyColliders[bIdx], true);
         }
+
+
+
 
         // -------------------- Roll --------------------
         void TryStartRoll()

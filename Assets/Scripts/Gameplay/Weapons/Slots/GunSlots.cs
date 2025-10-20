@@ -2,7 +2,7 @@ using UnityEngine;
 using System;
 using Geneforge.Gameplay.Weapons.Bullets;
 using Geneforge.Gameplay.Weapons.Stats;
-using Geneforge.Gameplay.Abilities.Essences;
+using Geneforge.Gameplay.Abilities;
 
 
 namespace Geneforge.Gameplay.Weapons.Slots 
