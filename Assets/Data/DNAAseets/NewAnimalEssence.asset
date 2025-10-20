@@ -15,3 +15,11 @@ MonoBehaviour:
   displayName: 
   description: 
   icon: {fileID: 0}
+  modifiers:
+  - stat: 5
+    kind: 1
+    value: 1.5
+  - stat: 2
+    kind: 0
+    value: -1
+  specialAbility: {fileID: 0}

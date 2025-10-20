@@ -12,7 +12,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 4bde70125a8f77a499a28aaa2a44acb7, type: 3}
   m_Name: New Weapon Stats
   m_EditorClassIdentifier: 
-  fireRate: 0.18
+  fireRate: 0.2
   projectileSpeed: 10
   damage: 1
   projectileSize: 1
@@ -20,11 +20,11 @@ MonoBehaviour:
   critChance: 0.375
   critMultiplier: 2
   projectilesPerShot: 1
-  spreadAngle: 10
-  projectileLifetime: 5.3
+  spreadAngle: 0
+  projectileLifetime: 3.3
   pierceCount: 1
   bounceCount: 0
-  homingStrength: 0.109
-  aoeRadius: 2
-  accuracy: 0.984
-  inaccuracyHalfAngle: 46
+  homingStrength: 0
+  aoeRadius: 0
+  accuracy: 1
+  inaccuracyHalfAngle: 12.7
