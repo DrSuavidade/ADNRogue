@@ -51,7 +51,7 @@ PrefabInstance:
     - target: {fileID: -8086145561023884616, guid: 2f69b8a048d24164ebbc71aea9be8937, type: 3}
       propertyPath: 'm_Materials.Array.data[0]'
       value: 
-      objectReference: {fileID: 2100000, guid: 053bd2114d387bd42bf4cfa3e122f6e9, type: 2}
+      objectReference: {fileID: 2100000, guid: 9120a0e979765f34589fa4e281fa1adf, type: 2}
     - target: {fileID: 919132149155446097, guid: 2f69b8a048d24164ebbc71aea9be8937, type: 3}
       propertyPath: m_Name
       value: Rex Magaita
