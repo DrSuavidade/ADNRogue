@@ -1,0 +1,171 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 177e3b1d2ae029a4699582a5fed232f2, type: 3}
+  m_Name: Dragonfly_TreeSkill
+  m_EditorClassIdentifier: 
+  nodes:
+  - id: start_dragonfly
+    title: 
+    description: 1st Upgrade
+    dnaCost: 1
+    prerequisites: []
+    statModifiers: []
+    abilityUpgrades:
+    - key: 
+      kind: 0
+      value: 0
+  - id: upgrade1_1_dragonfly
+    title: 
+    description: 2nd Upgrade
+    dnaCost: 1
+    prerequisites:
+    - start_dragonfly
+    statModifiers: []
+    abilityUpgrades:
+    - key: 
+      kind: 0
+      value: 0
+  - id: upgrade1_2_dragonfly
+    title: 
+    description: 3rd Upgrade
+    dnaCost: 1
+    prerequisites:
+    - start_dragonfly
+    statModifiers: []
+    abilityUpgrades:
+    - key: 
+      kind: 0
+      value: 0
+  - id: upgrade2_dragonfly
+    title: 
+    description: 4th Upgrade
+    dnaCost: 1
+    prerequisites:
+    - upgrade1_1_dragonfly
+    - upgrade1_2_dragonfly
+    statModifiers: []
+    abilityUpgrades:
+    - key: 
+      kind: 0
+      value: 0
+  - id: upgrade3_1_dragonfly
+    title: 
+    description: 5th Upgrade
+    dnaCost: 1
+    prerequisites:
+    - upgrade2_dragonfly
+    statModifiers: []
+    abilityUpgrades:
+    - key: 
+      kind: 0
+      value: 0
+  - id: upgrade3_2_dragonfly
+    title: 
+    description: 6th Upgrade
+    dnaCost: 1
+    prerequisites:
+    - upgrade2_dragonfly
+    statModifiers: []
+    abilityUpgrades:
+    - key: 
+      kind: 0
+      value: 0
+  - id: upgrade4_1_dragonfly
+    title: 
+    description: 7th Upgrade
+    dnaCost: 1
+    prerequisites:
+    - upgrade3_1_dragonfly
+    statModifiers: []
+    abilityUpgrades:
+    - key: 
+      kind: 0
+      value: 0
+  - id: upgrade4_2_dragonfly
+    title: 
+    description: 8th Upgrade
+    dnaCost: 1
+    prerequisites:
+    - upgrade4_1_dragonfly
+    - upgrade4_3_dragonfly
+    statModifiers: []
+    abilityUpgrades:
+    - key: 
+      kind: 0
+      value: 0
+  - id: upgrade4_3_dragonfly
+    title: 
+    description: 9th Upgrade
+    dnaCost: 1
+    prerequisites:
+    - upgrade3_2_dragonfly
+    statModifiers: []
+    abilityUpgrades:
+    - key: 
+      kind: 0
+      value: 0
+  - id: upgrade5_1_dragonfly
+    title: 
+    description: 10th Upgrade
+    dnaCost: 1
+    prerequisites:
+    - upgrade4_1_dragonfly
+    statModifiers: []
+    abilityUpgrades:
+    - key: 
+      kind: 0
+      value: 0
+  - id: upgrade5_2_dragonfly
+    title: 
+    description: 11th Upgrade
+    dnaCost: 1
+    prerequisites:
+    - upgrade4_3_dragonfly
+    statModifiers: []
+    abilityUpgrades:
+    - key: 
+      kind: 0
+      value: 0
+  - id: upgrade6_dragonfly
+    title: 
+    description: 12th Upgrade
+    dnaCost: 1
+    prerequisites:
+    - upgrade5_1_dragonfly
+    - upgrade5_2_dragonfly
+    statModifiers: []
+    abilityUpgrades:
+    - key: 
+      kind: 0
+      value: 0
+  - id: upgrade7_1_dragonfly
+    title: 
+    description: 13th Upgrade
+    dnaCost: 1
+    prerequisites:
+    - upgrade6_dragonfly
+    statModifiers: []
+    abilityUpgrades:
+    - key: 
+      kind: 0
+      value: 0
+  - id: upgrade7_2_dragonfly
+    title: 
+    description: 14th Upgrade
+    dnaCost: 1
+    prerequisites:
+    - upgrade6_dragonfly
+    statModifiers: []
+    abilityUpgrades:
+    - key: 
+      kind: 0
+      value: 0

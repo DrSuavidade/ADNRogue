@@ -1,34 +1,36 @@
 using UnityEngine;
 using System;
+using System.Linq;
 using Geneforge.Gameplay.Weapons.Bullets;
 using Geneforge.Gameplay.Weapons.Stats;
 using Geneforge.Gameplay.Abilities;
+using Geneforge.Gameplay.Progression;
 
 
-namespace Geneforge.Gameplay.Weapons.Slots 
+namespace Geneforge.Gameplay.Weapons.Slots
 {
-public enum SlotKind { Primary, Secondary }
+    public enum SlotKind { Primary, Secondary }
 
 
-[Serializable]
-public class GunSlot
-{
-    [SerializeField] SlotKind kind = SlotKind.Secondary;
-    [SerializeField] AnimalEssence essence;
+    [Serializable]
+    public class GunSlot
+    {
+        [SerializeField] SlotKind kind = SlotKind.Secondary;
+        [SerializeField] AnimalEssence essence;
 
 
-    public SlotKind Kind => kind;
-    public AnimalEssence Essence => essence;
-    public bool IsEmpty => essence == null;
+        public SlotKind Kind => kind;
+        public AnimalEssence Essence => essence;
+        public bool IsEmpty => essence == null;
 
 
-    public GunSlot() { }
-    public GunSlot(SlotKind k) { kind = k; }
+        public GunSlot() { }
+        public GunSlot(SlotKind k) { kind = k; }
 
 
-    public void Set(AnimalEssence e) => essence = e;
-    public void Clear() => essence = null;
-}
+        public void Set(AnimalEssence e) => essence = e;
+        public void Clear() => essence = null;
+    }
 
 
     /// <summary>
@@ -50,6 +52,9 @@ public class GunSlot
         new GunSlot(SlotKind.Secondary),
         };
 
+        [Header("Progression")]
+        [SerializeField] EssenceProgression progression;
+
 
         public GunSlot Primary => primary;
         public GunSlot[] Secondaries => secondaries;
@@ -57,6 +62,12 @@ public class GunSlot
 
         public event Action<AnimalEssence> OnPrimaryChanged;
         public event Action OnSecondariesChanged;
+        WeaponStats _cachedActive;
+
+        void Awake()
+        {
+            if (progression == null) progression = FindAnyObjectByType<EssenceProgression>();
+        }
 
         // --- Assign/Clear ---
         public bool TrySetPrimary(AnimalEssence e)
@@ -127,18 +138,52 @@ public class GunSlot
 
         bool IsValidIndex(int i) => i >= 0 && i < secondaries.Length;
 
-
-        // --- Hook points for later ---
         public void ApplyToBullet(Bullet b)
         {
-            // Placeholder: primary essence will add on-hit abilities (e.g., chain lightning)
-            // and secondaries will tweak damage/size/etc. in a follow-up pass.
+            if (b == null || _cachedActive == null) return;
+
+            b.ApplyRuntimeStats(_cachedActive);
+
+            var ability = primary?.Essence?.specialAbility;
+            if (ability != null)
+            {
+                AbilityUpgrade[] ups = null;
+                if (progression != null && primary?.Essence != null)
+                    ups = progression.GetActiveAbilityUpgrades(primary.Essence).ToArray();
+                b.BindAbility(ability, _cachedActive, ups);
+            }
         }
 
 
-        public void ApplyToWeaponStats(WeaponStats stats)
+
+        public WeaponStats BuildActiveStats(WeaponStats baseStats)
         {
-            // Placeholder: e.g., additive multipliers or fire rate tweaks from secondaries
+            if (baseStats == null) return null;
+            var ws = baseStats.CloneRuntime();
+
+            // Apply secondaries (base mods + unlocked node mods)
+            foreach (var s in secondaries)
+            {
+                var e = s?.Essence;
+                e?.ApplyTo(ws); // base essence mods
+                if (e != null && progression != null)
+                {
+                    var mods = progression.GetActiveStatMods(e);
+                    foreach (var m in mods) WeaponStatApplier.Apply(ws, m);
+                }
+            }
+
+            // Apply primary last (base mods + unlocked node mods)
+            var p = primary?.Essence;
+            p?.ApplyTo(ws);
+            if (p != null && progression != null)
+            {
+                var mods = progression.GetActiveStatMods(p);
+                foreach (var m in mods) WeaponStatApplier.Apply(ws, m);
+            }
+
+            _cachedActive = ws;
+            return ws;
         }
     }
 }

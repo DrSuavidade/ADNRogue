@@ -1,0 +1,20 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: ec831d909d4c2a843b3123e159ec6874, type: 3}
+  m_Name: F1_SharkEssence
+  m_EditorClassIdentifier: 
+  displayName: SharkDNA
+  description: fizz ulti ability
+  icon: {fileID: 21300000, guid: 80e317b0f3f92644abf87d65df2d15c1, type: 3}
+  modifiers: []
+  specialAbility: {fileID: 0}
+  skillTree: {fileID: 11400000, guid: a0bf3122f87199b49805ca5436e5ab94, type: 2}

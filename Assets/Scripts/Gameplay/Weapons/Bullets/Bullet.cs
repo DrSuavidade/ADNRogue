@@ -3,6 +3,7 @@ using System.Collections;
 using System.Collections.Generic;
 using Geneforge.Gameplay.Characters.Enemies;
 using Geneforge.Gameplay.Weapons.Stats;
+using Geneforge.Gameplay.Abilities;
 
 namespace Geneforge.Gameplay.Weapons.Bullets
 {
@@ -32,6 +33,9 @@ namespace Geneforge.Gameplay.Weapons.Bullets
         Vector3 preStepVel;
         HashSet<Enemy> _hitEnemies =
         new HashSet<Enemy>();
+        EssenceAbility _ability;                             // bound per-bullet
+        WeaponStats _ws;
+        AbilityUpgrade[] _upgrades;
 
 
         void Awake()
@@ -103,6 +107,23 @@ namespace Geneforge.Gameplay.Weapons.Bullets
             // lifetime
             StopAllCoroutines();
             StartCoroutine(DieAfter(lifeTime));
+        }
+
+        
+        public void BindAbility(EssenceAbility ability,
+                                Geneforge.Gameplay.Weapons.Stats.WeaponStats stats,
+                                AbilityUpgrade[] upgrades = null)
+        {
+            _ws = stats;
+            _upgrades = upgrades;
+
+            if (ability != null)
+                _ability = Instantiate(ability); // clone per bullet
+
+            if (_ability != null && _upgrades != null && _upgrades.Length > 0)
+                _ability.ApplyUpgrades(_upgrades);
+
+            _ability?.OnBulletSpawn(this, _ws);
         }
 
         IEnumerator DieAfter(float t) { yield return new WaitForSeconds(t); Destroy(gameObject); }
@@ -221,6 +242,9 @@ namespace Geneforge.Gameplay.Weapons.Bullets
 
                 if (showAoeRingOnHit) StartCoroutine(AoeRingFollow(enemy.transform, aoeRadius, 0.5f));
             }
+
+            // Ability hook (extra effects like chain lightning, burn, etc.)
+            _ability?.OnHitEnemy(this, enemy, _ws);
 
             // From now on, never collide with this enemy again (all colliders in its hierarchy)
             IgnoreEnemyColliders(enemy, true);
