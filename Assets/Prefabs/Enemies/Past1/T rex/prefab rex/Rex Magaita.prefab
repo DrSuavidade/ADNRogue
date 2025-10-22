@@ -396,10 +396,10 @@ PrefabInstance:
       addedObject: {fileID: 4178100457033403736}
     - targetCorrespondingSourceObject: {fileID: 919132149155446097, guid: 2f69b8a048d24164ebbc71aea9be8937, type: 3}
       insertIndex: -1
-      addedObject: {fileID: 1716014747421839536}
+      addedObject: {fileID: 8232627234058057010}
     - targetCorrespondingSourceObject: {fileID: 919132149155446097, guid: 2f69b8a048d24164ebbc71aea9be8937, type: 3}
       insertIndex: -1
-      addedObject: {fileID: 8232627234058057010}
+      addedObject: {fileID: 938572740981289609}
   m_SourcePrefab: {fileID: 100100000, guid: 2f69b8a048d24164ebbc71aea9be8937, type: 3}
 --- !u!4 &6097283748429324166 stripped
 Transform:
@@ -452,37 +452,6 @@ MonoBehaviour:
   deathAnimDuration: 5
   damageTextPrefab: {fileID: 8104875995613135839, guid: 51bfa69456bef62438805f10c2608f9f, type: 3}
   damageTextOffset: {x: 0, y: 2.5, z: 0}
---- !u!114 &1716014747421839536
-MonoBehaviour:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 6905768579150644540}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: b52db176e47bca942b26cdc96ba47292, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: 
-  animator: {fileID: 8496457458212892431}
-  playerHealth: {fileID: 0}
-  stayStationary: 0
-  rotateInPlace: 1
-  wanderRadius: 5
-  wanderInterval: 3
-  wanderSpeed: 2
-  idleWaitDuration: 1
-  detectionRadius: 15
-  chaseSpeed: 4
-  attackRange: 2.2
-  attackRate: 1.5
-  damagePerHit: 10
-  knockbackRootOverride: {fileID: 0}
-  applyKnockback: 1
-  knockbackForce: 6
-  knockbackUpward: 0.5
-  knockbackMaxSpeed: 12
-  damagePauseDuration: 0.5
 --- !u!65 &8232627234058057010
 BoxCollider:
   m_ObjectHideFlags: 0
@@ -504,3 +473,34 @@ BoxCollider:
   serializedVersion: 3
   m_Size: {x: 2.6936293, y: 8.588757, z: 11.85684}
   m_Center: {x: -0.033421516, y: 3.7943783, z: -0.554718}
+--- !u!114 &938572740981289609
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 6905768579150644540}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 8dbd565df48a6fc48b96b7ab3ecd5614, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  animator: {fileID: 8496457458212892431}
+  playerHealth: {fileID: 0}
+  stayStationary: 0
+  rotateInPlace: 1
+  wanderRadius: 5
+  wanderInterval: 3
+  wanderSpeed: 2
+  idleWaitDuration: 1
+  detectionRadius: 20
+  chaseSpeed: 4
+  attackRange: 1.5
+  attackRate: 1
+  damagePerHit: 10
+  knockbackRootOverride: {fileID: 0}
+  applyKnockback: 1
+  knockbackForce: 6
+  knockbackUpward: 0.5
+  knockbackMaxSpeed: 12
+  damagePauseDuration: 0.5
