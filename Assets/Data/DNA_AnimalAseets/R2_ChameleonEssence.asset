@@ -16,5 +16,5 @@ MonoBehaviour:
   description: stealth ability
   icon: {fileID: 21300000, guid: 0f66d5b8798cda543b8148f599600af2, type: 3}
   modifiers: []
-  specialAbility: {fileID: 0}
+  specialAbility: {fileID: 11400000, guid: 18352833c730db94cbf2ef982eae9b9c, type: 2}
   skillTree: {fileID: 11400000, guid: ec7e46047b7d7104cad3e0dfac03d0c0, type: 2}

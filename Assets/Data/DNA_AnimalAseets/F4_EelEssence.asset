@@ -16,5 +16,5 @@ MonoBehaviour:
   description: shock ability
   icon: {fileID: 21300000, guid: 3a138135cee64ac408ed53790a13323f, type: 3}
   modifiers: []
-  specialAbility: {fileID: 0}
+  specialAbility: {fileID: 11400000, guid: d1c9389ec3960ac4fa6429af389e5c2a, type: 2}
   skillTree: {fileID: 11400000, guid: fd45d1a5dc1ca704a8518c771ce36a60, type: 2}

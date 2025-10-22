@@ -9,9 +9,10 @@ MonoBehaviour:
   m_GameObject: {fileID: 0}
   m_Enabled: 1
   m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: f521f62c4faf7c24781e315372dbf624, type: 3}
-  m_Name: BurnOnHitAbility
+  m_Script: {fileID: 11500000, guid: 2c519f004e695ca4ba9fa38c512547d2, type: 3}
+  m_Name: A_Elephant Stampede
   m_EditorClassIdentifier: 
-  ticks: 5
-  tickInterval: 0.3
-  dpsFactor: 0.4
+  sizeMult: 1.8
+  aoeRadius: 4.5
+  aoeDamageFactor: 0.8
+  knockback: 10

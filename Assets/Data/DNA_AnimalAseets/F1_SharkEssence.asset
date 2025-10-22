@@ -16,5 +16,5 @@ MonoBehaviour:
   description: fizz ulti ability
   icon: {fileID: 21300000, guid: 80e317b0f3f92644abf87d65df2d15c1, type: 3}
   modifiers: []
-  specialAbility: {fileID: 0}
+  specialAbility: {fileID: 11400000, guid: c184067df3395fc48ae42336412353c6, type: 2}
   skillTree: {fileID: 11400000, guid: a0bf3122f87199b49805ca5436e5ab94, type: 2}

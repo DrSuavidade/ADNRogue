@@ -5,7 +5,7 @@ using Geneforge.Gameplay.Weapons.Stats;
 using Geneforge.Gameplay.Weapons.Bullets;
 using Geneforge.Gameplay.Characters.Enemies;
 
-[CreateAssetMenu(menuName = "Geneforge/Abilities/Chain Lightning")]
+[CreateAssetMenu(menuName = "Geneforge/Abilities/Eel - Chain Lightning")]
 public class ChainLightningAbility : EssenceAbility
 {
     [Header("Chain")]
@@ -13,7 +13,7 @@ public class ChainLightningAbility : EssenceAbility
     public float radius = 6f;
     public float jumpDelay = 0.06f;
     [Range(0f, 1f)] public float damageFactorPerJump = 0.7f;
-    
+
     public override void ApplyUpgrades(AbilityUpgrade[] upgrades)
     {
         if (upgrades == null) return;
@@ -48,7 +48,7 @@ public class ChainLightningAbility : EssenceAbility
 
     public override void OnHitEnemy(Bullet bullet, Enemy first, WeaponStats stats)
     {
-        bullet.StartCoroutine(ChainRoutine(first, stats));
+        if (first != null) first.StartCoroutine(ChainRoutine(first, stats));
     }
 
     IEnumerator ChainRoutine(Enemy start, WeaponStats stats)

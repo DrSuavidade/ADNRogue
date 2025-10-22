@@ -16,5 +16,5 @@ MonoBehaviour:
   description: snap jaws ability
   icon: {fileID: 21300000, guid: aded008e0bd410442a54fd749c60ff1b, type: 3}
   modifiers: []
-  specialAbility: {fileID: 0}
+  specialAbility: {fileID: 11400000, guid: fa81ca0aee3891c41b9103d2b41e07d6, type: 2}
   skillTree: {fileID: 11400000, guid: 6695b758d57356a41b4ad53e84920ca6, type: 2}

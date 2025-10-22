@@ -16,5 +16,5 @@ MonoBehaviour:
   description: size ability
   icon: {fileID: 21300000, guid: d20f4053803e7e44a96c87b4b77ae91e, type: 3}
   modifiers: []
-  specialAbility: {fileID: 0}
+  specialAbility: {fileID: 11400000, guid: 93b232a3ec7d044419a9f5eaa5418768, type: 2}
   skillTree: {fileID: 11400000, guid: a21bdfa9dee1b55499461f9c9ba5e758, type: 2}

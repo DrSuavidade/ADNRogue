@@ -16,5 +16,5 @@ MonoBehaviour:
   description: speed ability
   icon: {fileID: 21300000, guid: bc37a20dd1a3280489ee0cc67fa7d635, type: 3}
   modifiers: []
-  specialAbility: {fileID: 0}
+  specialAbility: {fileID: 11400000, guid: a780732c5f417dc499606003e7d4fb3b, type: 2}
   skillTree: {fileID: 11400000, guid: d53331d4c2e959747ad8b6edf85731a1, type: 2}

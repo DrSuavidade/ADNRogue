@@ -16,5 +16,5 @@ MonoBehaviour:
   description: roll poop ability
   icon: {fileID: 21300000, guid: 92fdaf47701e5e2428149b4fca913a3f, type: 3}
   modifiers: []
-  specialAbility: {fileID: 0}
+  specialAbility: {fileID: 11400000, guid: 7a9cc654f0acae2419d2fb6f290b1921, type: 2}
   skillTree: {fileID: 11400000, guid: 98a217dee1bae054f8c9d11b3e9285cf, type: 2}

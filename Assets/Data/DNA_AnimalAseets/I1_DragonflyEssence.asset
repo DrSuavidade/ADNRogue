@@ -16,5 +16,5 @@ MonoBehaviour:
   description: dash ability
   icon: {fileID: 21300000, guid: 9fa465e400bdc7a4eade2950fd2bd9aa, type: 3}
   modifiers: []
-  specialAbility: {fileID: 0}
+  specialAbility: {fileID: 11400000, guid: e5ad3762becb3f34c9c1f578b646d971, type: 2}
   skillTree: {fileID: 11400000, guid: 5510e846a0827ba4e921d57724fe2009, type: 2}

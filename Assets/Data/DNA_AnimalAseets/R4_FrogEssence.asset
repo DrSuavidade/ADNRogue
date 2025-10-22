@@ -16,5 +16,5 @@ MonoBehaviour:
   description: poison ability
   icon: {fileID: 21300000, guid: d867d9811b4ca54458b79695da0ab91b, type: 3}
   modifiers: []
-  specialAbility: {fileID: 0}
+  specialAbility: {fileID: 11400000, guid: c8145ce7a950de54ea60e0c9c075ddb6, type: 2}
   skillTree: {fileID: 11400000, guid: a09e93e189764b44a9a1390cf6d8ea40, type: 2}

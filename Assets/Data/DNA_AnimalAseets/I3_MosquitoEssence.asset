@@ -16,5 +16,5 @@ MonoBehaviour:
   description: life steal ability
   icon: {fileID: 21300000, guid: 1d1939cc56f2deb43a27dc9061aa750a, type: 3}
   modifiers: []
-  specialAbility: {fileID: 0}
+  specialAbility: {fileID: 11400000, guid: f4c1c347bbfbfbd478e00749235f3828, type: 2}
   skillTree: {fileID: 11400000, guid: a97fcb2390ea4044d91471366f9c9635, type: 2}
