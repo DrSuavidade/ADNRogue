@@ -275,13 +275,10 @@ PrefabInstance:
       addedObject: {fileID: 4409150109238304619}
     - targetCorrespondingSourceObject: {fileID: 919132149155446097, guid: 8880cbedb2631854fac3e1467c9943a6, type: 3}
       insertIndex: -1
-      addedObject: {fileID: 8515660035257363067}
-    - targetCorrespondingSourceObject: {fileID: 919132149155446097, guid: 8880cbedb2631854fac3e1467c9943a6, type: 3}
-      insertIndex: -1
       addedObject: {fileID: 1989167546992023559}
     - targetCorrespondingSourceObject: {fileID: 919132149155446097, guid: 8880cbedb2631854fac3e1467c9943a6, type: 3}
       insertIndex: -1
-      addedObject: {fileID: 7141862558912797199}
+      addedObject: {fileID: 2335259069915044654}
   m_SourcePrefab: {fileID: 100100000, guid: 8880cbedb2631854fac3e1467c9943a6, type: 3}
 --- !u!4 &7126545835194965619 stripped
 Transform:
@@ -334,37 +331,6 @@ MonoBehaviour:
   deathAnimDuration: 5
   damageTextPrefab: {fileID: 8104875995613135839, guid: 51bfa69456bef62438805f10c2608f9f, type: 3}
   damageTextOffset: {x: 0, y: 2.5, z: 0}
---- !u!114 &8515660035257363067
-MonoBehaviour:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 8616044378864164074}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: b52db176e47bca942b26cdc96ba47292, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: 
-  animator: {fileID: 3145609994246742073}
-  playerHealth: {fileID: 0}
-  stayStationary: 0
-  rotateInPlace: 1
-  wanderRadius: 5
-  wanderInterval: 3
-  wanderSpeed: 2
-  idleWaitDuration: 1
-  detectionRadius: 15
-  chaseSpeed: 4
-  attackRange: 2.2
-  attackRate: 1.5
-  damagePerHit: 10
-  knockbackRootOverride: {fileID: 0}
-  applyKnockback: 1
-  knockbackForce: 6
-  knockbackUpward: 0.5
-  knockbackMaxSpeed: 12
-  damagePauseDuration: 0.5
 --- !u!65 &1989167546992023559
 BoxCollider:
   m_ObjectHideFlags: 0
@@ -386,7 +352,7 @@ BoxCollider:
   serializedVersion: 3
   m_Size: {x: 0.61120605, y: 1.8748558, z: 0.428154}
   m_Center: {x: 0.0211277, y: 1.3675216, z: -0.01503706}
---- !u!114 &7141862558912797199
+--- !u!114 &2335259069915044654
 MonoBehaviour:
   m_ObjectHideFlags: 0
   m_CorrespondingSourceObject: {fileID: 0}
@@ -395,15 +361,32 @@ MonoBehaviour:
   m_GameObject: {fileID: 8616044378864164074}
   m_Enabled: 1
   m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: d24c77f7ed5edcd4f9aafa4051327160, type: 3}
+  m_Script: {fileID: 11500000, guid: 9917ed6e72275ce4caafa7bcb7fefd71, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
   animator: {fileID: 3145609994246742073}
-  rightHand: {fileID: 7126545835194965619}
-  spearSocket: {fileID: 2175245406134525817}
+  playerHealth: {fileID: 0}
+  stayStationary: 0
+  rotateInPlace: 1
+  wanderRadius: 5
+  wanderInterval: 3
+  wanderSpeed: 2
+  idleWaitDuration: 1
+  detectionRadius: 50
+  chaseSpeed: 4
+  attackRange: 40
+  attackRate: 1
+  requireLineOfSight: 0
+  lineOfSightMask:
+    serializedVersion: 2
+    m_Bits: 8
+  lineOfSightPadding: 0.1
   spearPrefab: {fileID: 3478011260350783487, guid: f40eaff574c5d104093df1d1004e0474, type: 3}
+  spearSocket: {fileID: 2175245406134525817}
   throwOrigin: {fileID: 1197512567069754311}
-  throwForce: 22
+  throwForce: 70
+  aimOffset: {x: 0, y: 0, z: 0}
+  damagePauseDuration: 0.5
 --- !u!4 &8996369180660024912 stripped
 Transform:
   m_CorrespondingSourceObject: {fileID: -8679921383154817045, guid: 8880cbedb2631854fac3e1467c9943a6, type: 3}
