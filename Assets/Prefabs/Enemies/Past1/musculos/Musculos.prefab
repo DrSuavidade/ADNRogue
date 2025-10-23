@@ -729,8 +729,8 @@ GameObject:
   - component: {fileID: 8643704228900336698}
   - component: {fileID: 8951362324333849935}
   - component: {fileID: 6793067370983324062}
-  - component: {fileID: 8056297228761759366}
   - component: {fileID: 5615347123532969311}
+  - component: {fileID: 453855838198358919}
   m_Layer: 0
   m_Name: Musculos
   m_TagString: Untagged
@@ -797,39 +797,6 @@ MonoBehaviour:
   deathAnimDuration: 5
   damageTextPrefab: {fileID: 8104875995613135839, guid: 51bfa69456bef62438805f10c2608f9f, type: 3}
   damageTextOffset: {x: 0, y: 2.5, z: 0}
---- !u!114 &8056297228761759366
-MonoBehaviour:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 4097680685806662130}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: b52db176e47bca942b26cdc96ba47292, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: 
-  animator: {fileID: 8951362324333849935}
-  playerHealth: {fileID: 0}
-  stayStationary: 0
-  rotateInPlace: 1
-  wanderRadius: 5
-  wanderInterval: 3
-  wanderSpeed: 2
-  idleWaitDuration: 1
-  detectionRadius: 15
-  chaseSpeed: 4
-  attackRange: 2.2
-  attackRate: 1.5
-  damagePerHit: 10
-  knockbackRootOverride: {fileID: 0}
-  applyKnockback: 1
-  knockbackForce: 6
-  knockbackUpward: 0.5
-  knockbackMaxSpeed: 12
-  ccKnockbackDuration: 0.25
-  ccKnockbackDecay: 8
-  damagePauseDuration: 0.5
 --- !u!65 &5615347123532969311
 BoxCollider:
   m_ObjectHideFlags: 0
@@ -851,6 +818,37 @@ BoxCollider:
   serializedVersion: 3
   m_Size: {x: 0.60432434, y: 1.795417, z: 0.5696602}
   m_Center: {x: -0.043851852, y: 0.8747634, z: -0.069402695}
+--- !u!114 &453855838198358919
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 4097680685806662130}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 9f5333ad6dd6de548a6f720b49aea61f, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  animator: {fileID: 8951362324333849935}
+  playerHealth: {fileID: 0}
+  stayStationary: 0
+  rotateInPlace: 1
+  wanderRadius: 5
+  wanderInterval: 3
+  wanderSpeed: 2
+  idleWaitDuration: 1
+  detectionRadius: 6
+  chaseSpeed: 4
+  attackRange: 1.5
+  attackRate: 1
+  damagePerHit: 10
+  knockbackRootOverride: {fileID: 0}
+  applyKnockback: 1
+  knockbackForce: 6
+  knockbackUpward: 0.5
+  knockbackMaxSpeed: 12
+  damagePauseDuration: 0.5
 --- !u!1 &4183706480518803915
 GameObject:
   m_ObjectHideFlags: 0
