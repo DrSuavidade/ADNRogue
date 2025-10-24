@@ -837,6 +837,10 @@ PrefabInstance:
       propertyPath: m_Name
       value: Praying
       objectReference: {fileID: 0}
+    - target: {fileID: 5698433153630276045, guid: e4b063766821bf84aa81279dfc55e73c, type: 3}
+      propertyPath: stayStationary
+      value: 1
+      objectReference: {fileID: 0}
     m_RemovedComponents: []
     m_RemovedGameObjects: []
     m_AddedGameObjects: []
