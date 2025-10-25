@@ -75,6 +75,9 @@ PrefabInstance:
     - targetCorrespondingSourceObject: {fileID: 919132149155446097, guid: bee172f8f16246f4ebc7c4e9745f24cb, type: 3}
       insertIndex: -1
       addedObject: {fileID: 4264821275478113555}
+    - targetCorrespondingSourceObject: {fileID: 919132149155446097, guid: bee172f8f16246f4ebc7c4e9745f24cb, type: 3}
+      insertIndex: -1
+      addedObject: {fileID: 2114927845467425706}
   m_SourcePrefab: {fileID: 100100000, guid: bee172f8f16246f4ebc7c4e9745f24cb, type: 3}
 --- !u!1 &1153405868413957991 stripped
 GameObject:
@@ -152,8 +155,6 @@ MonoBehaviour:
   knockbackForce: 6
   knockbackUpward: 0.5
   knockbackMaxSpeed: 12
-  ccKnockbackDuration: 0.25
-  ccKnockbackDecay: 8
   damagePauseDuration: 0.5
 --- !u!65 &4264821275478113555
 BoxCollider:
@@ -176,6 +177,39 @@ BoxCollider:
   serializedVersion: 3
   m_Size: {x: 0.58811635, y: 1.8352933, z: 0.5565255}
   m_Center: {x: 0.03791785, y: 1.0819948, z: 0.13196707}
+--- !u!114 &2114927845467425706
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1153405868413957991}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: bd125431edcb6d04ea76f47fee3a4310, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  dinosaurPrefab: {fileID: 5138259329276058423, guid: 537df12dedaaf044392a1fd9d3e6ad18, type: 3}
+  spawnPoints: []
+  spawnRadius: 6
+  groundRaycastHeight: 5
+  groundMask:
+    serializedVersion: 2
+    m_Bits: 4294967295
+  maxAlive: 3
+  summonCooldown: 3
+  loopWhileAliveAndSeeingPlayer: 1
+  loopInterval: 6
+  playerTag: Player
+  viewDistance: 18
+  viewHalfAngle: 60
+  losRayRadius: 0.25
+  losMask:
+    serializedVersion: 2
+    m_Bits: 4294967295
+  visionCheckEvery: 0.15
+  enableTestKey: 0
+  testKey: 116
 --- !u!4 &1966498717537824221 stripped
 Transform:
   m_CorrespondingSourceObject: {fileID: -8679921383154817045, guid: bee172f8f16246f4ebc7c4e9745f24cb, type: 3}
