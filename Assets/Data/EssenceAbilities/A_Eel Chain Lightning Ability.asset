@@ -14,5 +14,8 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   maxJumps: 3
   radius: 6
-  jumpDelay: 0.06
+  jumpDelay: 0.1
   damageFactorPerJump: 0.7
+  showVFX: 1
+  lineWidth: 0.06
+  lineColor: {r: 0.7, g: 0.9, b: 1, a: 0.95}

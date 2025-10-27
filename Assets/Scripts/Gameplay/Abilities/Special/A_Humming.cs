@@ -1,52 +1,123 @@
 using UnityEngine;
 using Geneforge.Gameplay.Abilities;
-using Geneforge.Gameplay.Weapons.Bullets;
 using Geneforge.Gameplay.Weapons.Stats;
-using Geneforge.Gameplay.Characters.Enemies;
 
 [CreateAssetMenu(menuName = "Geneforge/Abilities/Hummingbird - Momentum Fire")]
 public class HummingbirdMomentumFireAbility : EssenceAbility
 {
-    [Header("Ramp")]
-    public float rampPerSecond = 1.2f;     // time to reach full momentum ≈ 0.8s
-    public float decayPerSecond = 2.0f;    // ramp falls when pausing
-    public float decayDelay = 0.25f;       // grace window between shots
+    [Header("Ramp multipliers")]
+    [Tooltip("Starting fire-rate multiplier at 0s (0.5 = half base fire rate).")]
+    public float startMultiplier = 0.5f;
 
-    [Header("Effect")]
-    public float maxFireRateMultiplier = 1.8f; // >1 means faster firing (lower interval)
-    public int extraPierceAtMax = 1;
+    [Tooltip("How much fire-rate multiplier increases per second while holding fire.")]
+    public float perSecondAdd    = 0.5f;
 
-    // Shared per-run state (one primary hummingbird expected)
-    static float baseFireRate = -1f;
-    static int   basePierce = -1;
-    static float ramp = 0f;                // 0..1
-    static float lastShotTime = -999f;
+    [Tooltip("Maximum ramp time (seconds) to accumulate while holding.")]
+    public float maxRampSeconds  = 4.0f;
 
-    public override void OnBulletSpawn(Bullet bullet, WeaponStats activeStats)
+    [Header("Decay")]
+    [Tooltip("How fast ramp time is lost per real second while NOT holding fire.")]
+    public float decayRate = 1.0f; // 1s of release removes 1s of ramp
+
+    [Header("Extras")]
+    public int   extraPierceAtMax = 1;
+    public float minFireInterval  = 0.02f;
+
+    // runtime state (shared for the equipped run)
+    static float baseFireRate = -1f;   // seconds/shot
+    static int   basePierce   = -1;
+    static float rampSeconds  = 0f;    // 0..maxRampSeconds
+    static float lastShotTime = -1f;
+
+    // fire-hold tracking
+    static bool  isHeld = false;
+    static float lastHoldChangeTime = -1f;
+
+    public override void OnPrimaryEquipped(GameObject owner, WeaponStats activeStats) => ResetState();
+    public override void OnPrimaryUnequipped(GameObject owner)                         => ResetState();
+
+    void ResetState()
+    {
+        baseFireRate = -1f;
+        basePierce   = -1;
+        rampSeconds  = 0f;
+        lastShotTime = -1f;
+        isHeld = false;
+        lastHoldChangeTime = -1f;
+    }
+
+    public override void OnFireHeldStart()
+    {
+        isHeld = true;
+        lastHoldChangeTime = Time.time;
+    }
+
+    public override void OnFireHeldStop()
+    {
+        isHeld = false;
+        lastHoldChangeTime = Time.time;
+    }
+
+    // Runs immediately before PlayerController schedules the next shot
+    public override void OnAboutToFire(WeaponStats activeStats)
     {
         float now = Time.time;
 
-        // Capture baselines once (first shot after equip)
-        if (baseFireRate < 0f) baseFireRate = activeStats.fireRate;
-        if (basePierce   < 0)  basePierce   = activeStats.pierceCount;
+        if (baseFireRate < 0f) baseFireRate = Mathf.Max(0.001f, activeStats.fireRate);
+        if (basePierce   < 0)  basePierce   = Mathf.Max(0, activeStats.pierceCount);
 
-        // Update ramp based on time gap since last shot
+        // Time since last shot
         float dt = (lastShotTime > 0f) ? (now - lastShotTime) : 0f;
-        if (dt <= decayDelay)
-            ramp += rampPerSecond * Mathf.Max(0f, dt);
-        else
-            ramp -= decayPerSecond * (dt - decayDelay);
 
-        ramp = Mathf.Clamp01(ramp);
+        // Compute how much of that dt we were holding vs released
+        float buildTime = 0f; // contributes +dt to ramp
+        float idleTime  = 0f; // contributes -dt*decayRate to ramp
 
-        // Apply to the shared stats object (affects subsequent shots)
-        float mult = Mathf.Lerp(1f, maxFireRateMultiplier, ramp);     // 1..max
-        activeStats.fireRate = Mathf.Max(0.02f, baseFireRate / mult); // smaller interval at higher mult
+        if (lastShotTime > 0f)
+        {
+            if (lastHoldChangeTime <= lastShotTime || lastHoldChangeTime < 0f)
+            {
+                // No hold-state change since the last shot
+                if (isHeld) buildTime = dt; else idleTime = dt;
+            }
+            else
+            {
+                // Hold-state changed after the last shot
+                if (isHeld)
+                {
+                    // We are currently holding (this shot fired). At some time after the last shot,
+                    // holding began. The part before that was idle.
+                    idleTime  = Mathf.Max(0f, lastHoldChangeTime - lastShotTime);
+                    buildTime = Mathf.Max(0f, now - lastHoldChangeTime);
+                }
+                else
+                {
+                    // Shouldn't happen because we can't fire if not held, but keep it safe:
+                    idleTime = dt;
+                }
+            }
+        }
 
-        if (Mathf.Approximately(ramp, 1f))
-            activeStats.pierceCount = Mathf.Max(0, basePierce + extraPierceAtMax);
-        else
-            activeStats.pierceCount = basePierce;
+        // Update rampSeconds: grows with buildTime (while held), decays only with time we were released
+        rampSeconds += buildTime;
+        rampSeconds -= idleTime * Mathf.Max(0f, decayRate);
+
+        // Clamp 0..max
+        maxRampSeconds = Mathf.Max(0f, maxRampSeconds);
+        rampSeconds = Mathf.Clamp(rampSeconds, 0f, maxRampSeconds);
+
+        // Compute multiplier and apply (interval / multiplier)
+        float s  = Mathf.Max(0.01f, startMultiplier);
+        float a  = Mathf.Max(0f,    perSecondAdd);
+        float mx = s + a * maxRampSeconds;
+        float m  = Mathf.Clamp(s + a * rampSeconds, s, mx);
+
+        activeStats.fireRate = Mathf.Max(minFireInterval, baseFireRate / Mathf.Max(0.01f, m));
+
+        // Extra pierce only at max ramp
+        activeStats.pierceCount = (rampSeconds >= maxRampSeconds - 1e-3f)
+            ? Mathf.Max(0, basePierce + extraPierceAtMax)
+            : basePierce;
 
         lastShotTime = now;
     }

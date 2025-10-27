@@ -12,7 +12,7 @@ using Geneforge.Core.Stats;                  // RunStats (currentHP, maxHP, etc.
 public class A_MosquitoSiphon : EssenceAbility
 {
     [Range(0f, 1f)] public float lifestealPercent = 0.15f; // 15% of bullet damage
-    public float maxHealPerHit = 9999f;                     // optional clamp
+    public float maxHealPerHit = 9999f;
 
     // cached references for speed
     static PlayerHealth cachedPlayerHealth;

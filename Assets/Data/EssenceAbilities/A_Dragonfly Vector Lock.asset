@@ -13,5 +13,8 @@ MonoBehaviour:
   m_Name: A_Dragonfly Vector Lock
   m_EditorClassIdentifier: 
   speedMultiplier: 1.35
-  homingAdd: 0.35
+  homingAdd: 0.168
   seekRadius: 14
+  addTrail: 1
+  trailTime: 0.05
+  trailWidth: 0.05

@@ -12,8 +12,10 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 04c92a29c380bb14aa6a6bccbff58cd7, type: 3}
   m_Name: A_Sheep Wool Ricochet
   m_EditorClassIdentifier: 
-  bulletPrefab: {fileID: 0}
-  ricochetCount: 2
+  ricochetCount: 6
   seekRadius: 12
   speedRetention: 0.95
-  ignoreLastTargetSeconds: 0.15
+  ignoreLastTargetSeconds: 1
+  forwardNudge: 0.18
+  steerLockDuration: 0.08
+  ensureMinPierce: 1

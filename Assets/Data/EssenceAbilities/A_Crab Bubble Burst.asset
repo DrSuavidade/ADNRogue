@@ -12,8 +12,10 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 711fa4f5b8ea7a24bb1722a39f352a68, type: 3}
   m_Name: A_Crab Bubble Burst
   m_EditorClassIdentifier: 
-  accuracyMult: 0.35
+  forcedAccuracy: 0.102
+  forcedInaccuracyHalf: 46.2
   damageMult: 0.6
-  fireRateMult: 3
+  fireRateMult: 1.9
   bubbleDrag: 1.2
-  sizeMult: 0.9
+  sizeMult: 0.2
+  sphereVisual: 1

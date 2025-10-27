@@ -1,5 +1,8 @@
+//Is blocking damage when invisible intended?
+
 using UnityEngine;
 using System.Collections;
+using System.Collections.Generic;
 using Geneforge.Gameplay.Abilities;
 using Geneforge.Gameplay.Weapons.Bullets;
 using Geneforge.Gameplay.Weapons.Stats;
@@ -13,9 +16,21 @@ public class A_ChameleonCamouflage : EssenceAbility
     [Header("Camouflage")]
     public float invisDuration = 3f;
 
+    [Tooltip("Optional: layer to switch the player to while invisible (e.g. 'PlayerInvisible'). Leave empty to skip.")]
+    public string invisibleLayerName = "PlayerInvisible";
+    [Tooltip("Optional: enemies layer to ignore while invisible (e.g. 'Enemies'). Leave empty to skip.")]
+    public string enemiesLayerName = "Enemies";
+
+    [Header("Glass look")]
+    [Range(0f,1f)] public float glassAlpha = 0.28f;
+    public Color glassTint = new Color(0.75f, 0.95f, 1f, 1f);
+
     [Header("Tongue tug (first shot after invis)")]
     public float tetherDuration = 0.6f;
     public float pullForce = 15f;
+
+    // Global visibility flag so PlayerHealth (and optionally AI) can query.
+    public static bool InvisibleActive { get; private set; }
 
     static Transform s_owner;
     static bool s_armed;           // next shot tethers
@@ -33,6 +48,7 @@ public class A_ChameleonCamouflage : EssenceAbility
     {
         if (s_rt) Object.Destroy(s_rt);
         s_rt = null; s_owner = null; s_armed = false;
+        InvisibleActive = false;
     }
 
     public override void OnBulletSpawn(Bullet bullet, WeaponStats stats)
@@ -82,7 +98,17 @@ public class A_ChameleonCamouflage : EssenceAbility
     {
         A_ChameleonCamouflage def;
         RunStats run;
+
         Renderer[] rends;
+        // store original materials to restore glass swap cleanly
+        List<Material[]> originalMats;
+        Material glassMat;
+
+        Collider[] cols;
+        int originalLayer = -1;
+        int invisibleLayer = -1;
+        int enemiesLayer = -1;
+
         float lastHP;
         bool invisible;
         Coroutine timer;
@@ -92,8 +118,15 @@ public class A_ChameleonCamouflage : EssenceAbility
             def = d;
             run = owner.GetComponent<RunStats>();
             rends = owner.GetComponentsInChildren<Renderer>(true);
+            cols  = owner.GetComponentsInChildren<Collider>(true);
             lastHP = run ? run.currentHP : -1f;
-            SetVisible(true);
+
+            // resolve optional layers (ok if not found)
+            invisibleLayer = string.IsNullOrEmpty(def.invisibleLayerName) ? -1 : LayerMask.NameToLayer(def.invisibleLayerName);
+            enemiesLayer   = string.IsNullOrEmpty(def.enemiesLayerName)   ? -1 : LayerMask.NameToLayer(def.enemiesLayerName);
+
+            BuildGlassMaterial();
+            RestoreOriginal(); // ensure visible on equip
         }
 
         void Update()
@@ -109,19 +142,33 @@ public class A_ChameleonCamouflage : EssenceAbility
 
         void BeginInvis()
         {
-            if (timer != null) StopCoroutine(timer);
+            if (invisible) { // refresh timer only
+                if (timer != null) StopCoroutine(timer);
+                timer = StartCoroutine(InvisTimer());
+                return;
+            }
+
             s_armed = true; // arm the next shot
-            SetVisible(false);
+            ApplyGlass();
+            FlipToInvisibleLayer();
+
+            InvisibleActive = true;
             invisible = true;
+
+            if (timer != null) StopCoroutine(timer);
             timer = StartCoroutine(InvisTimer());
         }
 
         public void EndInvis()
         {
             if (!invisible) return;
+
             if (timer != null) StopCoroutine(timer);
             invisible = false; s_armed = false;
-            SetVisible(true);
+            InvisibleActive = false;
+
+            RestoreOriginal();
+            RestoreLayer();
         }
 
         IEnumerator InvisTimer()
@@ -130,12 +177,92 @@ public class A_ChameleonCamouflage : EssenceAbility
             EndInvis();
         }
 
-        void OnDestroy() { SetVisible(true); }
+        void OnDestroy()
+        {
+            InvisibleActive = false;
+            RestoreOriginal();
+            RestoreLayer();
+        }
 
-        void SetVisible(bool v)
+        // ===== Glass look =====
+        void BuildGlassMaterial()
+        {
+            if (glassMat) return;
+            // Simple transparent material that works in URP/BiRP
+            var shader = Shader.Find("Sprites/Default");
+            glassMat = new Material(shader);
+            var c = def.glassTint; c.a = Mathf.Clamp01(def.glassAlpha);
+            glassMat.color = c;
+        }
+
+        void ApplyGlass()
         {
             if (rends == null) return;
-            for (int i = 0; i < rends.Length; i++) if (rends[i]) rends[i].enabled = v;
+            if (originalMats == null) originalMats = new List<Material[]>(rends.Length);
+            originalMats.Clear();
+
+            for (int i = 0; i < rends.Length; i++)
+            {
+                var r = rends[i];
+                if (!r) { originalMats.Add(null); continue; }
+
+                // snapshot current per-renderer materials
+                var mats = r.materials;
+                originalMats.Add(mats);
+
+                // swap to glass (same count so submeshes still draw)
+                var swap = new Material[mats.Length];
+                for (int m = 0; m < swap.Length; m++) swap[m] = glassMat;
+                r.materials = swap;
+            }
+        }
+
+        void RestoreOriginal()
+        {
+            if (rends == null) return;
+
+            if (originalMats != null && originalMats.Count == rends.Length)
+            {
+                for (int i = 0; i < rends.Length; i++)
+                {
+                    var r = rends[i];
+                    if (!r) continue;
+                    var mats = originalMats[i];
+                    if (mats != null) r.materials = mats;
+                }
+            }
+        }
+
+        // ===== Layers/collisions (optional helpers) =====
+        void FlipToInvisibleLayer()
+        {
+            if (invisibleLayer < 0) return; // optional
+
+            var root = gameObject;
+            originalLayer = root.layer;
+            SetLayerRecursively(root.transform, invisibleLayer);
+
+            // optionally ignore enemies layer collisions
+            if (enemiesLayer >= 0)
+                Physics.IgnoreLayerCollision(invisibleLayer, enemiesLayer, true);
+        }
+
+        void RestoreLayer()
+        {
+            if (originalLayer < 0) return;
+
+            SetLayerRecursively(transform, originalLayer);
+
+            if (invisibleLayer >= 0 && enemiesLayer >= 0)
+                Physics.IgnoreLayerCollision(invisibleLayer, enemiesLayer, false);
+
+            originalLayer = -1;
+        }
+
+        void SetLayerRecursively(Transform t, int layer)
+        {
+            t.gameObject.layer = layer;
+            for (int i = 0; i < t.childCount; i++) SetLayerRecursively(t.GetChild(i), layer);
         }
     }
 }

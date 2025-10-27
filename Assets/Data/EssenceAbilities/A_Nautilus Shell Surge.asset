@@ -14,5 +14,14 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   surgeInterval: 5
   surgeRadius: 5.5
-  surgeKnockback: 10
+  surgeDamage: 8
+  showSurgeVFX: 1
+  ringDuration: 0.35
+  ringLineWidth: 0.06
+  ringSegments: 64
+  ringColor: {r: 0.6, g: 0.9, b: 1, a: 0.9}
   shellCooldown: 30
+  showShellSphere: 1
+  shellRadius: 0.6
+  shellMaterial: {fileID: 0}
+  shellColor: {r: 0.6, g: 0.9, b: 1, a: 0.25}

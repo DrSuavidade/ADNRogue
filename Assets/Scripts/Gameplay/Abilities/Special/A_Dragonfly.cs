@@ -8,12 +8,18 @@ using Geneforge.Gameplay.Characters.Enemies;
 public class A_DragonflyVectorLock : EssenceAbility
 {
     [Header("Speed & Steering")]
-    public float speedMultiplier = 1.35f;   // multiply initial speed
-    [Range(0f, 1f)] public float homingAdd = 0.35f; // extra steer (0..1) -> 360°/s * value
-    public float seekRadius = 14f;          // how far to look for targets
+    public float        speedMultiplier = 1.35f;         // multiply initial speed
+    [Range(0f, 1f)] public float homingAdd = 0.35f;      // extra steer (0..1) -> 360°/s * value
+    public float        seekRadius      = 14f;           // how far to look for targets
+
+    [Header("Trail (optional)")]
+    public bool  addTrail   = true;
+    public float trailTime  = 0.25f;
+    public float trailWidth = 0.08f;
 
     public override void OnBulletSpawn(Bullet bullet, WeaponStats stats)
     {
+        // Speed up the already-launched rigidbody
         var rb = bullet.GetComponent<Rigidbody>();
         if (rb != null)
         {
@@ -23,19 +29,23 @@ public class A_DragonflyVectorLock : EssenceAbility
             rb.velocity *= speedMultiplier;
 #endif
         }
-        if (homingAdd > 0f) 
+
+        // Add extra steering without touching Bullet internals
+        if (homingAdd > 0f)
         {
             var steer = bullet.gameObject.AddComponent<ExtraHomingSteer>();
             steer.turnRateDegPerSec = 360f * Mathf.Clamp01(homingAdd);
-            steer.seekRadius = seekRadius;
+            steer.seekRadius        = seekRadius;
         }
+
+        if (addTrail) AttachTrail(bullet);
     }
 
     // Adds extra homing without touching Bullet internals
     class ExtraHomingSteer : MonoBehaviour
     {
         public float turnRateDegPerSec = 120f;
-        public float seekRadius = 12f;
+        public float seekRadius        = 12f;
         Rigidbody rb;
 
         void Awake() { rb = GetComponent<Rigidbody>(); }
@@ -77,5 +87,34 @@ public class A_DragonflyVectorLock : EssenceAbility
 #endif
             transform.forward = newDir;
         }
+    }
+
+    void AttachTrail(Bullet bullet)
+    {
+        var tr = bullet.GetComponent<TrailRenderer>();
+        if (!tr) tr = bullet.gameObject.AddComponent<TrailRenderer>();
+        tr.time = Mathf.Max(0.01f, trailTime);
+        tr.widthMultiplier = Mathf.Max(0.005f, trailWidth);
+        tr.minVertexDistance = 0.01f;
+        tr.alignment = LineAlignment.View;
+        tr.shadowCastingMode = UnityEngine.Rendering.ShadowCastingMode.Off;
+        tr.receiveShadows = false;
+
+        // Simple purple gradient
+        var g = new Gradient();
+        g.SetKeys(
+            new[] {
+                new GradientColorKey(new Color(0.8f, 0.4f, 1f), 0f),
+                new GradientColorKey(new Color(0.6f, 0.2f, 1f), 1f)
+            },
+            new[] {
+                new GradientAlphaKey(1f, 0f),
+                new GradientAlphaKey(0f, 1f)
+            }
+        );
+        tr.colorGradient = g;
+
+        if (!tr.material) tr.material = new Material(Shader.Find("Sprites/Default"));
+        tr.sortingLayerID = bullet.gameObject.layer; // keep on same render layer/culling
     }
 }

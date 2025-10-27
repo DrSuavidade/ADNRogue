@@ -7,43 +7,50 @@ using Geneforge.Gameplay.Characters.Enemies;
 [CreateAssetMenu(menuName = "Geneforge/Abilities/Crocodile - Cold-Blooded")]
 public class A_CrocodileColdBlooded : EssenceAbility
 {
-    [Header("Crit boost")]
-    [Range(0f, 1f)] public float critChanceAdd = 0.15f;
-    public float critMultAdd = 0.5f;
+    [Header("Bonus Crit (per hit, additional to normal crit)")]
+    [Range(0f, 1f)] public float bonusCritChance = 0.20f;  // extra roll
+    [Min(1f)] public float bonusCritMultiplier = 1.5f;     // extra damage factor when bonus crit procs
 
     [Header("Execute")]
-    [Range(0f, 1f)] public float executePercent = 0.15f;   // execute below 15% HP
-    public float executeDamageFactor = 10f;                 // big bonus to finish off
+    [Range(0f, 1f)] public float executeThreshold = 0.15f; // execute below 15% HP
+    [Min(1f)] public float executeDamageFactor = 10f;      // big nuke when under threshold
 
-    public override void OnBulletSpawn(Bullet bullet, WeaponStats activeStats)
-    {
-        activeStats.critChance    = Mathf.Clamp01(activeStats.critChance + critChanceAdd);
-        activeStats.critMultiplier = Mathf.Max(1f, activeStats.critMultiplier + critMultAdd);
-    }
+    // IMPORTANT: do NOT mutate shared stats here
+    public override void OnBulletSpawn(Bullet bullet, WeaponStats activeStats) { }
 
     public override void OnHitEnemy(Bullet bullet, Enemy enemy, WeaponStats stats)
     {
-        if (enemy == null) return;
+        if (!enemy || !bullet) return;
 
-        // Try to read health fraction via common field/property names (no Enemy changes needed)
-        float hp = -1f, max = -1f;
-        if (!TryGetHealth(enemy, out hp, out max) || max <= 0f) return;
-
-        float frac = hp / max;
-        if (frac <= executePercent)
+        // --- Bonus crit (doesn't change global stats; just adds extra damage on top) ---
+        if (bonusCritChance > 0f && Random.value < bonusCritChance)
         {
-            enemy.TakeDamage(stats.damage * executeDamageFactor, false);
+            // add only the extra part of the crit (e.g., +50% if multiplier=1.5)
+            float extra = Mathf.Max(0f, bullet.damage) * (Mathf.Max(1f, bonusCritMultiplier) - 1f);
+            if (extra > 0f) enemy.TakeDamage(extra, true);
+        }
+
+        // --- Execute check (read enemy HP via common members; no Enemy changes required) ---
+        if (TryReadHealth(enemy, out float hp, out float max) && max > 0f)
+        {
+            float frac = hp / max;
+            if (frac <= executeThreshold)
+            {
+                // Big finishing chunk; still uses normal damage pipeline
+                float bonus = Mathf.Max(0f, stats.damage) * Mathf.Max(1f, executeDamageFactor);
+                enemy.TakeDamage(bonus, false);
+            }
         }
     }
 
-    bool TryGetHealth(Enemy e, out float hp, out float max)
+    bool TryReadHealth(Enemy e, out float hp, out float max)
     {
         hp = max = -1f;
         var t = e.GetType();
 
         // fields
         var fHP  = t.GetField("currentHealth") ?? t.GetField("health") ?? t.GetField("hp");
-        var fMax = t.GetField("maxHealth") ?? t.GetField("healthMax") ?? t.GetField("maxHP");
+        var fMax = t.GetField("maxHealth")     ?? t.GetField("healthMax") ?? t.GetField("maxHP");
         if (fHP != null && fMax != null) { hp = (float)fHP.GetValue(e); max = (float)fMax.GetValue(e); return true; }
 
         // properties

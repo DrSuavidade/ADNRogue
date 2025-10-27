@@ -12,7 +12,14 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 710d18f4bbf143e42a2d0b6722c0319c, type: 3}
   m_Name: A_Owl Hunters Mark Ability
   m_EditorClassIdentifier: 
-  markDuration: 8
+  markDuration: 4
   popDamageFactor: 1.5
   splashRadius: 0
   splashDamageFactor: 0.5
+  popCooldownSeconds: 2
+  showMarker: 1
+  markerRadius: 0.3
+  markerWidth: 0.06
+  markerColor: {r: 1, g: 0.9, b: 0.2, a: 1}
+  markerPulsePerSecond: 1.5
+  markerHeadOffsetY: 0.15

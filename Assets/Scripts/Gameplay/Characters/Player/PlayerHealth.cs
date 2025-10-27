@@ -1,5 +1,6 @@
 using UnityEngine;
 using Geneforge.Core.Stats;
+using Geneforge.Gameplay.Abilities;
 
 namespace Geneforge.Gameplay.Characters.Player 
 {
@@ -35,6 +36,7 @@ namespace Geneforge.Gameplay.Characters.Player
 
         public void ApplyDamage(float dmg)
         {
+            if (A_ChameleonCamouflage.InvisibleActive) return;
             if (isInvulnerable) return;
 
             bool died = runStats.TakeDamage(dmg);

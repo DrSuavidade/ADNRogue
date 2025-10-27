@@ -16,6 +16,14 @@ MonoBehaviour:
   maxStacks: 6
   stackDuration: 4
   rootDuration: 1.25
+  cooldownAfterPop: 10
   puddleRadius: 3
   puddleDuration: 4
   puddleSlow: 0.35
+  showIndicator: 1
+  indicatorHeightFactor: 1
+  indicatorHeightOffset: 0.15
+  indicatorRadius: 0.3
+  indicatorWorldScale: 1
+  wedgeColor: {r: 1, g: 0.85, b: 0.2, a: 0.85}
+  wedgeOffColor: {r: 1, g: 1, b: 1, a: 0.08}

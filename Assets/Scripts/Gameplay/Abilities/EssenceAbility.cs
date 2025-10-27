@@ -11,7 +11,11 @@ namespace Geneforge.Gameplay.Abilities
         public virtual void OnHitEnemy(Bullet bullet, Enemy enemy, WeaponStats activeStats) { }
         public virtual void ApplyUpgrades(AbilityUpgrade[] upgrades) { }
         public virtual void OnPrimaryEquipped(GameObject owner, WeaponStats activeStats) {}
-        public virtual void OnPrimaryUnequipped(GameObject owner) {}
+        public virtual void OnPrimaryUnequipped(GameObject owner) { }
+        public virtual void OnAboutToFire(WeaponStats activeStats) { }
+        public virtual void OnFireHeldStart() { }
+        public virtual void OnFireHeldStop() { }
+
 
     }
 }

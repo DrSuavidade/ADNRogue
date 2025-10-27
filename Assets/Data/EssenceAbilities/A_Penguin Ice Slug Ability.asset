@@ -15,5 +15,20 @@ MonoBehaviour:
   speedMultiplier: 0.6
   slowPercent: 0.4
   slowDuration: 2.5
-  freezeChance: 0.05
-  freezeDuration: 2
+  freezeChance: 0.337
+  freezeDuration: 4
+  freezeCooldown: 15
+  addTrail: 1
+  trailTime: 0.25
+  trailWidth: 0.08
+  trailStartColor: {r: 0.8, g: 0.95, b: 1, a: 0.95}
+  trailEndColor: {r: 0.6, g: 0.85, b: 1, a: 0}
+  showHitRing: 1
+  hitRingRadius: 0.9
+  hitRingDuration: 0.35
+  hitRingWidth: 0.06
+  hitRingColor: {r: 0.75, g: 0.95, b: 1, a: 0.9}
+  showIceBlockOnFreeze: 1
+  iceMaterial: {fileID: 0}
+  iceBlockScale: {x: 1, y: 1.6, z: 1}
+  iceBlockColor: {r: 0.6, g: 0.9, b: 1, a: 0.35}

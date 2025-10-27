@@ -12,8 +12,9 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: c7beab25744031e488205a5128c9c350, type: 3}
   m_Name: A_Hummingbird Momentum Fire Ability
   m_EditorClassIdentifier: 
-  rampPerSecond: 1.2
-  decayPerSecond: 2
-  decayDelay: 0.25
-  maxFireRateMultiplier: 1.8
+  startMultiplier: 0.2
+  perSecondAdd: 0.15
+  maxRampSeconds: 5
+  decayRate: 10
   extraPierceAtMax: 1
+  minFireInterval: 0.02

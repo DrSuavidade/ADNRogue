@@ -12,5 +12,15 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: fb43dd270cfaf2e449bbcbe08358e4ac, type: 3}
   m_Name: A_Wolf Twin Fangs
   m_EditorClassIdentifier: 
-  secondHitFactor: 0.7
-  delayBetweenHits: 0.05
+  extraHitCount: 1
+  extraHitDamageFactor: 0.7
+  firstExtraDelay: 0.5
+  betweenExtrasDelay: 0.2
+  extraHitKnockback: 0
+  showMouthVFX: 1
+  mouthColor: {r: 1, g: 1, b: 1, a: 0.95}
+  mouthDuration: 0.3
+  mouthWidth: 0.7
+  mouthOpenGap: 0.5
+  toothDepth: 0.18
+  mouthHeightOff: 1.2

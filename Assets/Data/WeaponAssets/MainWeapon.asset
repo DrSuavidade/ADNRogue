@@ -22,9 +22,9 @@ MonoBehaviour:
   projectilesPerShot: 1
   spreadAngle: 0
   projectileLifetime: 3.3
-  pierceCount: 1
+  pierceCount: 0
   bounceCount: 0
   homingStrength: 0
   aoeRadius: 0
   accuracy: 1
-  inaccuracyHalfAngle: 12.7
+  inaccuracyHalfAngle: 18.5

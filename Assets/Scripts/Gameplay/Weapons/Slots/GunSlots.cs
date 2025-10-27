@@ -63,17 +63,35 @@ namespace Geneforge.Gameplay.Weapons.Slots
         public event Action<AnimalEssence> OnPrimaryChanged;
         public event Action OnSecondariesChanged;
         WeaponStats _cachedActive;
+        [SerializeField] private GameObject abilityOwnerOverride; // set this in Inspector to the Player root
+
+        private EssenceAbility _wiredAbility;
+        private GameObject AbilityOwner =>
+            abilityOwnerOverride != null
+                ? abilityOwnerOverride
+                : (GetComponentInParent<Geneforge.Gameplay.Characters.Player.PlayerController>()?.gameObject ?? gameObject);
+
+
+        [SerializeField] private WeaponStats baseStatsAsset;
+
+        public WeaponStats ActiveStats => _cachedActive;
 
         void Awake()
         {
             if (progression == null) progression = FindAnyObjectByType<EssenceProgression>();
+            if (_cachedActive == null && baseStatsAsset != null)
+                _cachedActive = BuildActiveStats(baseStatsAsset);
+            WirePrimary(primary?.Essence?.specialAbility);
         }
 
         // --- Assign/Clear ---
         public bool TrySetPrimary(AnimalEssence e)
         {
             if (primary.Essence == e) return false;
+            var nextAbility = e ? e.specialAbility : null;
             primary.Set(e);
+            RebuildActive();
+            WirePrimary(nextAbility);
             OnPrimaryChanged?.Invoke(e);
             return true;
         }
@@ -83,6 +101,8 @@ namespace Geneforge.Gameplay.Weapons.Slots
         {
             if (primary.IsEmpty) return false;
             primary.Clear();
+            RebuildActive();
+            WirePrimary(null);
             OnPrimaryChanged?.Invoke(null);
             return true;
         }
@@ -93,6 +113,7 @@ namespace Geneforge.Gameplay.Weapons.Slots
             if (!IsValidIndex(index)) return false;
             if (secondaries[index].Essence == e) return false;
             secondaries[index].Set(e);
+            RebuildActive();
             OnSecondariesChanged?.Invoke();
             return true;
         }
@@ -102,6 +123,7 @@ namespace Geneforge.Gameplay.Weapons.Slots
         {
             if (!IsValidIndex(index) || secondaries[index].IsEmpty) return false;
             secondaries[index].Clear();
+            RebuildActive();
             OnSecondariesChanged?.Invoke();
             return true;
         }
@@ -111,9 +133,48 @@ namespace Geneforge.Gameplay.Weapons.Slots
         {
             primary.Clear();
             for (int i = 0; i < secondaries.Length; i++) secondaries[i].Clear();
+            RebuildActive();
             OnPrimaryChanged?.Invoke(null);
             OnSecondariesChanged?.Invoke();
         }
+
+        public void OnAboutToFire()
+        {
+            if (_cachedActive == null && baseStatsAsset != null)
+                _cachedActive = BuildActiveStats(baseStatsAsset);
+
+            var ability = primary?.Essence?.specialAbility;
+            if (ability != null && _cachedActive != null)
+                ability.OnAboutToFire(_cachedActive);
+        }
+
+        private void WirePrimary(EssenceAbility next)
+        {
+            if (_wiredAbility != null)
+            {
+                _wiredAbility.OnPrimaryUnequipped(AbilityOwner);
+                _wiredAbility = null;
+            }
+            if (next != null)
+            {
+                _wiredAbility = next;
+                _wiredAbility.OnPrimaryEquipped(AbilityOwner, _cachedActive);
+            }
+        }
+
+        public void OnFireHeldStart()
+        {
+            var ability = primary?.Essence?.specialAbility;
+            ability?.OnFireHeldStart();
+        }
+
+        public void OnFireHeldStop()
+        {
+            var ability = primary?.Essence?.specialAbility;
+            ability?.OnFireHeldStop();
+        }
+
+
 
         // --- Utilities ---
         public bool SwapSecondary(int a, int b)
@@ -122,6 +183,7 @@ namespace Geneforge.Gameplay.Weapons.Slots
             var tmp = secondaries[a].Essence;
             secondaries[a].Set(secondaries[b].Essence);
             secondaries[b].Set(tmp);
+            RebuildActive();
             OnSecondariesChanged?.Invoke();
             return true;
         }
@@ -184,6 +246,13 @@ namespace Geneforge.Gameplay.Weapons.Slots
 
             _cachedActive = ws;
             return ws;
+        }
+
+        void RebuildActive()
+        {
+            if (baseStatsAsset != null)
+                _cachedActive = BuildActiveStats(baseStatsAsset);
+            if (_wiredAbility != null) _wiredAbility.OnPrimaryEquipped(AbilityOwner, _cachedActive);
         }
     }
 }

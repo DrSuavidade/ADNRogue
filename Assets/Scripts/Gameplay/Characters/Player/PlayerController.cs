@@ -21,7 +21,7 @@ namespace Geneforge.Gameplay.Characters.Player
         [Header("Shooting")]
         [SerializeField] WeaponStats stats;                // ScriptableObject with fireRate, damage, etc.
         [SerializeField] GameObject bulletPrefab;
-        [SerializeField] Transform firePoint;
+        [SerializeField] public Transform firePoint;
 
         [Header("Animation")]
         [SerializeField] Animator animator;
@@ -120,6 +120,10 @@ namespace Geneforge.Gameplay.Characters.Player
             HandleShooting();
             UpdateAnimator();
             TryStartRoll();
+
+            if (Input.GetMouseButtonDown(0)) gunSlots?.OnFireHeldStart();
+            if (Input.GetMouseButtonUp(0)) gunSlots?.OnFireHeldStop();
+
         }
 
         // -------------------- Movement --------------------
@@ -178,10 +182,11 @@ namespace Geneforge.Gameplay.Characters.Player
         void HandleShooting()
         {
             if (!Input.GetMouseButton(0)) return;
-
-            float interval = (stats != null) ? stats.fireRate : 0.25f;
             if (Time.time < nextFireTime) return;
-            nextFireTime = Time.time + interval;
+
+            // Let the primary ability mutate the live snapshot BEFORE we read fireRate etc.
+            gunSlots?.OnAboutToFire();
+            var active = (gunSlots != null && gunSlots.ActiveStats != null) ? gunSlots.ActiveStats : stats;
 
             if (bulletPrefab == null || firePoint == null)
             {
@@ -189,23 +194,25 @@ namespace Geneforge.Gameplay.Characters.Player
                 return;
             }
 
-            // --- Active stat snapshot ---
-            int shots  = Mathf.Max(1, stats != null ? stats.projectilesPerShot : 1);
-            float spread = stats != null ? stats.spreadAngle : 0f;
+            float interval = (active != null) ? active.fireRate : 0.25f;
+            nextFireTime = Time.time + interval;
 
-            // [Accuracy] 0 -> max jitter; 1 -> no jitter
-            float inaccuracyHalf = 0f;
-            if (stats != null)
-                inaccuracyHalf = (1f - Mathf.Clamp01(stats.accuracy)) * stats.inaccuracyHalfAngle;
+            // --- Active stat snapshot (use ACTIVE, not stats) ---
+            int shots = Mathf.Max(1, (active != null ? active.projectilesPerShot : 1));
+            float spread = (active != null ? active.spreadAngle : 0f);
+
+            // Accuracy: 0 -> max jitter; 1 -> no jitter (yaw jitter scaled by inaccuracyHalfAngle)
+            float acc = (active != null) ? Mathf.Clamp01(active.accuracy) : 1f;
+            float inaccuracyHalf = (active != null) ? (1f - acc) * Mathf.Max(0f, active.inaccuracyHalfAngle) : 0f;
 
             // Lateral spacing so they don't spawn on top of each other.
-            float spacing = (stats != null ? stats.projectileSize : 1f) * 0.35f;
+            float spacing = ((active != null ? active.projectileSize : 1f) * 0.35f);
 
             List<Collider> volleyColliders = new List<Collider>();
 
             Vector3 forward = firePoint.forward;
-            Vector3 axis    = firePoint.up;     // yaw axis
-            Vector3 right   = firePoint.right;  // lateral lanes
+            Vector3 axis = firePoint.up;     // yaw axis
+            Vector3 right = firePoint.right;  // lateral lanes
 
             for (int i = 0; i < shots; i++)
             {
@@ -214,7 +221,7 @@ namespace Geneforge.Gameplay.Characters.Player
                 Quaternion rot = Quaternion.AngleAxis(angle, axis);
                 Vector3 dir = rot * forward;
 
-                // [Accuracy] random yaw jitter per projectile
+                // [Accuracy] random yaw jitter per projectile from ACTIVE
                 if (inaccuracyHalf > 0f)
                 {
                     float jitter = Random.Range(-inaccuracyHalf, inaccuracyHalf);
@@ -227,32 +234,35 @@ namespace Geneforge.Gameplay.Characters.Player
 
                 GameObject bulletGO = Instantiate(bulletPrefab, spawnPos, Quaternion.LookRotation(dir, axis));
 
-                if (stats != null)
-                    bulletGO.transform.localScale = Vector3.one * stats.projectileSize;
+                // Scale from ACTIVE
+                if (active != null)
+                    bulletGO.transform.localScale = Vector3.one * active.projectileSize;
 
                 Bullet b = bulletGO.GetComponent<Bullet>();
                 if (b != null)
                 {
-                    float dmg = (stats != null) ? stats.damage : 1f;
-                    bool crit = false;
-                    if (stats != null && Random.value <= stats.critChance)
-                    {
-                        dmg *= stats.critMultiplier;
-                        crit = true;
-                    }
+                    // Damage/crit from ACTIVE
+                    float dmg = (active != null) ? active.damage : 1f;
+                    bool crit = (active != null && Random.value <= active.critChance);
+                    if (crit && active != null) dmg *= active.critMultiplier;
+
                     b.damage = dmg;
-                    b.knockbackForce = (stats != null) ? stats.knockbackForce : 0f;
+                    b.knockbackForce = (active != null) ? active.knockbackForce : 0f;
                     b.isCrit = crit;
 
-                    if (stats != null) b.ApplyRuntimeStats(stats);
+                    // Push runtime knobs (lifetime, pierce, bounce, homing, aoe) from ACTIVE
+                    if (active != null) b.ApplyRuntimeStats(active);
 
-                    float speed = (stats != null) ? stats.projectileSpeed : 20f;
+                    // Launch speed from ACTIVE
+                    float speed = (active != null) ? active.projectileSpeed : 20f;
                     b.Launch(dir, speed);
 
+                    // Ability hooks (e.g., Crab bubble visual etc.)
                     gunSlots?.ApplyToBullet(b);
 
                     var cols = bulletGO.GetComponentsInChildren<Collider>();
                     if (cols != null && cols.Length > 0) volleyColliders.AddRange(cols);
+                    OnFired?.Invoke((gunSlots != null && gunSlots.ActiveStats != null) ? gunSlots.ActiveStats : stats);
                 }
                 else Debug.LogWarning("Bullet prefab missing Bullet component.", bulletGO);
             }
@@ -263,6 +273,7 @@ namespace Geneforge.Gameplay.Characters.Player
                     if (volleyColliders[a] && volleyColliders[bIdx])
                         Physics.IgnoreCollision(volleyColliders[a], volleyColliders[bIdx], true);
         }
+
 
 
 
@@ -477,5 +488,73 @@ namespace Geneforge.Gameplay.Characters.Player
             float angle = Vector3.SignedAngle(f, t, Vector3.up);
             return angle;
         }
+
+        // 1) Let others mirror your shot timing and active stats.
+        public event System.Action<WeaponStats> OnFired;
+
+        // 2) Fire a volley from a custom origin (for clones). Does not touch nextFireTime.
+        public void FireOnceFrom(Transform origin, WeaponStats overrideStats = null)
+        {
+            var active = overrideStats ?? (gunSlots != null && gunSlots.ActiveStats != null ? gunSlots.ActiveStats : stats);
+            if (origin == null || bulletPrefab == null || active == null) return;
+            SpawnVolleyFrom(origin, active);
+        }
+
+        // Shared inner logic extracted from your shooting; same rules, just uses `origin`.
+        void SpawnVolleyFrom(Transform origin, WeaponStats active)
+        {
+            int shots = Mathf.Max(1, active.projectilesPerShot);
+            float spread = active.spreadAngle;
+            float inaccuracyHalf = (1f - Mathf.Clamp01(active.accuracy)) * active.inaccuracyHalfAngle;
+            float spacing = active.projectileSize * 0.35f;
+
+            var volleyCols = new System.Collections.Generic.List<Collider>();
+
+            Vector3 forward = origin.forward;
+            Vector3 axis    = origin.up;
+            Vector3 right   = origin.right;
+
+            for (int i = 0; i < shots; i++)
+            {
+                float t = (shots == 1) ? 0f : i / (shots - 1f);
+                float angle = (shots == 1) ? 0f : Mathf.Lerp(-spread * 0.5f, spread * 0.5f, t);
+                Quaternion rot = Quaternion.AngleAxis(angle, axis);
+                Vector3 dir = rot * forward;
+
+                if (inaccuracyHalf > 0f)
+                    dir = Quaternion.AngleAxis(Random.Range(-inaccuracyHalf, inaccuracyHalf), axis) * dir;
+
+                float lane = (i - (shots - 1) * 0.5f);
+                Vector3 spawnPos = origin.position + right * (lane * spacing);
+
+                var go = Instantiate(bulletPrefab, spawnPos, Quaternion.LookRotation(dir, axis));
+                go.transform.localScale = Vector3.one * active.projectileSize;
+
+                var b = go.GetComponent<Bullet>();
+                if (b != null)
+                {
+                    // crit + damage
+                    float dmg = active.damage;
+                    bool crit = false;
+                    if (Random.value <= active.critChance) { dmg *= active.critMultiplier; crit = true; }
+                    b.damage = dmg; b.isCrit = crit; b.knockbackForce = active.knockbackForce;
+                    b.ApplyRuntimeStats(active);
+                    b.Launch(dir, active.projectileSpeed);
+
+                    // abilities
+                    gunSlots?.ApplyToBullet(b);
+                }
+
+                var cols = go.GetComponentsInChildren<Collider>();
+                if (cols != null && cols.Length > 0) volleyCols.AddRange(cols);
+            }
+
+            // ignore bullet-bullet collisions in same volley
+            for (int a = 0; a < volleyCols.Count; a++)
+                for (int b = a + 1; b < volleyCols.Count; b++)
+                    if (volleyCols[a] && volleyCols[b])
+                        Physics.IgnoreCollision(volleyCols[a], volleyCols[b], true);
+        }
+
     }
 }
