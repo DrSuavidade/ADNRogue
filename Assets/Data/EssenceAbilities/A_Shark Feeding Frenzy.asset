@@ -12,12 +12,18 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 392cea002421afe42a2e23e6a3d8f50d, type: 3}
   m_Name: A_Shark Feeding Frenzy
   m_EditorClassIdentifier: 
-  rageChance: 0.05
-  rageDuration: 5
-  rageSpeedMult: 1.75
-  retargetEvery: 0.5
-  roamRadius: 6
-  biteDelay: 0.15
+  fishChance: 1
+  fishScale: 1.2
+  telegraphDelay: 2
   biteRadius: 4.5
   biteDamageFactor: 1.35
   biteKnockback: 8
+  showTelegraph: 1
+  telegraphColor: {r: 0.1, g: 0.6, b: 1, a: 0.9}
+  telegraphWidth: 0.06
+  telegraphSegments: 64
+  breachColor: {r: 0.1, g: 0.4, b: 0.9, a: 0.95}
+  breachRiseTime: 0.25
+  breachHoldTime: 0.1
+  breachFallTime: 0.2
+  breachSize: {x: 1.2, y: 3.2}

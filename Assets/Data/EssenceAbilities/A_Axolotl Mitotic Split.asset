@@ -12,10 +12,6 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 539ccadb8f7a027408bc8bcf499c845d, type: 3}
   m_Name: A_Axolotl Mitotic Split
   m_EditorClassIdentifier: 
-  drAt2x: 0.1
-  drAt4x: 0.2
-  echoRingCount2x: 2
-  echoRingCount4x: 4
-  orbitRadius: 0.8
-  orbitSpeed: 120
-  echoScale: 0.9
+  cloneRadius: 1.2
+  followLerp: 15
+  cloneScale: 1

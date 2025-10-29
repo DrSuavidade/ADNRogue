@@ -1,5 +1,4 @@
-// not implemented
-
+// Assets/Scripts/Abilities/A_Shark.cs
 using UnityEngine;
 using System.Collections;
 using Geneforge.Gameplay.Abilities;
@@ -11,14 +10,17 @@ using Geneforge.Gameplay.Characters.Enemies;
 public class A_SharkFishProc : EssenceAbility
 {
     [Header("Fish Proc")]
-    [Range(0f, 1f)] public float fishChance = 0.02f;   // 2% chance to be a fish
+    [Range(0f, 1f)] public float fishChance = 0.02f;   // 2% chance a bullet is a "fish"
     public float fishScale = 1.2f;
 
     [Header("Shark Bite")]
-    public float telegraphDelay = 2.0f;
-    public float biteRadius = 4.5f;
-    public float biteDamageFactor = 5f;     // 5x fish bullet damage
-    public float biteKnockback = 12f;
+    public float telegraphDelay = 1.6f;
+    public float biteRadius = 6.0f;        // bigger than Elephant
+    public float biteDamageFactor = 6f;    // x fish bullet damage
+    public float biteKnockback = 14f;      // stronger knockback
+
+    [Header("Cooldown")]
+    public float cooldownSeconds = 30f;    // absolute cooldown
 
     [Header("Telegraph VFX")]
     public bool showTelegraph = true;
@@ -31,20 +33,35 @@ public class A_SharkFishProc : EssenceAbility
     public float breachRiseTime = 0.25f;
     public float breachHoldTime = 0.10f;
     public float breachFallTime = 0.20f;
-    public Vector2 breachSize = new Vector2(1.2f, 3.2f); // x = fin width, y = height
+    public Vector2 breachSize = new Vector2(1.6f, 3.6f); // x = fin width, y = height
 
-    // Mark bullets as "fish" at spawn time
+    // ---- internal cooldown + runner host ----
+    static float s_nextAllowedTime = 0f;
+    static SharkRunnerHost s_host;
+
+    static SharkRunnerHost Host
+    {
+        get
+        {
+            if (s_host != null) return s_host;
+            var go = new GameObject("[SharkRunnerHost]");
+            Object.DontDestroyOnLoad(go);
+            s_host = go.AddComponent<SharkRunnerHost>();
+            return s_host;
+        }
+    }
+
+    // Tag bullets as "fish" at spawn time
     public override void OnBulletSpawn(Bullet bullet, WeaponStats activeStats)
     {
         if (!bullet) return;
         if (Random.value > fishChance) return;
 
-        // Tag this bullet as a fish
         var tag = bullet.gameObject.AddComponent<FishTag>();
         tag.owner = this;
         tag.baseDamage = Mathf.Max(0f, bullet.damage);
 
-        // Light visual cue (optional): scale a bit & tint trail/renderer if present
+        // Small visual cue that this projectile is a fish
         bullet.transform.localScale *= fishScale;
 
         var tr = bullet.GetComponentInChildren<TrailRenderer>();
@@ -55,25 +72,32 @@ public class A_SharkFishProc : EssenceAbility
             mr.material.color = new Color(0.2f, 0.7f, 1f, 1f);
     }
 
-    // When a fish bullet hits any enemy, schedule the shark breach
+    // When a fish bullet hits an enemy, schedule the shark breach (if cooldown allows)
     public override void OnHitEnemy(Bullet bullet, Enemy enemy, WeaponStats stats)
     {
         if (!bullet || !enemy) return;
+
         var fish = bullet.GetComponent<FishTag>();
         if (fish == null || fish.triggered) return;
 
+        // Absolute cooldown gate
+        if (Time.time < s_nextAllowedTime) return;
+        s_nextAllowedTime = Time.time + Mathf.Max(0f, cooldownSeconds);
+
         fish.triggered = true;
 
-        // Lock-in ground position at impact
+        // Lock ground position at the moment of impact
         Vector3 pos = enemy.transform.position;
         Vector3 ground = ProjectToGround(pos);
 
-        bullet.StartCoroutine(SharkSequence(ground, fish.baseDamage));
+        // IMPORTANT: run the sequence on a persistent host (not on the bullet),
+        // otherwise it dies when the bullet is destroyed. (Bullets manage their
+        // own lifetimes/coroutines.)  :contentReference[oaicite:2]{index=2}
+        Host.Run(SharkSequence(ground, fish.baseDamage));
     }
 
     Vector3 ProjectToGround(Vector3 at)
     {
-        // Try raycast to ground; otherwise, keep y as-is
         Vector3 origin = at + Vector3.up * 5f;
         if (Physics.Raycast(origin, Vector3.down, out var hit, 50f, ~0, QueryTriggerInteraction.Ignore))
             return hit.point;
@@ -82,30 +106,27 @@ public class A_SharkFishProc : EssenceAbility
 
     IEnumerator SharkSequence(Vector3 atGround, float fishDamage)
     {
-        // Telegraph
         GameObject tele = null;
         if (showTelegraph)
             tele = CreateTelegraph(atGround, biteRadius, telegraphColor, telegraphWidth, telegraphSegments);
 
-        // Wait the delay
         yield return new WaitForSeconds(Mathf.Max(0.01f, telegraphDelay));
 
-        // Cleanup telegraph
         if (tele) Object.Destroy(tele);
 
-        // Do the breach VFX + damage/knockback
         SpawnBreachVFX(atGround);
         ApplyBite(atGround, fishDamage);
     }
 
     void ApplyBite(Vector3 center, float fishDamage)
     {
+        // Damage scales from the original fish-bullet’s damage
         float dmg = Mathf.Max(0f, fishDamage) * Mathf.Max(0f, biteDamageFactor);
 
-        var hits = Physics.OverlapSphere(center, biteRadius, ~0, QueryTriggerInteraction.Ignore);
-        for (int i = 0; i < hits.Length; i++)
+        var cols = Physics.OverlapSphere(center, biteRadius, ~0, QueryTriggerInteraction.Ignore);
+        for (int i = 0; i < cols.Length; i++)
         {
-            var e = hits[i].GetComponent<Enemy>();
+            var e = cols[i].GetComponent<Enemy>();
             if (!e) continue;
 
             e.TakeDamage(dmg, false);
@@ -129,7 +150,7 @@ public class A_SharkFishProc : EssenceAbility
         lr.material = new Material(Shader.Find("Sprites/Default"));
         lr.widthMultiplier = Mathf.Max(0.01f, width);
         lr.startColor = col; lr.endColor = col;
-        lr.positionCount = Mathf.Max(8, segs);
+        lr.positionCount = Mathf.Max(16, segs);
 
         var pts = new Vector3[lr.positionCount];
         for (int i = 0; i < pts.Length; i++)
@@ -144,7 +165,6 @@ public class A_SharkFishProc : EssenceAbility
 
     void SpawnBreachVFX(Vector3 at)
     {
-        // Simple “fin” breach: a vertical quad rising and falling
         var root = new GameObject("Shark_BreachVFX");
         root.transform.position = at;
 
@@ -160,15 +180,14 @@ public class A_SharkFishProc : EssenceAbility
         }
         var col = quad.GetComponent<Collider>(); if (col) Object.Destroy(col);
 
-        // Face camera for readability
         var cam = Camera.main;
         if (cam) root.transform.rotation = Quaternion.LookRotation(-cam.transform.forward, cam.transform.up);
 
-        quad.transform.localScale = new Vector3(breachSize.x, 0.01f, 1f); // start flat
+        quad.transform.localScale = new Vector3(breachSize.x, 0.01f, 1f);
         root.AddComponent<BreachRunner>().Init(quad.transform, breachSize, breachRiseTime, breachHoldTime, breachFallTime);
     }
 
-    // --- helpers ---
+    // --- helpers & runner types ---
     class FishTag : MonoBehaviour
     {
         public A_SharkFishProc owner;
@@ -202,20 +221,24 @@ public class A_SharkFishProc : EssenceAbility
                 yield return null;
             }
 
-            // Hold
             if (hold > 0f) yield return new WaitForSeconds(hold);
 
             // Fall
-            t = 0f;
-            while (t < fall)
+            float t2 = 0f;
+            while (t2 < fall)
             {
-                t += Time.deltaTime;
-                float k = Mathf.Clamp01(t / fall);
+                t2 += Time.deltaTime;
+                float k = Mathf.Clamp01(t2 / fall);
                 if (fin) fin.localScale = new Vector3(size.x, Mathf.Lerp(size.y, 0.01f, k), 1f);
                 yield return null;
             }
 
             Destroy(gameObject);
         }
+    }
+
+    class SharkRunnerHost : MonoBehaviour
+    {
+        public void Run(IEnumerator routine) { StartCoroutine(routine); }
     }
 }

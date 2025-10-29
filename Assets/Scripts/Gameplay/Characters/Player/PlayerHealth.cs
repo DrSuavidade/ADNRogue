@@ -36,7 +36,6 @@ namespace Geneforge.Gameplay.Characters.Player
 
         public void ApplyDamage(float dmg)
         {
-            if (A_ChameleonCamouflage.InvisibleActive) return;
             if (isInvulnerable) return;
 
             bool died = runStats.TakeDamage(dmg);

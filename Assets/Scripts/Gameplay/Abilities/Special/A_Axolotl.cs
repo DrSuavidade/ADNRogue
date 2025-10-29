@@ -1,5 +1,4 @@
-//need deep changes
-
+// Assets/Scripts/Abilities/A_Axolotl.cs
 using UnityEngine;
 using System.Collections.Generic;
 using Geneforge.Gameplay.Abilities;
@@ -11,9 +10,8 @@ using Geneforge.Core.Stats;
 public class A_AxolotlMitoticSplit : EssenceAbility
 {
     [Header("Layout")]
-    public float cloneRadius = 1.2f;
-    public float followLerp  = 15f;
-    public float cloneScale  = 1f;
+    public float cloneRadius = 1.2f;   // orbit radius
+    public float cloneScale  = 1f;     // visual scale of clones
 
     public override void OnPrimaryEquipped(GameObject owner, WeaponStats baseline)
     {
@@ -25,7 +23,7 @@ public class A_AxolotlMitoticSplit : EssenceAbility
     public override void OnPrimaryUnequipped(GameObject owner)
     {
         var rt = owner.GetComponent<SplitRuntime>();
-        if (rt) Destroy(rt);
+        if (rt) Object.Destroy(rt);
     }
 
     // -------- Runtime on the real player --------
@@ -35,14 +33,18 @@ public class A_AxolotlMitoticSplit : EssenceAbility
         PlayerController player;
         RunStats run;
 
+        Animator ownerAnim;
+        Transform ownerFirePoint;
+
         struct Clone
         {
             public GameObject go;
             public Transform  muzzle;
+            public Animator   anim;
+            public Vector3    localOffset; // ring offset relative to player
         }
 
-        List<Clone> clones = new List<Clone>();
-        Transform ownerMuzzle; // owner firePoint local pose snapshot
+        readonly List<Clone> clones = new List<Clone>();
 
         void OnDestroy()
         {
@@ -52,12 +54,14 @@ public class A_AxolotlMitoticSplit : EssenceAbility
 
         public void Configure(A_AxolotlMitoticSplit d, GameObject owner)
         {
-            def = d;
+            def    = d;
             player = owner.GetComponent<PlayerController>();
             run    = owner.GetComponent<RunStats>();
             if (!player || !run) { Debug.LogWarning("Axolotl needs PlayerController + RunStats on owner."); return; }
 
-            ownerMuzzle = player.firePoint; // public in your controller
+            ownerAnim     = player.GetComponentInChildren<Animator>(true);
+            ownerFirePoint = player.firePoint;
+
             player.OnFired -= OnOwnerFired;
             player.OnFired += OnOwnerFired;
 
@@ -68,12 +72,10 @@ public class A_AxolotlMitoticSplit : EssenceAbility
         {
             if (!def || !player || !run) return;
 
-            // Re-evaluate thresholds
             int want = DesiredCloneCount();
             if (want != clones.Count) RebuildClones(want);
 
-            // Move/rotate clones around player
-            UpdateCloneTransforms();
+            UpdateCloneTransformsAndAnim();
         }
 
         int DesiredCloneCount()
@@ -90,7 +92,7 @@ public class A_AxolotlMitoticSplit : EssenceAbility
             for (int i = clones.Count - 1; i >= desired; i--) DestroyClone(i);
 
             // add missing
-            while (clones.Count < desired) CreateClone();
+            while (clones.Count < desired) CreateClone(clones.Count, desired);
         }
 
         void DestroyClone(int index)
@@ -101,35 +103,61 @@ public class A_AxolotlMitoticSplit : EssenceAbility
             clones.RemoveAt(index);
         }
 
-        void CreateClone()
+        void CreateClone(int idx, int totalAfterCreate)
         {
-            // Duplicate the player object so visuals match exactly
-            var src = player.gameObject;
-            var cloneGO = Instantiate(src);
+            // Duplicate the player so visuals match exactly
+            var visualRoot = ownerAnim != null ? ownerAnim.gameObject : player.gameObject;
+            var cloneGO = Instantiate(visualRoot);
             cloneGO.name = "AxolotlClone";
-            cloneGO.transform.localScale = Vector3.one * def.cloneScale;
+            var originalLocal = visualRoot.transform.localScale;
+            var mul = def.cloneScale;
+            cloneGO.transform.localScale = new Vector3(
+                originalLocal.x * mul,
+                originalLocal.y * mul,
+                originalLocal.z * mul
+            );
 
-            // Strip gameplay: colliders, rigidbodies; disable all scripts
+            // Parent to player so it moves WITH the player 1:1
+            cloneGO.transform.SetParent(player.transform, false);
+
+            // Strip gameplay: colliders, rigidbodies; disable ALL scripts EXCEPT Animator
             foreach (var col in cloneGO.GetComponentsInChildren<Collider>(true)) Destroy(col);
             foreach (var rb in cloneGO.GetComponentsInChildren<Rigidbody>(true)) Destroy(rb);
-            foreach (var mb in cloneGO.GetComponentsInChildren<MonoBehaviour>(true))
+            foreach (var comp in cloneGO.GetComponentsInChildren<Component>(true))
             {
-                // disable every script on the clone (visual-only)
-                if (mb) mb.enabled = false;
+                // Keep Animators and Transforms running for visuals
+                if (comp is Animator) continue;
+                if (comp is Transform) continue;
+                // Disable MonoBehaviour scripts (if any)
+                var mb = comp as MonoBehaviour;
+                if (mb != null) mb.enabled = false;
             }
 
-            // Add our marker and a muzzle child with same local pose as owner firePoint
-            var marker = cloneGO.AddComponent<CloneMarker>();
+            // Grab the clone animator
+            var cloneAnim = cloneGO.GetComponentInChildren<Animator>(true);
+
+            // Add our marker muzzle with the same local pose as owner's firePoint
             var muzzle = new GameObject("Muzzle").transform;
             muzzle.SetParent(cloneGO.transform, false);
-            if (ownerMuzzle)
+            if (ownerFirePoint)
             {
-                muzzle.localPosition = ownerMuzzle.localPosition;
-                muzzle.localRotation = ownerMuzzle.localRotation;
+                muzzle.localPosition = ownerFirePoint.localPosition;
+                muzzle.localRotation = ownerFirePoint.localRotation;
             }
-            marker.muzzle = muzzle;
 
-            clones.Add(new Clone { go = cloneGO, muzzle = muzzle });
+            // Precompute ring local offset
+            Vector3 localOffset = ComputeRingOffset(idx, totalAfterCreate);
+
+            clones.Add(new Clone { go = cloneGO, muzzle = muzzle, anim = cloneAnim, localOffset = localOffset });
+        }
+
+        Vector3 ComputeRingOffset(int i, int n)
+        {
+            if (n <= 0) return Vector3.zero;
+            float baseAngle = (n == 1) ? 180f : 0f;
+            float ang = baseAngle + (360f / Mathf.Max(1, n)) * i;
+            float rad = ang * Mathf.Deg2Rad;
+            return new Vector3(Mathf.Cos(rad), 0f, Mathf.Sin(rad)) * def.cloneRadius;
         }
 
         void ClearClones()
@@ -139,25 +167,63 @@ public class A_AxolotlMitoticSplit : EssenceAbility
             clones.Clear();
         }
 
-        void UpdateCloneTransforms()
+        void UpdateCloneTransformsAndAnim()
         {
             if (clones.Count == 0) return;
 
-            int n = clones.Count;
-            float baseAngle = (n == 1) ? 180f : 0f;
-
-            for (int i = 0; i < n; i++)
+            for (int i = 0; i < clones.Count; i++)
             {
-                float ang = baseAngle + (360f / Mathf.Max(1, n)) * i;
-                float rad = ang * Mathf.Deg2Rad;
-                Vector3 dir = new Vector3(Mathf.Cos(rad), 0f, Mathf.Sin(rad));
-                Vector3 target = player.transform.position + dir * def.cloneRadius;
-
                 var c = clones[i];
                 if (!c.go) continue;
 
-                c.go.transform.position = Vector3.Lerp(c.go.transform.position, target, Time.deltaTime * def.followLerp);
-                c.go.transform.rotation = player.transform.rotation;
+                // Recompute ring offset based on *current* clone count
+                Vector3 offsetNow = ComputeRingOffset(i, clones.Count);
+
+                c.go.transform.localPosition = offsetNow;
+                c.go.transform.localRotation = Quaternion.identity;
+
+                // Mirror animator params from owner
+                MirrorAnimatorParams(ownerAnim, c.anim);
+            }
+        }
+
+
+        // Robust animator parameter mirroring (floats, ints, bools, triggers)
+        void MirrorAnimatorParams(Animator src, Animator dst)
+        {
+            if (!src || !dst) return;
+
+            var ps = src.parameters;
+            for (int i = 0; i < ps.Length; i++)
+            {
+                var p = ps[i];
+                switch (p.type)
+                {
+                    case AnimatorControllerParameterType.Float:
+                        dst.SetFloat(p.nameHash, src.GetFloat(p.nameHash));
+                        break;
+                    case AnimatorControllerParameterType.Int:
+                        dst.SetInteger(p.nameHash, src.GetInteger(p.nameHash));
+                        break;
+                    case AnimatorControllerParameterType.Bool:
+                        dst.SetBool(p.nameHash, src.GetBool(p.nameHash));
+                        break;
+                    case AnimatorControllerParameterType.Trigger:
+                        // If the source has a trigger set this frame, re-fire it on the clone
+                        // (simple heuristic: if src is in a state with that tag, or use custom bridging)
+                        // Here we naively forward rising edges: clear+set every frame the source is set.
+                        if (src.GetBool(p.nameHash)) { dst.ResetTrigger(p.nameHash); dst.SetTrigger(p.nameHash); }
+                        break;
+                }
+            }
+
+            // Optionally sync state time to avoid drift:
+            var s0 = src.GetCurrentAnimatorStateInfo(0);
+            var d0 = dst.GetCurrentAnimatorStateInfo(0);
+            if (s0.shortNameHash == d0.shortNameHash)
+            {
+                // keep normalized time roughly in step
+                dst.Play(s0.shortNameHash, 0, s0.normalizedTime % 1f);
             }
         }
 
@@ -171,8 +237,5 @@ public class A_AxolotlMitoticSplit : EssenceAbility
                 if (m) player.FireOnceFrom(m, active);
             }
         }
-
-        // tiny marker to hold the muzzle
-        class CloneMarker : MonoBehaviour { public Transform muzzle; }
     }
 }

@@ -17,7 +17,7 @@ MonoBehaviour:
   damage: 1
   projectileSize: 1
   knockbackForce: 1
-  critChance: 0.375
+  critChance: 0
   critMultiplier: 2
   projectilesPerShot: 1
   spreadAngle: 0

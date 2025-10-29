@@ -12,8 +12,17 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 0d135d283e0a7664e8ae2cd138606470, type: 3}
   m_Name: A_Tiger Rend
   m_EditorClassIdentifier: 
+  stacksToBleed: 5
+  stackExpireSeconds: 6
   bleedDps: 1.2
   bleedDuration: 4
   shredPerStack: 0.1
-  maxStacks: 5
+  maxShredStacks: 5
   shredDuration: 6
+  bleedFlashColor: {r: 0.85, g: 0, b: 0, a: 1}
+  bleedFlashDuration: 0.05
+  hudHeightOffset: 0
+  hudPipSize: 0.12
+  hudPipSpacing: 0.1
+  hudFilled: {r: 0.95, g: 0.25, b: 0.25, a: 1}
+  hudEmpty: {r: 0.25, g: 0.25, b: 0.25, a: 0.5}

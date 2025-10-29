@@ -101,6 +101,19 @@ namespace Geneforge.Gameplay.Characters.Enemies.Animal
 
                 return;
             }
+            // After the damage-pause return, before using 'dist' to pick state:
+            if (A_ChameleonCamouflage.InvisibleActive)
+            {
+                // Behave as if the player isn't there
+                state = State.Wandering;
+                currentSpeed = 0f;
+
+                // Idle animation (or continue wandering if you prefer)
+                if (animator != null) animator.SetFloat("Speed", 0f);
+
+                // Skip chase/attack for this frame
+                return;
+            }
 
             if (player == null) return;
 
