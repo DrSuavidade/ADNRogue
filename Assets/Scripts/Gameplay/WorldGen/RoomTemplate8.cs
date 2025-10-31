@@ -12,6 +12,10 @@ namespace Geneforge.Gameplay.WorldGen
         [Header("Supported Doors (tick the ones this prefab contains)")]
         public bool N, NE, E, SE, S, SW, W, NW;
 
+        [Header("Prefab Authoring")]
+        [Tooltip("Which direction does the room's ENTRANCE door face in the prefab as authored?")]
+        public Dir8 entranceDirection = Dir8.SouthWest;
+
         public bool Supports(Dir8 d) => d switch
         {
             Dir8.North => N, Dir8.NorthEast => NE, Dir8.East => E, Dir8.SouthEast => SE,

@@ -51,21 +51,30 @@ namespace Geneforge.Gameplay.WorldGen
             _hub = Instantiate(config.hubTemplate.prefab, transform.position, Quaternion.identity, transform);
             _hub.name = $"Hub_{config.era}";
 
-            // Four diagonals
             var diagonals = new[] { Dir8.NorthEast, Dir8.NorthWest, Dir8.SouthEast, Dir8.SouthWest };
             foreach (var d in diagonals)
             {
                 var tmpl = PickDiagonalTemplate();
-                var g = d.ToGrid();
-                var pos = transform.position + new Vector3(g.x, 0f, g.y) * config.hubToDiagonal; // <-- fix: Vector2Int -> Vector3
-                var rot = d.ToRotation();
+
+                // World position for this slot
+                var g  = d.ToGrid();
+                var pos = transform.position + new Vector3(g.x, 0f, g.y) * config.hubToDiagonal;
+
+                // We want the room's ENTRANCE to face back toward the hub:
+                // target = opposite of the slot direction (e.g., NE slot -> target SW).
+                var target = d.Opposite();
+
+                // Compute rotation delta from prefab-authored entrance to our target:
+                // rot = R(target) * inverse( R(prefabEntrance) )
+                var rot = target.ToRotation() * Quaternion.Inverse(tmpl.entranceDirection.ToRotation());
 
                 var inst = Instantiate(tmpl.prefab, pos, rot, transform);
                 inst.name = $"{d}_Room";
 
-                WireDoors(_hub, inst, d); // hub <-> diagonal
+                WireDoors(_hub, inst, d);  // hub <-> diagonal
                 RegisterRoom(inst, RoomKind.Combat, d);
             }
+
 
             // Boss (North)
             if (config.bossTemplate && config.bossTemplate.prefab)
