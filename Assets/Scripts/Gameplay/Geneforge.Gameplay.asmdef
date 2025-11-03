@@ -2,7 +2,8 @@
     "name": "Geneforge.Gameplay",
     "rootNamespace": "Geneforge",
     "references": [
-        "GUID:8ffd6cebf53695342895c583c6cca16f"
+        "GUID:8ffd6cebf53695342895c583c6cca16f",
+        "GUID:75469ad4d38634e559750d17036d5f7c"
     ],
     "includePlatforms": [],
     "excludePlatforms": [],

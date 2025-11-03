@@ -1,8 +1,8 @@
 using UnityEngine;
+using UnityEngine.InputSystem; // << novo
 
 namespace Geneforge.Gameplay.Cameras
 {
-
     public class OrbitCamera : MonoBehaviour
     {
         [Header("Targets")]
@@ -16,7 +16,8 @@ namespace Geneforge.Gameplay.Cameras
         [Range(-80f, 85f)] public float maxPitch = 65f;
         public bool invertY = false;
         public bool lockCursor = true;
-        [Tooltip("Kept for compatibility; ignored when always-on orbit is desired.")]
+
+        [Tooltip("If true, only orbits while Right Mouse Button is pressed.")]
         public bool requireRightMouse = false;
 
         [Header("Follow")]
@@ -27,12 +28,18 @@ namespace Geneforge.Gameplay.Cameras
 
         void Start()
         {
+            if (followTarget == null)
+            {
+                Debug.LogWarning("OrbitCamera: followTarget not set.", this);
+            }
+
             if (lockCursor)
             {
                 Cursor.lockState = CursorLockMode.Locked;
                 Cursor.visible = false;
             }
-            Vector3 e = transform.rotation.eulerAngles;
+
+            var e = transform.rotation.eulerAngles;
             yaw = e.y;
             pitch = NormalizePitch(e.x);
         }
@@ -40,19 +47,38 @@ namespace Geneforge.Gameplay.Cameras
         void LateUpdate()
         {
             if (followTarget == null) return;
+            if (Mouse.current == null) return; // sem rato (ex.: build mobile)
 
+            // posiciona na target
             transform.position = followTarget.position + followOffset;
 
-            // ALWAYS rotate on mouse movement (no button needed)
-            float mx = Input.GetAxis("Mouse X");
-            float my = Input.GetAxis("Mouse Y");
+            // Regras para iniciar órbita
+            bool orbiting = true;
+            if (requireRightMouse)
+                orbiting = Mouse.current.rightButton.isPressed;
 
-            yaw += mx * mouseXSensitivity * Time.deltaTime;
-            float ySign = invertY ? 1f : -1f;
-            pitch += ySign * my * mouseYSensitivity * Time.deltaTime;
-            pitch = Mathf.Clamp(pitch, minPitch, maxPitch);
+            if (orbiting)
+            {
+                // Mouse.delta é em píxeis desde o último frame.
+                // Usa unscaledDeltaTime para suavizar em diferentes framerates.
+                Vector2 delta = Mouse.current.delta.ReadValue();
+                float dt = Time.unscaledDeltaTime;
+
+                // Ajuste de sensibilidade: 0.01f dá um feeling próximo do Input antigo
+                float mx = delta.x * mouseXSensitivity * 0.01f * dt;
+                float my = delta.y * mouseYSensitivity * 0.01f * dt;
+
+                yaw += mx;
+                float ySign = invertY ? 1f : -1f;
+                pitch += ySign * my;
+                pitch = Mathf.Clamp(pitch, minPitch, maxPitch);
+            }
 
             transform.rotation = Quaternion.Euler(pitch, yaw, 0f);
+
+            // --- (Opcional) Zoom pelo scroll ---
+            // float scrollY = Mouse.current.scroll.ReadValue().y; // ~±120 por notch
+            // if (Mathf.Abs(scrollY) > 0.01f) { ... }
         }
 
         static float NormalizePitch(float xAngle)

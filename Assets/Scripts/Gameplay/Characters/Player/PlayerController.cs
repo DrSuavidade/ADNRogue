@@ -1,5 +1,6 @@
 using UnityEngine;
 using System.Collections.Generic;
+using UnityEngine.InputSystem; // << novo
 using Geneforge.Gameplay.Weapons.Bullets;
 using Geneforge.Gameplay.Weapons.Stats;
 using Geneforge.Gameplay.Weapons.Slots;
@@ -7,6 +8,7 @@ using Geneforge.Gameplay.Weapons.Slots;
 namespace Geneforge.Gameplay.Characters.Player
 {
     [RequireComponent(typeof(CharacterController))]
+    [RequireComponent(typeof(PlayerInput))] // << recomendamos ter o componente
     public class PlayerController : MonoBehaviour
     {
         // -------------------- Inspector --------------------
@@ -19,40 +21,40 @@ namespace Geneforge.Gameplay.Characters.Player
         [SerializeField] float faceCameraTurnSpeed = 12f;  // slerp speed
 
         [Header("Shooting")]
-        [SerializeField] WeaponStats stats;                // ScriptableObject with fireRate, damage, etc.
+        [SerializeField] WeaponStats stats;                // ScriptableObject com fireRate, damage, etc.
         [SerializeField] GameObject bulletPrefab;
         [SerializeField] public Transform firePoint;
 
         [Header("Animation")]
         [SerializeField] Animator animator;
-        [Tooltip("Transform that visually represents the character (Animator/mesh root). This will rotate during roll so the animation faces the roll direction.")]
+        [Tooltip("Transform visual do personagem (raiz do Animator/malha). Será rodado no roll para a direção do roll.")]
         [SerializeField] Transform modelRoot;
 
         [Header("Dodge Roll")]
-        [SerializeField] KeyCode rollKey = KeyCode.Space;
+        [Tooltip("A tecla do roll agora é definida nas Input Actions (ação 'roll'). Este campo já não é usado.")]
+        [SerializeField] KeyCode rollKey = KeyCode.Space; // mantido só para compat, não é usado
         [SerializeField] float rollDuration = 2f;
         [SerializeField] float rollCooldown = 1f;
         [SerializeField] float rollDistance = 5f;
-        [Tooltip("Snap roll direction to 8-way (45° increments) relative to camera.")]
+        [Tooltip("Arredonda a direção do roll para 8 direções (múltiplos de 45°) relativas à câmara.")]
         [SerializeField] bool snapRollToEightWay = true;
 
         [Header("Gravity")]
-        [SerializeField] float gravityY = -35f;       // tune to taste
-        [SerializeField] float groundedGravityY = -2f; // small downward to keep grounded contact
+        [SerializeField] float gravityY = -35f;
+        [SerializeField] float groundedGravityY = -2f;
 
         float verticalVelocityY = 0f;
 
         [SerializeField] GunSlots gunSlots;
-
 
         // -------------------- Runtime state --------------------
         CharacterController cc;
         Camera mainCam;
         PlayerHealth playerHealth;
 
-        Vector3 currentMoveWorld;   // camera-relative move vector used this frame
-        Vector3 rollDirection;      // roll direction chosen at start (world space, ground-projected)
-        float rollSpeed;            // computed from distance/duration
+        Vector3 currentMoveWorld;   // movimento (mundo) deste frame
+        Vector3 rollDirection;      // direção escolhida no início do roll (mundo)
+        float rollSpeed;
 
         bool isRolling = false;
         bool canRoll = true;
@@ -66,20 +68,11 @@ namespace Geneforge.Gameplay.Characters.Player
         float baseAnimatorSpeed = 1f;
 
         [Header("Animation – Diagonal Boost")]
-        [SerializeField, Tooltip("Enable extra playback speed ONLY on diagonals.")]
-        bool diagonalBoostEnabled = true;
+        [SerializeField] bool diagonalBoostEnabled = true;
+        [SerializeField] float diagonalBoostMax = 1.7f;
+        [SerializeField] float diagonalBoostPower = 1.25f;
+        [SerializeField] float animAxisDeadzone = 0.05f;
 
-        [SerializeField, Tooltip("Max animator speed multiplier at a perfect diagonal (e.g., 1.6–1.8).")]
-        float diagonalBoostMax = 1.7f;
-
-        [SerializeField, Tooltip("Response curve exponent (>1 boosts diagonals more aggressively).")]
-        float diagonalBoostPower = 1.25f;
-
-        [SerializeField, Tooltip("Deadzone for axes before considering movement.")]
-        float animAxisDeadzone = 0.05f;
-
-
-        // cache for restoring the model orientation after roll
         Quaternion modelPreRollRotation;
 
         // Animator parameter IDs
@@ -88,6 +81,12 @@ namespace Geneforge.Gameplay.Characters.Player
         static readonly int AnimIsFiring = Animator.StringToHash("IsFiring");
         static readonly int AnimRoll = Animator.StringToHash("Roll");
         static readonly int AnimSpeed = Animator.StringToHash("Speed");
+
+        // --------- Input System references ---------
+        PlayerInput playerInput;
+        InputAction moveAction;   // Vector2
+        InputAction rollAction;   // Button
+        InputAction attackAction; // Button (IsPressed)
 
         // -------------------- Unity --------------------
         void Awake()
@@ -104,6 +103,36 @@ namespace Geneforge.Gameplay.Characters.Player
 
             if (modelRoot == null && animator != null) modelRoot = animator.transform;
             if (animator != null) baseAnimatorSpeed = animator.speed;
+
+            // ---- Input System wiring ----
+            playerInput = GetComponent<PlayerInput>();
+            if (playerInput != null && playerInput.actions != null)
+            {
+                // O teu mapa chama-se "Player"
+                var map = playerInput.actions.FindActionMap("Player", true);
+                moveAction   = map.FindAction("Move", true);
+                rollAction   = map.FindAction("roll", true);    // 'roll' em minúsculas, como no teu asset
+                attackAction = map.FindAction("Attack", false); // pode não existir; é opcional
+            }
+            else
+            {
+                Debug.LogError("PlayerInput/Actions não encontrado. Adiciona o componente PlayerInput e associa o .inputactions.", this);
+            }
+        }
+
+        void OnEnable()
+        {
+            // Garantir enable/disable correto das actions
+            moveAction?.Enable();
+            rollAction?.Enable();
+            attackAction?.Enable();
+        }
+
+        void OnDisable()
+        {
+            attackAction?.Disable();
+            rollAction?.Disable();
+            moveAction?.Disable();
         }
 
         void Update()
@@ -113,7 +142,7 @@ namespace Geneforge.Gameplay.Characters.Player
             if (isRolling)
             {
                 HandleRollingMovement();
-                return; // skip regular movement/shooting while rolling
+                return; // não processa movimento/disparo normal durante o roll
             }
 
             HandleMovement();
@@ -121,17 +150,18 @@ namespace Geneforge.Gameplay.Characters.Player
             UpdateAnimator();
             TryStartRoll();
 
-            if (Input.GetMouseButtonDown(0)) gunSlots?.OnFireHeldStart();
-            if (Input.GetMouseButtonUp(0)) gunSlots?.OnFireHeldStop();
-
+            // Sinais para o teu sistema de armas (mantidos)
+            if (attackAction != null && attackAction.WasPressedThisFrame()) gunSlots?.OnFireHeldStart();
+            if (attackAction != null && attackAction.WasReleasedThisFrame()) gunSlots?.OnFireHeldStop();
         }
 
         // -------------------- Movement --------------------
         void HandleMovement()
         {
-            // Use RAW axes for snappy direction changes (avoids "old direction" after roll)
-            float ix = Input.GetAxisRaw("Horizontal");
-            float iz = Input.GetAxisRaw("Vertical");
+            // Lê o Vector2 do Input System
+            Vector2 move2D = moveAction != null ? moveAction.ReadValue<Vector2>() : Vector2.zero;
+            float ix = Mathf.Clamp(move2D.x, -1f, 1f);
+            float iz = Mathf.Clamp(move2D.y, -1f, 1f);
 
             Vector3 moveInput = new Vector3(ix, 0f, iz);
             if (moveInput.sqrMagnitude > 1f) moveInput.Normalize();
@@ -147,7 +177,6 @@ namespace Geneforge.Gameplay.Characters.Player
 
             if (cc.isGrounded)
             {
-                // keep slight downward pull so CC stays snapped to ground
                 if (verticalVelocityY < 0f) verticalVelocityY = groundedGravityY;
             }
             else
@@ -155,10 +184,8 @@ namespace Geneforge.Gameplay.Characters.Player
                 verticalVelocityY += gravityY * Time.deltaTime;
             }
 
-            // Apply vertical after horizontal (CC sums multiple Move calls per frame)
             cc.Move(new Vector3(0f, verticalVelocityY, 0f) * Time.deltaTime);
 
-            // Face rules (keep aim forward unless disabled)
             if (!isRolling)
             {
                 if (faceToCameraForward)
@@ -181,38 +208,32 @@ namespace Geneforge.Gameplay.Characters.Player
         // -------------------- Shooting --------------------
         void HandleShooting()
         {
-            if (!Input.GetMouseButton(0)) return;
+            if (attackAction == null || !attackAction.IsPressed()) return; // contínuo
             if (Time.time < nextFireTime) return;
 
-            // Let the primary ability mutate the live snapshot BEFORE we read fireRate etc.
             gunSlots?.OnAboutToFire();
             var active = (gunSlots != null && gunSlots.ActiveStats != null) ? gunSlots.ActiveStats : stats;
 
             if (bulletPrefab == null || firePoint == null)
             {
-                Debug.LogWarning("BulletPrefab or FirePoint not assigned.", this);
+                Debug.LogWarning("BulletPrefab ou FirePoint não atribuídos.", this);
                 return;
             }
 
             float interval = (active != null) ? active.fireRate : 0.25f;
             nextFireTime = Time.time + interval;
 
-            // --- Active stat snapshot (use ACTIVE, not stats) ---
             int shots = Mathf.Max(1, (active != null ? active.projectilesPerShot : 1));
             float spread = (active != null ? active.spreadAngle : 0f);
-
-            // Accuracy: 0 -> max jitter; 1 -> no jitter (yaw jitter scaled by inaccuracyHalfAngle)
             float acc = (active != null) ? Mathf.Clamp01(active.accuracy) : 1f;
             float inaccuracyHalf = (active != null) ? (1f - acc) * Mathf.Max(0f, active.inaccuracyHalfAngle) : 0f;
-
-            // Lateral spacing so they don't spawn on top of each other.
             float spacing = ((active != null ? active.projectileSize : 1f) * 0.35f);
 
             List<Collider> volleyColliders = new List<Collider>();
 
             Vector3 forward = firePoint.forward;
-            Vector3 axis = firePoint.up;     // yaw axis
-            Vector3 right = firePoint.right;  // lateral lanes
+            Vector3 axis = firePoint.up;
+            Vector3 right = firePoint.right;
 
             for (int i = 0; i < shots; i++)
             {
@@ -221,27 +242,23 @@ namespace Geneforge.Gameplay.Characters.Player
                 Quaternion rot = Quaternion.AngleAxis(angle, axis);
                 Vector3 dir = rot * forward;
 
-                // [Accuracy] random yaw jitter per projectile from ACTIVE
                 if (inaccuracyHalf > 0f)
                 {
                     float jitter = Random.Range(-inaccuracyHalf, inaccuracyHalf);
                     dir = Quaternion.AngleAxis(jitter, axis) * dir;
                 }
 
-                // Centered lateral lanes: -N..+N along 'right'
                 float lane = (i - (shots - 1) * 0.5f);
                 Vector3 spawnPos = firePoint.position + right * (lane * spacing);
 
                 GameObject bulletGO = Instantiate(bulletPrefab, spawnPos, Quaternion.LookRotation(dir, axis));
 
-                // Scale from ACTIVE
                 if (active != null)
                     bulletGO.transform.localScale = Vector3.one * active.projectileSize;
 
                 Bullet b = bulletGO.GetComponent<Bullet>();
                 if (b != null)
                 {
-                    // Damage/crit from ACTIVE
                     float dmg = (active != null) ? active.damage : 1f;
                     bool crit = (active != null && Random.value <= active.critChance);
                     if (crit && active != null) dmg *= active.critMultiplier;
@@ -250,54 +267,45 @@ namespace Geneforge.Gameplay.Characters.Player
                     b.knockbackForce = (active != null) ? active.knockbackForce : 0f;
                     b.isCrit = crit;
 
-                    // Push runtime knobs (lifetime, pierce, bounce, homing, aoe) from ACTIVE
                     if (active != null) b.ApplyRuntimeStats(active);
 
-                    // Launch speed from ACTIVE
                     float speed = (active != null) ? active.projectileSpeed : 20f;
                     b.Launch(dir, speed);
 
-                    // Ability hooks (e.g., Crab bubble visual etc.)
                     gunSlots?.ApplyToBullet(b);
 
                     var cols = bulletGO.GetComponentsInChildren<Collider>();
                     if (cols != null && cols.Length > 0) volleyColliders.AddRange(cols);
                     OnFired?.Invoke((gunSlots != null && gunSlots.ActiveStats != null) ? gunSlots.ActiveStats : stats);
                 }
-                else Debug.LogWarning("Bullet prefab missing Bullet component.", bulletGO);
+                else Debug.LogWarning("Bullet prefab sem componente Bullet.", bulletGO);
             }
 
-            // Disable collisions between bullets spawned in the same volley
             for (int a = 0; a < volleyColliders.Count; a++)
                 for (int bIdx = a + 1; bIdx < volleyColliders.Count; bIdx++)
                     if (volleyColliders[a] && volleyColliders[bIdx])
                         Physics.IgnoreCollision(volleyColliders[a], volleyColliders[bIdx], true);
         }
 
-
-
-
-
         // -------------------- Roll --------------------
         void TryStartRoll()
         {
-            if (!canRoll || isRolling || !Input.GetKeyDown(rollKey)) return;
+            // Usar o gatilho do Input System
+            if (!canRoll || isRolling || rollAction == null || !rollAction.triggered) return;
             StartRoll();
         }
 
         void StartRoll()
         {
-            // 1) Get camera-relative input direction (or camera forward if no input)
             Vector3 camF = GetCamForward();
-            Vector3 inputDir = GetCameraRelativeInputDirRaw(); // unit length or zero
+            Vector3 inputDir = GetCameraRelativeInputDirRaw(); // usa Move do Input System
 
             if (inputDir == Vector3.zero)
             {
-                rollDirection = camF; // forward roll
+                rollDirection = camF; // forward
             }
             else
             {
-                // 2) Optionally snap to nearest 45° relative to camera forward
                 if (snapRollToEightWay)
                 {
                     float signedAngle = SignedAngleOnY(camF, inputDir);
@@ -310,21 +318,18 @@ namespace Geneforge.Gameplay.Characters.Player
                 }
             }
 
-            // 3) Rotate only the visual model to face the roll direction for animation
             if (modelRoot != null)
             {
                 modelPreRollRotation = modelRoot.rotation;
                 modelRoot.rotation = Quaternion.LookRotation(rollDirection, Vector3.up);
             }
 
-            // 4) Prepare timers/flags
             rollSpeed = rollDistance / Mathf.Max(0.0001f, rollDuration);
             rollTimer = rollDuration;
             cooldownTimer = rollCooldown;
             isRolling = true;
             canRoll = false;
 
-            // Clear stale move to avoid "old direction" artifacts in the first post-roll frame
             currentMoveWorld = Vector3.zero;
 
             if (playerLayer >= 0 && enemyLayer >= 0)
@@ -344,10 +349,9 @@ namespace Geneforge.Gameplay.Characters.Player
             {
                 verticalVelocityY += gravityY * Time.deltaTime;
             }
-            // Move strictly along the chosen direction
+
             cc.Move(rollDirection * rollSpeed * Time.deltaTime);
 
-            // Keep the root aligned with camera forward while rolling (aim stays forward)
             if (faceToCameraForward)
             {
                 Vector3 camF = GetCamForward();
@@ -379,13 +383,8 @@ namespace Geneforge.Gameplay.Characters.Player
         {
             isRolling = false;
 
-            // Restore model rotation to forward aim
             if (modelRoot != null)
             {
-                // Option A: restore to pre-roll absolute rotation
-                // modelRoot.rotation = modelPreRollRotation;
-
-                // Option B (preferred for aiming): face current camera forward
                 Vector3 camF = GetCamForward();
                 modelRoot.rotation = Quaternion.LookRotation(camF, Vector3.up);
             }
@@ -399,7 +398,6 @@ namespace Geneforge.Gameplay.Characters.Player
         {
             if (animator == null) return;
 
-            // Camera-relative axes for consistent W/A/S/D animation selection
             Vector3 camF = GetCamForward();
             Vector3 camR = GetCamRight();
 
@@ -409,19 +407,19 @@ namespace Geneforge.Gameplay.Characters.Player
             if (currentMoveWorld.sqrMagnitude > 0.0001f)
             {
                 Vector3 dir = currentMoveWorld.normalized;
-                animX = Mathf.Clamp(Vector3.Dot(dir, camR), -1f, 1f); // left(-1) .. right(+1)
-                animY = Mathf.Clamp(Vector3.Dot(dir, camF), -1f, 1f); // back(-1) .. forward(+1)
+                animX = Mathf.Clamp(Vector3.Dot(dir, camR), -1f, 1f);
+                animY = Mathf.Clamp(Vector3.Dot(dir, camF), -1f, 1f);
             }
 
-            // Small deadzone to stabilize idle blends
             if (Mathf.Abs(animX) < 0.05f) animX = 0f;
             if (Mathf.Abs(animY) < 0.05f) animY = 0f;
 
             animator.SetFloat(AnimMoveX, animX);
             animator.SetFloat(AnimMoveY, animY);
-            animator.SetBool(AnimIsFiring, Input.GetMouseButton(0));
 
-            // Optional scalar (safe even if not used in the controller)
+            bool isFiringNow = (attackAction != null && attackAction.IsPressed());
+            animator.SetBool(AnimIsFiring, isFiringNow);
+
             float speed01 = Mathf.Clamp01(currentMoveWorld.magnitude / Mathf.Max(0.0001f, moveSpeed));
             animator.SetFloat(AnimSpeed, speed01);
 
@@ -430,18 +428,14 @@ namespace Geneforge.Gameplay.Characters.Player
                 float ax = Mathf.Abs(animX);
                 float ay = Mathf.Abs(animY);
 
-                // If one axis is basically zero -> straight, no boost
                 if (ax < animAxisDeadzone || ay < animAxisDeadzone)
                 {
                     animator.speed = baseAnimatorSpeed;
                 }
                 else
                 {
-                    // axisMax is ~0.707 at a perfect 45° diagonal and approaches 1.0 near straight
                     float axisMax = Mathf.Max(ax, ay);
-                    // Base boost = 1 / axisMax (≈1.414 at perfect diagonal)
                     float baseBoost = 1f / Mathf.Max(axisMax, 0.0001f);
-                    // Exponent to push diagonals harder without affecting near-straights much
                     float boosted = Mathf.Pow(baseBoost, diagonalBoostPower);
                     animator.speed = baseAnimatorSpeed * Mathf.Min(boosted, diagonalBoostMax);
                 }
@@ -467,15 +461,14 @@ namespace Geneforge.Gameplay.Characters.Player
             return Vector3.ProjectOnPlane(right, Vector3.up).normalized;
         }
 
-        // Camera-relative input direction using RAW axes (snappy)
+        // Direção da entrada (WASD/analógico) relativa à câmara, usando o Input System
         Vector3 GetCameraRelativeInputDirRaw()
         {
-            float ix = Input.GetAxisRaw("Horizontal");
-            float iz = Input.GetAxisRaw("Vertical");
-            if (Mathf.Approximately(ix, 0f) && Mathf.Approximately(iz, 0f))
+            Vector2 move2D = moveAction != null ? moveAction.ReadValue<Vector2>() : Vector2.zero;
+            if (Mathf.Approximately(move2D.x, 0f) && Mathf.Approximately(move2D.y, 0f))
                 return Vector3.zero;
 
-            Vector3 dir = GetCamForward() * iz + GetCamRight() * ix;
+            Vector3 dir = GetCamForward() * move2D.y + GetCamRight() * move2D.x;
             if (dir.sqrMagnitude > 1f) dir.Normalize();
             return dir;
         }
@@ -489,10 +482,10 @@ namespace Geneforge.Gameplay.Characters.Player
             return angle;
         }
 
-        // 1) Let others mirror your shot timing and active stats.
+        // Eventos externos
         public event System.Action<WeaponStats> OnFired;
 
-        // 2) Fire a volley from a custom origin (for clones). Does not touch nextFireTime.
+        // API p/ clones (mantido)
         public void FireOnceFrom(Transform origin, WeaponStats overrideStats = null)
         {
             var active = overrideStats ?? (gunSlots != null && gunSlots.ActiveStats != null ? gunSlots.ActiveStats : stats);
@@ -500,7 +493,6 @@ namespace Geneforge.Gameplay.Characters.Player
             SpawnVolleyFrom(origin, active);
         }
 
-        // Shared inner logic extracted from your shooting; same rules, just uses `origin`.
         void SpawnVolleyFrom(Transform origin, WeaponStats active)
         {
             int shots = Mathf.Max(1, active.projectilesPerShot);
@@ -533,7 +525,6 @@ namespace Geneforge.Gameplay.Characters.Player
                 var b = go.GetComponent<Bullet>();
                 if (b != null)
                 {
-                    // crit + damage
                     float dmg = active.damage;
                     bool crit = false;
                     if (Random.value <= active.critChance) { dmg *= active.critMultiplier; crit = true; }
@@ -541,7 +532,6 @@ namespace Geneforge.Gameplay.Characters.Player
                     b.ApplyRuntimeStats(active);
                     b.Launch(dir, active.projectileSpeed);
 
-                    // abilities
                     gunSlots?.ApplyToBullet(b);
                 }
 
@@ -549,12 +539,10 @@ namespace Geneforge.Gameplay.Characters.Player
                 if (cols != null && cols.Length > 0) volleyCols.AddRange(cols);
             }
 
-            // ignore bullet-bullet collisions in same volley
             for (int a = 0; a < volleyCols.Count; a++)
                 for (int b = a + 1; b < volleyCols.Count; b++)
                     if (volleyCols[a] && volleyCols[b])
                         Physics.IgnoreCollision(volleyCols[a], volleyCols[b], true);
         }
-
     }
 }
