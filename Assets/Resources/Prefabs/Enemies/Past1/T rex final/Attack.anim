@@ -177580,7 +177580,7 @@ AnimationClip:
   m_HasMotionFloatCurves: 0
   m_Events:
   - time: 1
-    functionName: OnAttackHit
+    functionName: AE_BiteHit
     data: 
     objectReferenceParameter: {fileID: 0}
     floatParameter: 0

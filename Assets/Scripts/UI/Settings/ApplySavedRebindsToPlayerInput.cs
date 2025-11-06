@@ -1,19 +1,22 @@
 using UnityEngine;
 using UnityEngine.InputSystem;
 
-[DefaultExecutionOrder(-100)]
-public class ApplySavedRebindsToPlayerInput : MonoBehaviour
+namespace Game.UI.Settings
 {
-    public PlayerInput playerInput;
-    const string PlayerPrefsKey = "Keybinds";
-
-    void Awake()
+    [DefaultExecutionOrder(-100)]
+    public class ApplySavedRebindsToPlayerInput : MonoBehaviour
     {
-        if (playerInput == null) playerInput = GetComponent<PlayerInput>();
-        if (playerInput == null) return;
+        public PlayerInput playerInput;
+        const string PlayerPrefsKey = "Keybinds";
 
-        var json = PlayerPrefs.GetString(PlayerPrefsKey, "");
-        if (!string.IsNullOrEmpty(json))
-            playerInput.actions.LoadBindingOverridesFromJson(json);
+        void Awake()
+        {
+            if (playerInput == null) playerInput = GetComponent<PlayerInput>();
+            if (playerInput == null) return;
+
+            var json = PlayerPrefs.GetString(PlayerPrefsKey, "");
+            if (!string.IsNullOrEmpty(json))
+                playerInput.actions.LoadBindingOverridesFromJson(json);
+        }
     }
 }

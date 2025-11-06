@@ -233295,8 +233295,8 @@ AnimationClip:
   m_HasGenericRootTransform: 0
   m_HasMotionFloatCurves: 0
   m_Events:
-  - time: 2
-    functionName: OnAttackHit
+  - time: 3
+    functionName: AE_TailHit
     data: 
     objectReferenceParameter: {fileID: 0}
     floatParameter: 0

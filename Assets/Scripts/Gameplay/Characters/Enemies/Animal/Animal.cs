@@ -2,7 +2,7 @@ using UnityEngine;
 using System.Collections;
 using Geneforge.Gameplay.Characters.Player;
 
-namespace Geneforge.Gameplay.Characters.Enemies.Animal 
+namespace Geneforge.Gameplay.Characters.Enemies.Animal
 {
     public class Animal : MonoBehaviour
     {
@@ -38,6 +38,24 @@ namespace Geneforge.Gameplay.Characters.Enemies.Animal
 
         [Header("Damage Pause")]
         public float damagePauseDuration = 0.5f;
+
+        // -------- NOVO: hitboxes e lock de ataque --------
+        [Header("Attack Windows / Hitboxes")]
+        public Transform bitePoint;            // vazio na ponta da boca
+        public Transform tailPoint;            // vazio na ponta da cauda
+        public float biteRadius = 0.9f;
+        public float tailRadius = 1.1f;
+        public LayerMask playerMask;           // layer do player
+
+        [Header("Attack Lock")]
+        public bool lockDuringAttack = true;
+        public float attackLockExtraTime = 0.05f; // margem após o fim do clip
+        public bool freezeRotationWhileAttacking = true;
+
+        bool isAttackLocked = false;
+        Coroutine attackLockCo;
+        Collider[] _hitBuf = new Collider[4];
+        // --------------------------------------------------
 
         Vector3 spawnPos;
         Vector3 wanderTarget;
@@ -89,51 +107,44 @@ namespace Geneforge.Gameplay.Characters.Enemies.Animal
 
         void Update()
         {
-            // 1) Handle damage pause
+            // 0) Damage-pause
             if (isDamagePaused)
             {
                 damagePauseTimer += Time.deltaTime;
-                if (animator != null)
-                    animator.SetFloat("Speed", 0f);
-
-                if (damagePauseTimer >= damagePauseDuration)
-                    isDamagePaused = false;
-
+                if (animator != null) animator.SetFloat("Speed", 0f);
+                if (damagePauseTimer >= damagePauseDuration) isDamagePaused = false;
                 return;
             }
-            // After the damage-pause return, before using 'dist' to pick state:
+
+            // 0.1) Invisibilidade (o teu sistema)
             if (A_ChameleonCamouflage.InvisibleActive)
             {
-                // Behave as if the player isn't there
                 state = State.Wandering;
                 currentSpeed = 0f;
-
-                // Idle animation (or continue wandering if you prefer)
                 if (animator != null) animator.SetFloat("Speed", 0f);
-
-                // Skip chase/attack for this frame
                 return;
             }
 
             if (player == null) return;
 
-            // 2) Determine state
+            // 0.2) LOCK durante o ataque → não mexer nem rodar
+            if (isAttackLocked)
+            {
+                if (animator != null) animator.SetFloat("Speed", 0f);
+                return;
+            }
+
+            // 1) Escolha de estado
             float dist = Vector3.Distance(transform.position, player.position);
 
             if (dist <= attackRange)
-            {
                 state = State.Attacking;
-            }
             else if (!stayStationary && dist <= detectionRadius)
-            {
                 state = State.Chasing;
-            }
             else
-            {
                 state = State.Wandering;
-            }
 
-            // 3) Movement
+            // 2) Movimento/rotação
             float targetSpeed;
             Vector3 targetPos;
 
@@ -172,19 +183,29 @@ namespace Geneforge.Gameplay.Characters.Enemies.Animal
             }
 
             currentSpeed = targetSpeed;
+
             if (currentSpeed > 0f)
             {
                 Vector3 dir = targetPos - transform.position;
                 dir.y = 0f;
-                if (dir.sqrMagnitude > 0.01f)
+
+                // NOVO: parar na borda do alcance para não atravessar o player
+                if (state == State.Chasing && player != null)
+                {
+                    float d = Vector3.Distance(transform.position, player.position);
+                    float stopDist = Mathf.Max(attackRange * 0.95f, attackRange - 0.1f);
+                    if (d <= stopDist) currentSpeed = 0f;
+                }
+
+                if (dir.sqrMagnitude > 0.01f && currentSpeed > 0f)
                 {
                     transform.position += dir.normalized * currentSpeed * Time.deltaTime;
                     transform.rotation = Quaternion.LookRotation(dir.normalized);
                 }
             }
 
-            // Rotate in place while attacking
-            if (state == State.Attacking && rotateInPlace && player != null)
+            // Rodar para o player só se permitido
+            if (state == State.Attacking && rotateInPlace && player != null && !freezeRotationWhileAttacking)
             {
                 Vector3 face = player.position - transform.position;
                 face.y = 0f;
@@ -192,25 +213,23 @@ namespace Geneforge.Gameplay.Characters.Enemies.Animal
                     transform.rotation = Quaternion.LookRotation(face.normalized);
             }
 
-            // Animate
-            float normSpeed = chaseSpeed > 0f
-                ? Mathf.Clamp01(currentSpeed / chaseSpeed)
-                : 0f;
-            if (animator != null)
-                animator.SetFloat("Speed", normSpeed);
+            // 3) Animação de velocidade
+            float normSpeed = chaseSpeed > 0f ? Mathf.Clamp01(currentSpeed / chaseSpeed) : 0f;
+            if (animator != null) animator.SetFloat("Speed", normSpeed);
 
-            // 6) Attack timing (apenas Attack e AttackB)
+            // 4) Disparo do ataque + LOCK
             if (state == State.Attacking && Time.time >= lastAttackTime + attackRate)
             {
                 lastAttackTime = Time.time;
 
-                if (Random.value < 0.5f)      // 50% → Attack
-                    animator.SetTrigger("Attack");
-                else                          // 50% → AttackB
-                    animator.SetTrigger("AttackB");
+                if (Random.value < 0.5f) animator.SetTrigger("Attack");   // mordida
+                else animator.SetTrigger("AttackB");                       // cauda
+
+                if (lockDuringAttack && attackLockCo == null)
+                    attackLockCo = StartCoroutine(AttackLockForCurrentState());
             }
 
-            // 7) Wander logic
+            // 5) Wander
             if (!stayStationary && state == State.Wandering)
             {
                 if (!isIdleWaiting)
@@ -236,15 +255,44 @@ namespace Geneforge.Gameplay.Characters.Enemies.Animal
             }
         }
 
-        public void OnAttackHit()
+        // ---------- KNOCKBACK / DANO (Animation Events chamam estes) ----------
+        public void AE_BiteHit()
         {
-            if (playerHealth != null)
-                playerHealth.ApplyDamage(damagePerHit);
+            if (bitePoint == null) return;
+            int n = Physics.OverlapSphereNonAlloc(bitePoint.position, biteRadius, _hitBuf, playerMask, QueryTriggerInteraction.Ignore);
+            for (int i = 0; i < n; i++)
+            {
+                var ph = _hitBuf[i].GetComponentInParent<PlayerHealth>();
+                if (ph != null)
+                {
+                    ph.ApplyDamage(damagePerHit);
+                    ApplyKnockbackFrom(bitePoint.position);
+                    break;
+                }
+            }
+        }
 
+        public void AE_TailHit()
+        {
+            if (tailPoint == null) return;
+            int n = Physics.OverlapSphereNonAlloc(tailPoint.position, tailRadius, _hitBuf, playerMask, QueryTriggerInteraction.Ignore);
+            for (int i = 0; i < n; i++)
+            {
+                var ph = _hitBuf[i].GetComponentInParent<PlayerHealth>();
+                if (ph != null)
+                {
+                    ph.ApplyDamage(damagePerHit);
+                    ApplyKnockbackFrom(tailPoint.position);
+                    break;
+                }
+            }
+        }
+
+        void ApplyKnockbackFrom(Vector3 fromPos)
+        {
             if (!applyKnockback || player == null) return;
 
-            // Knockback
-            Vector3 dir = (player.position - transform.position);
+            Vector3 dir = (player.position - fromPos);
             dir.y = 0f;
             if (dir.sqrMagnitude < 0.0001f) dir = transform.forward;
             dir.Normalize();
@@ -256,11 +304,7 @@ namespace Geneforge.Gameplay.Characters.Enemies.Animal
                 root.GetComponentInChildren<KnockbackReceiver>() ??
                 root.GetComponentInParent<KnockbackReceiver>();
 
-            if (receiver != null)
-            {
-                receiver.ApplyImpulse(impulse);
-                return;
-            }
+            if (receiver != null) { receiver.ApplyImpulse(impulse); return; }
 
             var rb =
                 root.GetComponentInChildren<Rigidbody>() ??
@@ -269,7 +313,6 @@ namespace Geneforge.Gameplay.Characters.Enemies.Animal
             if (rb != null)
             {
                 rb.AddForce(impulse, ForceMode.Impulse);
-
                 if (knockbackMaxSpeed > 0f)
                 {
                     Vector3 v = rb.linearVelocity;
@@ -292,6 +335,24 @@ namespace Geneforge.Gameplay.Characters.Enemies.Animal
                 StopCoroutine(nameof(CCKnockbackRoutine));
                 StartCoroutine(CCKnockbackRoutine(cc, impulse, 0.25f, 8f));
             }
+        }
+        // ---------------------------------------------------------------------
+
+        IEnumerator AttackLockForCurrentState()
+        {
+            isAttackLocked = true;
+
+            // usa a duração do estado actual como aproximação (fallback 0.6s)
+            float clipLen = 0.6f;
+            if (animator != null)
+            {
+                var st = animator.GetCurrentAnimatorStateInfo(0);
+                if (st.length > 0.01f) clipLen = st.length;
+            }
+
+            yield return new WaitForSeconds(clipLen + attackLockExtraTime);
+            isAttackLocked = false;
+            attackLockCo = null;
         }
 
         IEnumerator CCKnockbackRoutine(CharacterController cc, Vector3 impulse, float duration, float decayRate)
@@ -320,13 +381,19 @@ namespace Geneforge.Gameplay.Characters.Enemies.Animal
         {
             if (!stayStationary)
             {
-                
+                Gizmos.color = Color.white;
                 Gizmos.DrawWireSphere(transform.position, wanderRadius);
                 Gizmos.color = Color.magenta;
                 Gizmos.DrawWireSphere(transform.position, detectionRadius);
             }
             Gizmos.color = Color.red;
             Gizmos.DrawWireSphere(transform.position, attackRange);
+
+            // NOVO: ver hitboxes
+            Gizmos.color = Color.yellow;
+            if (bitePoint) Gizmos.DrawWireSphere(bitePoint.position, biteRadius);
+            Gizmos.color = Color.cyan;
+            if (tailPoint) Gizmos.DrawWireSphere(tailPoint.position, tailRadius);
         }
     }
 }
