@@ -22,7 +22,7 @@ namespace Geneforge.Gameplay.Characters.Enemies.Suporte
         [Header("Deteção / Mirar")]
         public float detectionRadius = 20f;
         public float attackRange = 10f;
-        public float attackRate = 1f; // ritmo das animações Attack/AttackB/AttackC
+        public float attackRate = 1f;
 
         [Header("Escudo")]
         public float shieldDuration = 5f;
@@ -35,13 +35,14 @@ namespace Geneforge.Gameplay.Characters.Enemies.Suporte
         public int circleSegments = 24;
         public float circleWidth = 0.05f;
 
-        [Header("Layer (Opcional)")]
+        [Header("Layer (Opcional para reforço)")]
+        [Tooltip("Layer que os ataques do jogador ignoram (ex.: 'Shielded'). Deixa -1 para não trocar.")]
         public int shieldedLayer = -1;
 
         [Header("Feedback a Dano")]
         public float damagePauseDuration = 0.5f;
 
-        // ------- Lock / Motion Control (anti-deslize) -------
+        // ------- Lock / Motion Control -------
         [Header("Motion Control")]
         public bool disableRootMotionWhenLocked = true;
         public bool hardStopRigidbodyWhenLocked = true;
@@ -56,7 +57,7 @@ namespace Geneforge.Gameplay.Characters.Enemies.Suporte
         public bool freezeRotationWhileHit = true;
         public string[] hitStateNames = { "Damaged", "Hit", "Hurt" };
         public string[] hitStateTags  = { "Hurt", "Damaged" };
-        // -----------------------------------------------------
+        // ------------------------------------
 
         // --- Estado interno ---
         Vector3 spawnPos, wanderTarget;
@@ -73,7 +74,7 @@ namespace Geneforge.Gameplay.Characters.Enemies.Suporte
 
         static readonly Collider[] overlapBuffer = new Collider[96];
 
-        // ---- Refs auxiliares / anti-deslize ----
+        // ---- Refs auxiliares ----
         Geneforge.Gameplay.Characters.Enemies.Enemy enemy;
         Rigidbody _rb;
         CharacterController _cc;
@@ -88,23 +89,32 @@ namespace Geneforge.Gameplay.Characters.Enemies.Suporte
         bool _facingPinned = false;
         Quaternion _pinnedFacing;
 
-        // ----- Dados do Escudo -----
+        // ----- Escudo (dados por-alvo) -----
         class ShieldData
         {
-            public Transform target;
+            public Transform root;
             public float endTime;
-            public int originalLayer = -1;
 
-            public Rigidbody rb;          // RB do alvo (se existir)
-            public bool prevIsKinematic;  // estado anterior
+            public Rigidbody rb;
+            public bool prevIsKinematic;
+
+            public CharacterController cc;
+            public bool prevCCEnabled;
+
+            public List<Collider> colliders = new List<Collider>(32);
+            public List<bool> prevEnabled   = new List<bool>(32);
+
+            public Dictionary<Transform,int> originalLayers = new Dictionary<Transform,int>(64);
+            public string originalTag;
+
             public GameObject circleObj;
             public LineRenderer lr;
         }
-
         readonly Dictionary<Transform, ShieldData> activeShields = new Dictionary<Transform, ShieldData>();
 
-        // ----- Congelar ao morrer (alinha com Animal) -----
+        // ----- Morte / Despawn -----
         bool _deathFrozen = false;
+        bool _despawnStarted = false;
 
         void Awake()
         {
@@ -182,9 +192,10 @@ namespace Geneforge.Gameplay.Characters.Enemies.Suporte
 
         void Update()
         {
+            // Atualiza e limpa escudos expirados ANTES de qualquer return
             UpdateActiveShields();
 
-            // MORTE → congelar de vez e deixar o Enemy tratar do despawn (~5s)
+            // MORTE → congela e agenda despawn ~5s (tempo real)
             if (enemy != null && enemy.CurrentHealth <= 0f)
             {
                 if (!_deathFrozen)
@@ -193,9 +204,11 @@ namespace Geneforge.Gameplay.Characters.Enemies.Suporte
                     HardStopNow();
                     if (!_translationLocked) StartTranslationLock();
                     _deathFrozen = true;
-
-                    // Desativar este "brain" para não voltar a mexer nem gastar CPU
-                    enabled = false;
+                }
+                if (!_despawnStarted)
+                {
+                    _despawnStarted = true;
+                    StartCoroutine(DespawnAfterRealtime(5f));
                 }
                 return;
             }
@@ -205,13 +218,12 @@ namespace Geneforge.Gameplay.Characters.Enemies.Suporte
             bool inHitAnim    = IsInHitAnim();
             bool inBusyAnim   = inAttackAnim || inHitAnim;
 
-            // Lock de translação enquanto está em hit/ataque, ou durante o timer de dano
+            // Lock de translação
             bool wantsTranslationLock = isDamagePaused || inBusyAnim;
-
             if (wantsTranslationLock && !_translationLocked) StartTranslationLock();
             else if (!wantsTranslationLock && _translationLocked) EndTranslationLock();
 
-            // Pin da rotação (não vira a meio do ataque/hit)
+            // Pin de rotação
             bool shouldPinFacing =
                 (inAttackAnim && freezeRotationWhileAttacking) ||
                 (inHitAnim    && freezeRotationWhileHit);
@@ -226,7 +238,7 @@ namespace Geneforge.Gameplay.Characters.Enemies.Suporte
                 _facingPinned = false;
             }
 
-            // Dano (pausa, mas sem dar return — para manter pin ativo)
+            // Pausa de dano
             if (isDamagePaused)
             {
                 damagePauseTimer += Time.deltaTime;
@@ -236,7 +248,7 @@ namespace Geneforge.Gameplay.Characters.Enemies.Suporte
                     isDamagePaused = false;
             }
 
-            // Estado (Suporte ataca parado — usa range)
+            // Estado (Suporte ataca parado)
             float distToPlayer = (player != null) ? Vector3.Distance(transform.position, player.position) : Mathf.Infinity;
             state = (distToPlayer <= attackRange) ? State.Attacking : State.Wandering;
 
@@ -279,6 +291,17 @@ namespace Geneforge.Gameplay.Characters.Enemies.Suporte
             }
         }
 
+        IEnumerator DespawnAfterRealtime(float seconds)
+        {
+            float t = 0f;
+            while (t < seconds)
+            {
+                t += Time.unscaledDeltaTime; // não pára com pause
+                yield return null;
+            }
+            Destroy(gameObject);
+        }
+
         void FixedUpdate()
         {
             if (_translationLocked) PinXZ();
@@ -301,11 +324,12 @@ namespace Geneforge.Gameplay.Characters.Enemies.Suporte
             }
         }
 
-        // -------- ESCUDO: chamado via evento da animação ----------
+        // -------- ESCUDO (evento de animação) ----------
         public void OnAttackHit()
         {
             int count = Physics.OverlapSphereNonAlloc(transform.position, shieldRadius, overlapBuffer, ~0, QueryTriggerInteraction.Ignore);
 
+            // candidatos: outros inimigos vivos
             List<Transform> candidates = new List<Transform>();
             for (int i = 0; i < count; i++)
             {
@@ -316,11 +340,13 @@ namespace Geneforge.Gameplay.Characters.Enemies.Suporte
 
                 var allyEnemy = root.GetComponentInParent<Geneforge.Gameplay.Characters.Enemies.Enemy>();
                 if (allyEnemy == null) continue;
+                if (allyEnemy.CurrentHealth <= 0f) continue;
 
                 if (!candidates.Contains(allyEnemy.transform))
                     candidates.Add(allyEnemy.transform);
             }
 
+            // mais perto primeiro
             candidates.Sort((a, b) =>
             {
                 float da = (a.position - transform.position).sqrMagnitude;
@@ -346,24 +372,48 @@ namespace Geneforge.Gameplay.Characters.Enemies.Suporte
             ShieldData data;
             if (!activeShields.TryGetValue(target, out data))
             {
-                data = new ShieldData { target = target };
+                data = new ShieldData { root = target };
 
-                // Guardar RB e tornar kinematic durante o escudo (em vez de desligar colliders)
+                // 1) Guardar e desligar colliders (invulnerável a overlaps/hitboxes)
+                data.colliders.Clear();
+                data.prevEnabled.Clear();
+                target.GetComponentsInChildren(true, data.colliders);
+                foreach (var c in data.colliders)
+                {
+                    if (!c) { data.prevEnabled.Add(false); continue; }
+                    data.prevEnabled.Add(c.enabled);
+                    c.enabled = false;
+                }
+
+                // 2) Guardar e desativar CharacterController (se existir)
+                data.cc = target.GetComponentInParent<CharacterController>();
+                if (data.cc != null)
+                {
+                    data.prevCCEnabled = data.cc.enabled;
+                    data.cc.enabled = false;
+                }
+
+                // 3) RB kinematic (não cai/é empurrado)
                 data.rb = target.GetComponentInParent<Rigidbody>();
                 if (data.rb != null)
                 {
                     data.prevIsKinematic = data.rb.isKinematic;
-                    data.rb.isKinematic  = true; // não reage à física, não "cai"
+                    data.rb.isKinematic  = true;
+                    data.rb.linearVelocity = Vector3.zero;
+                    data.rb.angularVelocity = Vector3.zero;
                 }
 
-                // Mudar layer se configurado
+                // 4) Trocar Layers (reforço)
+                data.originalLayers.Clear();
                 if (shieldedLayer >= 0)
-                {
-                    data.originalLayer = target.gameObject.layer;
-                    SetLayerRecursively(target.gameObject, shieldedLayer);
-                }
+                    RecordAndSetLayerRecursively(target, data.originalLayers, shieldedLayer);
 
-                // Círculo visual
+                // 5) Trocar Tag do root (reforço contra filtros por tag)
+                var go = target.gameObject;
+                data.originalTag = go.tag;
+                go.tag = "Untagged";
+
+                // 6) Círculo visual
                 data.circleObj = new GameObject("ShieldCircle");
                 data.lr = data.circleObj.AddComponent<LineRenderer>();
                 data.lr.useWorldSpace = true;
@@ -388,12 +438,12 @@ namespace Geneforge.Gameplay.Characters.Enemies.Suporte
             foreach (var kv in activeShields)
             {
                 var data = kv.Value;
-                if (!data.target) { toRemove.Add(kv.Key); continue; }
+                if (!data.root) { toRemove.Add(kv.Key); continue; }
 
-                // atualizar posição e círculo
+                // atualizar círculo
                 if (data.circleObj && data.lr)
                 {
-                    Vector3 center = data.target.position + indicatorOffset;
+                    Vector3 center = data.root.position + indicatorOffset;
                     for (int i = 0; i < circleSegments; i++)
                     {
                         float angle = i * Mathf.PI * 2f / circleSegments;
@@ -406,14 +456,30 @@ namespace Geneforge.Gameplay.Characters.Enemies.Suporte
                 // terminou o escudo?
                 if (Time.time >= data.endTime)
                 {
-                    // Restaurar RB
-                    if (data.rb != null)
-                        data.rb.isKinematic = data.prevIsKinematic;
+                    // 1) Restaurar colliders
+                    for (int i = 0; i < data.colliders.Count; i++)
+                    {
+                        var c = data.colliders[i];
+                        if (!c) continue;
+                        bool prev = (i < data.prevEnabled.Count) ? data.prevEnabled[i] : true;
+                        c.enabled = prev;
+                    }
+                    data.colliders.Clear();
+                    data.prevEnabled.Clear();
 
-                    // Restaurar layer
-                    if (data.originalLayer >= 0)
-                        SetLayerRecursively(data.target.gameObject, data.originalLayer);
+                    // 2) Restaurar CharacterController
+                    if (data.cc != null) data.cc.enabled = data.prevCCEnabled;
 
+                    // 3) Restaurar RB
+                    if (data.rb != null) data.rb.isKinematic = data.prevIsKinematic;
+
+                    // 4) Restaurar Layers
+                    RestoreLayers(data.originalLayers);
+
+                    // 5) Restaurar Tag
+                    if (data.root) data.root.gameObject.tag = data.originalTag;
+
+                    // 6) Remover círculo
                     if (data.circleObj) Destroy(data.circleObj);
 
                     toRemove.Add(kv.Key);
@@ -429,7 +495,7 @@ namespace Geneforge.Gameplay.Characters.Enemies.Suporte
             Vector3 targetPos = wanderTarget;
             float speed = isIdleWaiting ? 0f : wanderSpeed;
 
-            if (speed > 0f && !_translationLocked) // não mover se está bloqueado
+            if (speed > 0f && !_translationLocked)
             {
                 Vector3 dir = targetPos - transform.position; dir.y = 0f;
                 if (dir.sqrMagnitude > 0.01f)
@@ -470,7 +536,7 @@ namespace Geneforge.Gameplay.Characters.Enemies.Suporte
         void OnDrawGizmosSelected()
         {
             Gizmos.color = Color.cyan; Gizmos.DrawWireSphere(transform.position, shieldRadius);
-            Gizmos.color = Color.red; Gizmos.DrawWireSphere(transform.position, attackRange);
+            Gizmos.color = Color.red;   Gizmos.DrawWireSphere(transform.position, attackRange);
         }
 
         // ----------------- Helpers -----------------
@@ -537,7 +603,6 @@ namespace Geneforge.Gameplay.Characters.Enemies.Suporte
                 if (alsoFreezeRotationY && hardStopFreezeRotationY)
                     _rb.constraints |= RigidbodyConstraints.FreezeRotationY;
             }
-            // CharacterController: basta não chamar Move
         }
 
         void ReleaseRotationFreeze()
@@ -546,12 +611,30 @@ namespace Geneforge.Gameplay.Characters.Enemies.Suporte
                 _rb.constraints &= ~RigidbodyConstraints.FreezeRotationY;
         }
 
-        static void SetLayerRecursively(GameObject obj, int newLayer)
+        // ===== Layers: registar/trocar/restaurar =====
+        void RecordAndSetLayerRecursively(Transform root, Dictionary<Transform,int> store, int newLayer)
         {
-            if (!obj) return;
-            obj.layer = newLayer;
-            foreach (Transform child in obj.transform)
-                if (child) SetLayerRecursively(child.gameObject, newLayer);
+            if (!root) return;
+
+            if (!store.ContainsKey(root))
+                store.Add(root, root.gameObject.layer);
+
+            if (newLayer >= 0)
+                root.gameObject.layer = newLayer;
+
+            for (int i = 0; i < root.childCount; i++)
+                RecordAndSetLayerRecursively(root.GetChild(i), store, newLayer);
+        }
+
+        void RestoreLayers(Dictionary<Transform,int> store)
+        {
+            if (store == null) return;
+            foreach (var kv in store)
+            {
+                var t = kv.Key;
+                if (t) t.gameObject.layer = kv.Value;
+            }
+            store.Clear();
         }
     }
 }
