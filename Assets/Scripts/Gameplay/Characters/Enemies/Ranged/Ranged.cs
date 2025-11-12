@@ -3,19 +3,7 @@ using System.Collections;
 using Geneforge.Gameplay.Characters.Player;
 
 namespace Geneforge.Gameplay.Characters.Enemies.Ranged
-
 {
-    /// <summary>
-    /// AI idêntica ao EnemyAI (Wander → Chase → Attack) mas com ataque à distância (lança).
-    /// NÃO cria parâmetros novos no Animator. Só usa:
-    ///  - Trigger "Attack"
-    ///  - Float   "Speed"
-    /// (Damaged/Death continuam a ser tratados pelo Enemy.cs)
-    ///
-    /// A animação deve ter os eventos:
-    ///  - OnThrowRelease()  → solta a lança
-    ///  - OnAttackHit()     → opcional; aqui é um stub (não faz nada)
-    /// </summary>
     [RequireComponent(typeof(Enemy))]
     public class Ranged : MonoBehaviour
     {
@@ -45,26 +33,25 @@ namespace Geneforge.Gameplay.Characters.Enemies.Ranged
         public float lineOfSightPadding = 0.1f;
 
         [Header("Lança (embutida)")]
-        [Tooltip("Prefab da lança (tem Rigidbody + Collider + SpearProjectile).")]
         public GameObject spearPrefab;
-        [Tooltip("Empty na mão onde a lança fica presa.")]
         public Transform spearSocket;
-        [Tooltip("Empty à frente da mão para a direção. Se vazio, usa o socket/transform.")]
         public Transform throwOrigin;
-        [Tooltip("Força/velocidade inicial do lançamento.")]
         public float throwForce = 30f;
-        [Tooltip("Ajuste fino da mira (ex.: um pouco acima do alvo).")]
         public Vector3 aimOffset = Vector3.zero;
 
         [Header("Pausa ao sofrer dano")]
         public float damagePauseDuration = 0.5f;
 
-        // ----------------- estado interno -----------------
-        Vector3 spawnPos;
-        Vector3 wanderTarget;
-        float wanderTimer;
-        float lastAttackTime;
+        [Header("Motion Control (Death Lock)")]
+        public bool hardStopRigidbodyWhenLocked = true;
+        public bool hardStopFreezeRotationY = true;
 
+        [Header("Animator – Estado de Morte (nome do clip/estado)")]
+        public string deathStateName = "Death";
+
+        // ----------------- estado interno -----------------
+        Vector3 spawnPos, wanderTarget;
+        float wanderTimer, lastAttackTime;
         enum State { Wandering, Chasing, Attacking }
         State state = State.Wandering;
 
@@ -79,6 +66,27 @@ namespace Geneforge.Gameplay.Characters.Enemies.Ranged
         GameObject heldSpear;
         Collider[] ownerCols;
 
+        Enemy enemy;
+        Rigidbody _rb;
+        CharacterController _cc;
+
+        bool _translationLocked = false;
+        Vector3 _pinnedXZ;
+
+        bool _deadLatched = false;
+        bool _deathFrozen = false;   // já congelei o animator após 1ª morte?
+        int _deathHash = 0;
+        Coroutine _freezeDeathCo;
+
+        void Awake()
+        {
+            _rb  = GetComponent<Rigidbody>();
+            _cc  = GetComponent<CharacterController>();
+            enemy = GetComponent<Enemy>();
+            if (!string.IsNullOrEmpty(deathStateName))
+                _deathHash = Animator.StringToHash(deathStateName);
+        }
+
         void Start()
         {
             spawnPos = transform.position;
@@ -88,8 +96,6 @@ namespace Geneforge.Gameplay.Characters.Enemies.Ranged
             if (player != null && playerHealth == null)
                 playerHealth = player.GetComponent<PlayerHealth>();
 
-            // pausa breve quando sofre dano (evento do Enemy.cs)
-            var enemy = GetComponent<Enemy>();
             if (enemy != null) enemy.OnDamaged += HandleOnDamaged;
 
             ownerCols = GetComponentsInChildren<Collider>(true);
@@ -98,15 +104,13 @@ namespace Geneforge.Gameplay.Characters.Enemies.Ranged
 
         void OnDestroy()
         {
-            var enemy = GetComponent<Enemy>();
             if (enemy != null) enemy.OnDamaged -= HandleOnDamaged;
-
             CancelInvoke(nameof(SpawnHeldSpear));
         }
 
         void HandleOnDamaged(float dmg)
         {
-            if (!isDamagePaused)
+            if (!_deadLatched && !isDamagePaused)
             {
                 isDamagePaused = true;
                 damagePauseTimer = 0f;
@@ -115,6 +119,19 @@ namespace Geneforge.Gameplay.Characters.Enemies.Ranged
 
         void Update()
         {
+            // --- MORTE: parar tudo aqui, sem tocar no Enemy ---
+            if (!_deadLatched && enemy != null && enemy.CurrentHealth <= 0f)
+            {
+                LatchDeathStop();
+            }
+            if (_deadLatched)
+            {
+                // manter fixo até o Enemy destruir o GO (~5s)
+                PinXZ();
+                return;
+            }
+            // ---------------------------------------------------
+
             // 1) pausa por dano
             if (isDamagePaused)
             {
@@ -124,17 +141,11 @@ namespace Geneforge.Gameplay.Characters.Enemies.Ranged
                 return;
             }
 
-            // After the damage-pause return, before using 'dist' to pick state:
             if (A_ChameleonCamouflage.InvisibleActive)
             {
-                // Behave as if the player isn't there
                 state = State.Wandering;
                 currentSpeed = 0f;
-
-                // Idle animation (or continue wandering if you prefer)
                 if (animator != null) animator.SetFloat("Speed", 0f);
-
-                // Skip chase/attack for this frame
                 return;
             }
 
@@ -159,19 +170,17 @@ namespace Geneforge.Gameplay.Characters.Enemies.Ranged
                     if (stayStationary) { targetPos = transform.position; targetSpeed = 0f; }
                     else { targetPos = player.position; targetSpeed = chaseSpeed; }
                     break;
-
                 case State.Wandering:
                     if (stayStationary) { targetPos = transform.position; targetSpeed = 0f; }
                     else { targetPos = wanderTarget; targetSpeed = isIdleWaiting ? 0f : wanderSpeed; }
                     break;
-
                 default: // Attacking
                     targetPos = transform.position; targetSpeed = 0f;
                     break;
             }
 
             currentSpeed = targetSpeed;
-            if (currentSpeed > 0f)
+            if (currentSpeed > 0f && !_translationLocked)
             {
                 Vector3 dir = targetPos - transform.position; dir.y = 0f;
                 if (dir.sqrMagnitude > 0.01f)
@@ -181,7 +190,7 @@ namespace Geneforge.Gameplay.Characters.Enemies.Ranged
                 }
             }
 
-            // 4) olhar para o alvo (em ataque ou se quiseres rodar parado)
+            // 4) olhar para o alvo
             if ((state == State.Attacking || rotateInPlace) && player != null)
             {
                 Vector3 face = player.position - transform.position; face.y = 0f;
@@ -189,18 +198,17 @@ namespace Geneforge.Gameplay.Characters.Enemies.Ranged
                     transform.rotation = Quaternion.LookRotation(face.normalized);
             }
 
-            // 5) locomotion -> só "Speed"
+            // 5) locomotion -> "Speed"
             if (animator)
             {
                 float normSpeed = chaseSpeed > 0f ? Mathf.Clamp01(currentSpeed / chaseSpeed) : 0f;
                 animator.SetFloat("Speed", normSpeed);
             }
 
-            // 6) ataque → só usa Trigger "Attack"
+            // 6) ataque → Trigger "Attack"
             if (state == State.Attacking && Time.time >= lastAttackTime + attackRate)
             {
                 lastAttackTime = Time.time;
-
                 if (heldSpear != null && animator)
                     animator.SetTrigger("Attack"); // a clip chamará OnThrowRelease()
             }
@@ -226,6 +234,13 @@ namespace Geneforge.Gameplay.Characters.Enemies.Ranged
                     }
                 }
             }
+
+            if (_translationLocked) PinXZ();
+        }
+
+        void FixedUpdate()
+        {
+            if (_translationLocked || _deadLatched) PinXZ();
         }
 
         // ============================
@@ -233,13 +248,8 @@ namespace Geneforge.Gameplay.Characters.Enemies.Ranged
         // ============================
         void SpawnHeldSpear()
         {
-            if (!spearPrefab || !spearSocket)
-            {
-                Debug.LogError("[Ranged] spearPrefab/spearSocket em falta.");
-                return;
-            }
+            if (!spearPrefab || !spearSocket) return;
 
-            // limpar o socket (evita duplicações ao rearmar)
             for (int i = spearSocket.childCount - 1; i >= 0; i--)
                 Destroy(spearSocket.GetChild(i).gameObject);
 
@@ -253,58 +263,37 @@ namespace Geneforge.Gameplay.Characters.Enemies.Ranged
             var rb = heldSpear.GetComponent<Rigidbody>();
             var col = heldSpear.GetComponent<Collider>();
             var proj = heldSpear.GetComponent<SpearProjectile>();
-            if (!rb || !col || !proj)
-            {
-                Debug.LogError("[Ranged] O prefab da lança precisa de Rigidbody + Collider + SpearProjectile.");
-                return;
-            }
+            if (!rb || !col || !proj) return;
 
-            rb.isKinematic = true; // presa na mão
-            col.enabled = false;   // sem colisão na mão
+            rb.isKinematic = true;
+            col.enabled = false;
         }
 
-        // ===== Animation Events =====
-        // Evento na clip "Attack" — frame em que a mão solta a lança
-        public void OnThrowRelease()
-        {
-            ThrowNow();
-        }
-
-        // Evento herdado do melee — aqui é neutro (para não dar erro na clip)
+        public void OnThrowRelease() => ThrowNow();
         public void OnAttackHit() { /* sem efeito no ranged */ }
 
         void ThrowNow()
         {
-            if (heldSpear == null) return;
+            if (_deadLatched || heldSpear == null) return;
 
             var proj = heldSpear.GetComponent<SpearProjectile>();
             var rb = heldSpear.GetComponent<Rigidbody>();
             var col = heldSpear.GetComponent<Collider>();
+            if (!proj || !rb || !col) return;
 
-            if (!proj || !rb || !col)
-            {
-                Debug.LogError("[Ranged] SpearProjectile/Rigidbody/Collider em falta no spearPrefab.");
-                return;
-            }
-
-            // soltar da mão
             heldSpear.transform.SetParent(null, true);
 
-            // direção
             Vector3 originPos = (throwOrigin ? throwOrigin.position :
                                 (spearSocket ? spearSocket.position : transform.position));
             Vector3 targetPos = (player ? player.position : transform.position + transform.forward * 5f) + aimOffset;
             Vector3 dir = (targetPos - originPos).normalized;
 
-            // lançar (o SpearProjectile ativa física e ignora colisões do dono)
             if (ownerCols == null || ownerCols.Length == 0)
                 ownerCols = GetComponentsInChildren<Collider>(true);
 
             proj.Launch(dir * throwForce, ownerCols);
 
             heldSpear = null;
-
-            // rearmar após curto atraso
             Invoke(nameof(SpawnHeldSpear), 0.4f);
         }
 
@@ -347,11 +336,97 @@ namespace Geneforge.Gameplay.Characters.Enemies.Ranged
                 Gizmos.color = Color.magenta; Gizmos.DrawWireSphere(transform.position, detectionRadius);
             }
             Gizmos.color = Color.red; Gizmos.DrawWireSphere(transform.position, attackRange);
+        }
 
-            if (throwOrigin)
+        // -------- Helpers locais (morte/pin) --------
+        void LatchDeathStop()
+        {
+            _deadLatched = true;
+
+            // parar animações/ataques após a morte
+            if (animator)
             {
-                Gizmos.color = Color.cyan;
-                Gizmos.DrawLine(throwOrigin.position, throwOrigin.position + throwOrigin.forward * 2f);
+                animator.ResetTrigger("Attack");
+                animator.SetFloat("Speed", 0f);
+                animator.applyRootMotion = false;
+            }
+
+            CancelInvoke(nameof(SpawnHeldSpear));
+
+            if (heldSpear != null)
+            {
+                Destroy(heldSpear);
+                heldSpear = null;
+            }
+
+            StartTranslationLock();
+
+            // Congelar o Animator após a 1ª reprodução do estado "Death"
+            if (animator && !_deathFrozen && _freezeDeathCo == null)
+                _freezeDeathCo = StartCoroutine(FreezeAfterDeathOnce());
+        }
+
+        IEnumerator FreezeAfterDeathOnce()
+        {
+            // esperar o Animator entrar no estado de morte
+            yield return null;
+            int safety = 0;
+            while (animator && !_IsInDeathState() && safety++ < 300)
+                yield return null;
+
+            // esperar o fim da 1ª volta do clip (normalizedTime >= 1)
+            safety = 0;
+            while (animator && _IsInDeathState() && animator.GetCurrentAnimatorStateInfo(0).normalizedTime < 1f && safety++ < 600)
+                yield return null;
+
+            if (animator)
+            {
+                // congela na última pose → impede repetir
+                animator.speed = 0f;
+                // (opcional) animator.enabled = false;  // se preferires desligar por completo
+            }
+            _deathFrozen = true;
+            _freezeDeathCo = null;
+        }
+
+        bool _IsInDeathState()
+        {
+            if (!animator) return false;
+            if (_deathHash != 0)
+                return animator.GetCurrentAnimatorStateInfo(0).shortNameHash == _deathHash;
+            // fallback por nome (menos eficiente)
+            var st = animator.GetCurrentAnimatorStateInfo(0);
+            return st.IsName(deathStateName);
+        }
+
+        void StartTranslationLock()
+        {
+            _translationLocked = true;
+            var p = transform.position;
+            _pinnedXZ = new Vector3(p.x, 0f, p.z);
+
+            if (_rb && !_rb.isKinematic)
+            {
+                _rb.linearVelocity = Vector3.zero;
+                _rb.angularVelocity = Vector3.zero;
+            }
+            if (_rb)
+            {
+                _rb.constraints |= RigidbodyConstraints.FreezePositionX | RigidbodyConstraints.FreezePositionZ;
+                if (hardStopFreezeRotationY)
+                    _rb.constraints |= RigidbodyConstraints.FreezeRotationY;
+            }
+        }
+
+        void PinXZ()
+        {
+            var p = transform.position;
+            transform.position = new Vector3(_pinnedXZ.x, p.y, _pinnedXZ.z);
+
+            if (_rb && !_rb.isKinematic)
+            {
+                _rb.linearVelocity = new Vector3(0f, _rb.linearVelocity.y, 0f);
+                _rb.angularVelocity = Vector3.zero;
             }
         }
     }

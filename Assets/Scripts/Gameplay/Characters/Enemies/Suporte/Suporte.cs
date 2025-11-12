@@ -41,6 +41,23 @@ namespace Geneforge.Gameplay.Characters.Enemies.Suporte
         [Header("Feedback a Dano")]
         public float damagePauseDuration = 0.5f;
 
+        // ------- Lock / Motion Control (anti-deslize) -------
+        [Header("Motion Control")]
+        public bool disableRootMotionWhenLocked = true;
+        public bool hardStopRigidbodyWhenLocked = true;
+        public bool hardStopFreezeRotationY = true;
+
+        [Header("Attack Lock / Detection")]
+        public bool freezeRotationWhileAttacking = true;
+        public string[] attackStateNames = { "Attack", "AttackB", "AttackC" };
+        public string[] attackStateTags  = { "Attack" };
+
+        [Header("Hit Lock / Detection")]
+        public bool freezeRotationWhileHit = true;
+        public string[] hitStateNames = { "Damaged", "Hit", "Hurt" };
+        public string[] hitStateTags  = { "Hurt", "Damaged" };
+        // -----------------------------------------------------
+
         // --- Estado interno ---
         Vector3 spawnPos, wanderTarget;
         float wanderTimer, lastAttackTime;
@@ -55,20 +72,45 @@ namespace Geneforge.Gameplay.Characters.Enemies.Suporte
         float damagePauseTimer = 0f;
 
         static readonly Collider[] overlapBuffer = new Collider[96];
-        int enemyLayer = -1;
 
+        // ---- Refs auxiliares / anti-deslize ----
+        Geneforge.Gameplay.Characters.Enemies.Enemy enemy;
+        Rigidbody _rb;
+        CharacterController _cc;
+
+        // Lock de translação XZ
+        bool _translationLocked = false;
+        Vector3 _pinnedXZ;
+        RigidbodyConstraints _rbPrevConstraints;
+        bool _rbHadConstraints = false;
+
+        // Pin de rotação durante ataque/hit
+        bool _facingPinned = false;
+        Quaternion _pinnedFacing;
+
+        // ----- Dados do Escudo -----
         class ShieldData
         {
             public Transform target;
             public float endTime;
             public int originalLayer = -1;
-            public List<Collider> colliders = new List<Collider>();
-            public List<bool> prevEnabled = new List<bool>();
+
+            public Rigidbody rb;          // RB do alvo (se existir)
+            public bool prevIsKinematic;  // estado anterior
             public GameObject circleObj;
             public LineRenderer lr;
         }
 
         readonly Dictionary<Transform, ShieldData> activeShields = new Dictionary<Transform, ShieldData>();
+
+        // ----- Congelar ao morrer (alinha com Animal) -----
+        bool _deathFrozen = false;
+
+        void Awake()
+        {
+            _rb = GetComponent<Rigidbody>();
+            _cc = GetComponent<CharacterController>();
+        }
 
         void Start()
         {
@@ -77,16 +119,13 @@ namespace Geneforge.Gameplay.Characters.Enemies.Suporte
 
             player = GameObject.FindWithTag("Player")?.transform;
 
-            var enemy = GetComponent<Enemy>();
+            enemy = GetComponent<Geneforge.Gameplay.Characters.Enemies.Enemy>();
             if (enemy != null)
                 enemy.OnDamaged += HandleOnDamaged;
-
-            enemyLayer = LayerMask.NameToLayer("Enemy");
         }
 
         void OnDestroy()
         {
-            var enemy = GetComponent<Enemy>();
             if (enemy != null)
                 enemy.OnDamaged -= HandleOnDamaged;
         }
@@ -100,18 +139,104 @@ namespace Geneforge.Gameplay.Characters.Enemies.Suporte
             }
         }
 
+        void StartTranslationLock()
+        {
+            _translationLocked = true;
+            var p = transform.position;
+            _pinnedXZ = new Vector3(p.x, 0f, p.z);
+
+            if (_rb)
+            {
+                if (!_rb.isKinematic)
+                {
+                    _rb.linearVelocity = Vector3.zero;
+                    _rb.angularVelocity = Vector3.zero;
+                }
+
+                _rbPrevConstraints = _rb.constraints;
+                _rbHadConstraints = true;
+                _rb.constraints = _rbPrevConstraints
+                                  | RigidbodyConstraints.FreezePositionX
+                                  | RigidbodyConstraints.FreezePositionZ;
+
+                if (hardStopFreezeRotationY)
+                    _rb.constraints |= RigidbodyConstraints.FreezeRotationY;
+            }
+
+            ApplyRootMotionLock(true);
+        }
+
+        void EndTranslationLock()
+        {
+            _translationLocked = false;
+
+            if (_rb && _rbHadConstraints)
+            {
+                _rb.constraints = _rbPrevConstraints;
+                _rbHadConstraints = false;
+            }
+
+            ApplyRootMotionLock(false);
+            ReleaseRotationFreeze();
+        }
+
         void Update()
         {
             UpdateActiveShields();
 
-            if (isDamagePaused)
+            // MORTE → congelar de vez e deixar o Enemy tratar do despawn (~5s)
+            if (enemy != null && enemy.CurrentHealth <= 0f)
             {
-                damagePauseTimer += Time.deltaTime;
-                if (animator) animator.SetFloat("Speed", 0f);
-                if (damagePauseTimer >= damagePauseDuration) isDamagePaused = false;
+                if (!_deathFrozen)
+                {
+                    AnimatorSpeed(0f);
+                    HardStopNow();
+                    if (!_translationLocked) StartTranslationLock();
+                    _deathFrozen = true;
+
+                    // Desativar este "brain" para não voltar a mexer nem gastar CPU
+                    enabled = false;
+                }
                 return;
             }
 
+            // Estados “ocupados”
+            bool inAttackAnim = IsInAttackAnim();
+            bool inHitAnim    = IsInHitAnim();
+            bool inBusyAnim   = inAttackAnim || inHitAnim;
+
+            // Lock de translação enquanto está em hit/ataque, ou durante o timer de dano
+            bool wantsTranslationLock = isDamagePaused || inBusyAnim;
+
+            if (wantsTranslationLock && !_translationLocked) StartTranslationLock();
+            else if (!wantsTranslationLock && _translationLocked) EndTranslationLock();
+
+            // Pin da rotação (não vira a meio do ataque/hit)
+            bool shouldPinFacing =
+                (inAttackAnim && freezeRotationWhileAttacking) ||
+                (inHitAnim    && freezeRotationWhileHit);
+
+            if (inBusyAnim && !_facingPinned && shouldPinFacing)
+            {
+                _facingPinned = true;
+                _pinnedFacing = transform.rotation;
+            }
+            else if (!inBusyAnim && _facingPinned)
+            {
+                _facingPinned = false;
+            }
+
+            // Dano (pausa, mas sem dar return — para manter pin ativo)
+            if (isDamagePaused)
+            {
+                damagePauseTimer += Time.deltaTime;
+                AnimatorSpeed(0f);
+                HardStopNow(alsoFreezeRotationY: true);
+                if (damagePauseTimer >= damagePauseDuration)
+                    isDamagePaused = false;
+            }
+
+            // Estado (Suporte ataca parado — usa range)
             float distToPlayer = (player != null) ? Vector3.Distance(transform.position, player.position) : Mathf.Infinity;
             state = (distToPlayer <= attackRange) ? State.Attacking : State.Wandering;
 
@@ -121,16 +246,29 @@ namespace Geneforge.Gameplay.Characters.Enemies.Suporte
             }
             else
             {
-                if (animator) animator.SetFloat("Speed", 0f);
+                AnimatorSpeed(0f);
             }
 
             if (state == State.Attacking && rotateInPlace && player != null)
             {
-                Vector3 face = player.position - transform.position; face.y = 0f;
-                if (face.sqrMagnitude > 0.001f)
-                    transform.rotation = Quaternion.LookRotation(face.normalized);
+                if (!_facingPinned)
+                {
+                    Vector3 face = player.position - transform.position; face.y = 0f;
+                    if (face.sqrMagnitude > 0.001f)
+                        transform.rotation = Quaternion.LookRotation(face.normalized);
+                }
             }
 
+            // Reaplicar pins
+            if (_translationLocked)
+            {
+                var p = transform.position;
+                transform.position = new Vector3(_pinnedXZ.x, p.y, _pinnedXZ.z);
+            }
+            if (_facingPinned)
+                transform.rotation = _pinnedFacing;
+
+            // Ataque (ritmo de animação)
             if (state == State.Attacking && Time.time >= lastAttackTime + attackRate)
             {
                 lastAttackTime = Time.time;
@@ -138,6 +276,28 @@ namespace Geneforge.Gameplay.Characters.Enemies.Suporte
                 if (roll < 0.6f) animator?.SetTrigger("Attack");
                 else if (roll < 0.85f) animator?.SetTrigger("AttackB");
                 else animator?.SetTrigger("AttackC");
+            }
+        }
+
+        void FixedUpdate()
+        {
+            if (_translationLocked) PinXZ();
+        }
+
+        void LateUpdate()
+        {
+            if (_translationLocked) PinXZ();
+        }
+
+        void PinXZ()
+        {
+            var p = transform.position;
+            transform.position = new Vector3(_pinnedXZ.x, p.y, _pinnedXZ.z);
+
+            if (_rb && !_rb.isKinematic)
+            {
+                _rb.linearVelocity = new Vector3(0f, _rb.linearVelocity.y, 0f);
+                _rb.angularVelocity = Vector3.zero;
             }
         }
 
@@ -153,10 +313,12 @@ namespace Geneforge.Gameplay.Characters.Enemies.Suporte
                 if (!col) continue;
                 var root = col.attachedRigidbody ? col.attachedRigidbody.transform : col.transform;
                 if (root == this.transform) continue;
-                var enemy = root.GetComponentInParent<Enemy>();
-                if (enemy == null) continue;
-                if (!candidates.Contains(enemy.transform))
-                    candidates.Add(enemy.transform);
+
+                var allyEnemy = root.GetComponentInParent<Geneforge.Gameplay.Characters.Enemies.Enemy>();
+                if (allyEnemy == null) continue;
+
+                if (!candidates.Contains(allyEnemy.transform))
+                    candidates.Add(allyEnemy.transform);
             }
 
             candidates.Sort((a, b) =>
@@ -186,25 +348,22 @@ namespace Geneforge.Gameplay.Characters.Enemies.Suporte
             {
                 data = new ShieldData { target = target };
 
-                // guardar e desligar colliders
-                data.colliders.Clear();
-                target.GetComponentsInChildren(true, data.colliders);
-                data.prevEnabled.Clear();
-                foreach (var c in data.colliders)
+                // Guardar RB e tornar kinematic durante o escudo (em vez de desligar colliders)
+                data.rb = target.GetComponentInParent<Rigidbody>();
+                if (data.rb != null)
                 {
-                    if (!c) { data.prevEnabled.Add(false); continue; }
-                    data.prevEnabled.Add(c.enabled);
-                    c.enabled = false;
+                    data.prevIsKinematic = data.rb.isKinematic;
+                    data.rb.isKinematic  = true; // não reage à física, não "cai"
                 }
 
-                // mudar layer se configurado
+                // Mudar layer se configurado
                 if (shieldedLayer >= 0)
                 {
                     data.originalLayer = target.gameObject.layer;
                     SetLayerRecursively(target.gameObject, shieldedLayer);
                 }
 
-                // criar círculo
+                // Círculo visual
                 data.circleObj = new GameObject("ShieldCircle");
                 data.lr = data.circleObj.AddComponent<LineRenderer>();
                 data.lr.useWorldSpace = true;
@@ -244,19 +403,14 @@ namespace Geneforge.Gameplay.Characters.Enemies.Suporte
                     }
                 }
 
+                // terminou o escudo?
                 if (Time.time >= data.endTime)
                 {
-                    // reverter colliders
-                    int idx = 0;
-                    foreach (var c in data.colliders)
-                    {
-                        if (!c) { idx++; continue; }
-                        bool prev = (idx < data.prevEnabled.Count) ? data.prevEnabled[idx] : true;
-                        c.enabled = prev;
-                        idx++;
-                    }
+                    // Restaurar RB
+                    if (data.rb != null)
+                        data.rb.isKinematic = data.prevIsKinematic;
 
-                    // reverter layer
+                    // Restaurar layer
                     if (data.originalLayer >= 0)
                         SetLayerRecursively(data.target.gameObject, data.originalLayer);
 
@@ -275,17 +429,19 @@ namespace Geneforge.Gameplay.Characters.Enemies.Suporte
             Vector3 targetPos = wanderTarget;
             float speed = isIdleWaiting ? 0f : wanderSpeed;
 
-            if (speed > 0f)
+            if (speed > 0f && !_translationLocked) // não mover se está bloqueado
             {
                 Vector3 dir = targetPos - transform.position; dir.y = 0f;
                 if (dir.sqrMagnitude > 0.01f)
                 {
                     transform.position += dir.normalized * speed * Time.deltaTime;
-                    transform.rotation = Quaternion.LookRotation(dir.normalized);
+
+                    if (!_facingPinned)
+                        transform.rotation = Quaternion.LookRotation(dir.normalized);
                 }
             }
 
-            if (animator) animator.SetFloat("Speed", Mathf.Clamp01(speed / Mathf.Max(0.01f, wanderSpeed)));
+            AnimatorSpeed(Mathf.Clamp01(speed / Mathf.Max(0.01f, wanderSpeed)));
 
             if (!isIdleWaiting)
             {
@@ -315,6 +471,79 @@ namespace Geneforge.Gameplay.Characters.Enemies.Suporte
         {
             Gizmos.color = Color.cyan; Gizmos.DrawWireSphere(transform.position, shieldRadius);
             Gizmos.color = Color.red; Gizmos.DrawWireSphere(transform.position, attackRange);
+        }
+
+        // ----------------- Helpers -----------------
+
+        bool IsInAttackAnim()
+        {
+            if (animator == null) return false;
+            var st = animator.GetCurrentAnimatorStateInfo(0);
+
+            foreach (var n in attackStateNames)
+                if (!string.IsNullOrEmpty(n) && st.IsName(n))
+                    return true;
+
+            foreach (var t in attackStateTags)
+                if (!string.IsNullOrEmpty(t) && st.IsTag(t))
+                    return true;
+
+            return false;
+        }
+
+        bool IsInHitAnim()
+        {
+            if (animator == null) return false;
+            var st = animator.GetCurrentAnimatorStateInfo(0);
+
+            foreach (var n in hitStateNames)
+                if (!string.IsNullOrEmpty(n) && st.IsName(n))
+                    return true;
+
+            foreach (var t in hitStateTags)
+                if (!string.IsNullOrEmpty(t) && st.IsTag(t))
+                    return true;
+
+            return false;
+        }
+
+        void AnimatorSpeed(float v)
+        {
+            if (animator != null) animator.SetFloat("Speed", v);
+        }
+
+        void ApplyRootMotionLock(bool locked)
+        {
+            if (animator == null || !disableRootMotionWhenLocked) return;
+            animator.applyRootMotion = !locked;
+        }
+
+        void HardStopNow(bool alsoFreezeRotationY = true)
+        {
+            if (animator)
+            {
+                animator.applyRootMotion = false;
+                animator.SetFloat("Speed", 0f);
+            }
+
+            if (hardStopRigidbodyWhenLocked && _rb)
+            {
+                if (!_rb.isKinematic)
+                {
+                    _rb.linearVelocity = Vector3.zero;
+                    _rb.angularVelocity = Vector3.zero;
+                }
+
+                if (alsoFreezeRotationY && hardStopFreezeRotationY)
+                    _rb.constraints |= RigidbodyConstraints.FreezeRotationY;
+            }
+            // CharacterController: basta não chamar Move
+        }
+
+        void ReleaseRotationFreeze()
+        {
+            if (_rb && hardStopFreezeRotationY)
+                _rb.constraints &= ~RigidbodyConstraints.FreezeRotationY;
         }
 
         static void SetLayerRecursively(GameObject obj, int newLayer)

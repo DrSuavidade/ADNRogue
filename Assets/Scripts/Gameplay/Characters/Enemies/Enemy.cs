@@ -91,10 +91,17 @@ namespace Geneforge.Gameplay.Characters.Enemies
             var cc = GetComponent<CharacterController>();
             if (cc != null) cc.enabled = false;
 
+            // Zerar velocidades apenas se NÃO forem cinemáticos e só depois tornar kinematic
             foreach (var rb in GetComponentsInChildren<Rigidbody>())
             {
-                rb.linearVelocity = Vector3.zero;
-                rb.angularVelocity = Vector3.zero;
+                if (rb == null) continue;
+
+                if (!rb.isKinematic)
+                {
+                    rb.linearVelocity = Vector3.zero;
+                    rb.angularVelocity = Vector3.zero;
+                }
+
                 rb.isKinematic = true;
             }
 
@@ -106,7 +113,7 @@ namespace Geneforge.Gameplay.Characters.Enemies
                 animator.SetTrigger(deathTrigger);
             }
 
-            // 3) despawn em tempo REAL (não para com pause) e sem levar StopAllCoroutines a tiro
+            // 3) despawn em tempo REAL (não para com pause)
             if (_despawnCo == null)
                 _despawnCo = StartCoroutine(DespawnAfterRealtime(5f));
         }

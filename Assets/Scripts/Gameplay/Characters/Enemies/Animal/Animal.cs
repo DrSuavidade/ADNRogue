@@ -57,13 +57,19 @@ namespace Geneforge.Gameplay.Characters.Enemies.Animal
         public bool lockOnDamage = true;
         public bool lockOnAttack = true;
         public string[] attackStateNames = { "Attack", "AttackB" };
-        public string[] attackStateTags = { "Attack" };
+        public string[] attackStateTags  = { "Attack" };
 
         [Header("Motion Control")]
         public bool disableRootMotionWhenLocked = true;
         public bool hardStopRigidbodyWhenLocked = true;
         public bool hardStopFreezeRotationY = true;
-        // -------------------------------------------
+
+        // -------- Hit Lock / Detection (NOVO) --------
+        [Header("Hit Lock / Detection")]
+        public bool freezeRotationWhileHit = true;
+        public string[] hitStateNames = { "Damaged", "Hit", "Hurt" };
+        public string[] hitStateTags  = { "Hurt", "Damaged" };
+        // ---------------------------------------------
 
         bool isAttackLocked = false;
         Coroutine attackLockCo;
@@ -89,22 +95,15 @@ namespace Geneforge.Gameplay.Characters.Enemies.Animal
         Rigidbody _rb;
         CharacterController _cc;
 
-        // --- NEW: Lock de Translação (evita deslize mas mantém steering/rotação) ---
+        // --- Lock de Translação (evita deslize) ---
         bool _translationLocked = false;
-        Vector3 _pinnedXZ; // XZ ancorados durante o lock
+        Vector3 _pinnedXZ;
+        RigidbodyConstraints _rbPrevConstraints;
+        bool _rbHadConstraints = false;
 
-        void StartTranslationLock()
-        {
-            _translationLocked = true;
-            var p = transform.position;
-            _pinnedXZ = new Vector3(p.x, 0f, p.z);
-        }
-
-        void EndTranslationLock()
-        {
-            _translationLocked = false;
-        }
-        // ---------------------------------------------------------------------------
+        // --- Pin de rotação durante ataque/hit (opcional mas útil) ---
+        bool _facingPinned = false;
+        Quaternion _pinnedFacing;
 
         void Awake()
         {
@@ -141,56 +140,98 @@ namespace Geneforge.Gameplay.Characters.Enemies.Animal
             }
         }
 
+        void StartTranslationLock()
+        {
+            _translationLocked = true;
+            var p = transform.position;
+            _pinnedXZ = new Vector3(p.x, 0f, p.z);
+
+            if (_rb)
+            {
+                if (!_rb.isKinematic)
+                {
+                    _rb.linearVelocity = Vector3.zero;
+                    _rb.angularVelocity = Vector3.zero;
+                }
+
+                _rbPrevConstraints = _rb.constraints;
+                _rbHadConstraints = true;
+                _rb.constraints = _rbPrevConstraints
+                                  | RigidbodyConstraints.FreezePositionX
+                                  | RigidbodyConstraints.FreezePositionZ;
+
+                if (hardStopFreezeRotationY)
+                    _rb.constraints |= RigidbodyConstraints.FreezeRotationY;
+            }
+
+            ApplyRootMotionLock(true);
+        }
+
+        void EndTranslationLock()
+        {
+            _translationLocked = false;
+
+            if (_rb && _rbHadConstraints)
+            {
+                _rb.constraints = _rbPrevConstraints;
+                _rbHadConstraints = false;
+            }
+
+            ApplyRootMotionLock(false);
+            ReleaseRotationFreeze();
+        }
+
         void Update()
         {
-            // morto? não mexe
+            // MORTE: parar já. Enemy trata do despawn ~5s depois.
             if (enemy != null && enemy.CurrentHealth <= 0f)
             {
                 AnimatorSpeed(0f);
                 HardStopNow();
+                if (!_translationLocked) StartTranslationLock(); // fica pregado até desaparecer
                 return;
             }
 
-            // -------- Lock apenas da TRANSLAÇÃO (sem return) --------
-            // Vamos decidir por frame se devemos fixar XZ.
-            bool wantsTranslationLock = false;
+            // Estados de animação "ocupados"
+            bool inAttackAnim = IsInAttackAnim();
+            bool inHitAnim    = IsInHitAnim();
+            bool inBusyAnim   = inAttackAnim || inHitAnim;
 
-            // dano → bloquear translação
+            // Lock de translação se: dano (timer) OU enquanto clip de hit/ataque decorre
+            bool wantsTranslationLock = (lockOnDamage && isDamagePaused) || inBusyAnim;
+
+            if (wantsTranslationLock && !_translationLocked) StartTranslationLock();
+            else if (!wantsTranslationLock && _translationLocked) EndTranslationLock();
+
+            // Pin de rotação durante ataque/hit (para não virar a meio)
+            bool shouldPinFacing =
+                (inAttackAnim && freezeRotationWhileAttacking) ||
+                (inHitAnim    && freezeRotationWhileHit);
+
+            if (inBusyAnim && !_facingPinned && shouldPinFacing)
+            {
+                _facingPinned = true;
+                _pinnedFacing = transform.rotation;
+            }
+            else if (!inBusyAnim && _facingPinned)
+            {
+                _facingPinned = false;
+            }
+
+            // Dano → pausa
             if (lockOnDamage && isDamagePaused)
             {
                 damagePauseTimer += Time.deltaTime;
                 AnimatorSpeed(0f);
                 HardStopNow(alsoFreezeRotationY: true);
-                ApplyRootMotionLock(true);
-                wantsTranslationLock = true;
 
                 if (damagePauseTimer >= damagePauseDuration)
                 {
                     isDamagePaused = false;
-                    ReleaseRotationFreeze();
                 }
             }
 
-            // ataque (estado de animação) → bloquear translação
-            if (lockOnAttack && IsInAttackAnim())
-            {
-                AnimatorSpeed(0f);
-                HardStopNow(alsoFreezeRotationY: freezeRotationWhileAttacking);
-                ApplyRootMotionLock(true);
-                wantsTranslationLock = true;
-            }
-            else
-            {
-                ApplyRootMotionLock(false);
-                if (!isDamagePaused) ReleaseRotationFreeze();
-            }
-
-            // Aplicar/retirar lock de translação sem cortar a lógica de perseguição
-            if (wantsTranslationLock && !_translationLocked) StartTranslationLock();
-            else if (!wantsTranslationLock && _translationLocked) EndTranslationLock();
-            // ---------------------------------------------------------
-
-            // invisibilidade
+            // Invisibilidade
             if (A_ChameleonCamouflage.InvisibleActive)
             {
                 state = State.Wandering;
@@ -207,9 +248,7 @@ namespace Geneforge.Gameplay.Characters.Enemies.Animal
             {
                 AnimatorSpeed(0f);
                 HardStopNow(alsoFreezeRotationY: freezeRotationWhileAttacking);
-                ApplyRootMotionLock(true);
-                if (!_translationLocked) StartTranslationLock(); // garantir translação bloqueada
-                // Sem return — mantemos steering ativo
+                if (!_translationLocked) StartTranslationLock();
             }
 
             // estado
@@ -263,7 +302,8 @@ namespace Geneforge.Gameplay.Characters.Enemies.Animal
                     if (!_translationLocked)
                         transform.position += dir.normalized * currentSpeed * Time.deltaTime;
 
-                    transform.rotation = Quaternion.LookRotation(dir.normalized);
+                    if (!_facingPinned)
+                        transform.rotation = Quaternion.LookRotation(dir.normalized);
                 }
             }
             else
@@ -271,7 +311,7 @@ namespace Geneforge.Gameplay.Characters.Enemies.Animal
                 HardStopNow(alsoFreezeRotationY: false);
             }
 
-            if (state == State.Attacking && rotateInPlace && player != null && !freezeRotationWhileAttacking)
+            if (state == State.Attacking && rotateInPlace && player != null && !_facingPinned)
             {
                 Vector3 face = player.position - transform.position;
                 face.y = 0f;
@@ -279,12 +319,16 @@ namespace Geneforge.Gameplay.Characters.Enemies.Animal
                     transform.rotation = Quaternion.LookRotation(face.normalized);
             }
 
-            // Ancorar XZ durante lock (garante zero deslize de físicas/root)
+            // Ancorar XZ durante lock (garante zero deslize)
             if (_translationLocked)
             {
                 var p = transform.position;
                 transform.position = new Vector3(_pinnedXZ.x, p.y, _pinnedXZ.z);
             }
+
+            // Reaplicar rotação pinada (se ativa)
+            if (_facingPinned)
+                transform.rotation = _pinnedFacing;
 
             float normSpeed = chaseSpeed > 0f ? Mathf.Clamp01(currentSpeed / chaseSpeed) : 0f;
             AnimatorSpeed(normSpeed);
@@ -323,6 +367,28 @@ namespace Geneforge.Gameplay.Characters.Enemies.Animal
                         PickWanderTarget();
                     }
                 }
+            }
+        }
+
+        void FixedUpdate()
+        {
+            if (_translationLocked) PinXZ();
+        }
+
+        void LateUpdate()
+        {
+            if (_translationLocked) PinXZ();
+        }
+
+        void PinXZ()
+        {
+            var p = transform.position;
+            transform.position = new Vector3(_pinnedXZ.x, p.y, _pinnedXZ.z);
+
+            if (_rb && !_rb.isKinematic)
+            {
+                _rb.linearVelocity = new Vector3(0f, _rb.linearVelocity.y, 0f);
+                _rb.angularVelocity = Vector3.zero;
             }
         }
 
@@ -386,7 +452,6 @@ namespace Geneforge.Gameplay.Characters.Enemies.Animal
                 rb.AddForce(impulse, ForceMode.Impulse);
                 if (knockbackMaxSpeed > 0f)
                 {
-                    // CORREÇÃO: usar velocity (não linearVelocity)
                     Vector3 v = rb.linearVelocity;
                     Vector3 horiz = new Vector3(v.x, 0f, v.z);
                     if (horiz.magnitude > knockbackMaxSpeed)
@@ -424,7 +489,7 @@ namespace Geneforge.Gameplay.Characters.Enemies.Animal
             yield return new WaitForSeconds(clipLen + attackLockExtraTime);
             isAttackLocked = false;
             attackLockCo = null;
-            EndTranslationLock(); // libertar translação quando acaba a janela de ataque
+            EndTranslationLock(); // libertar translação quando termina a janela de ataque
         }
 
         IEnumerator CCKnockbackRoutine(CharacterController cc, Vector3 impulse, float duration, float decayRate)
@@ -485,6 +550,22 @@ namespace Geneforge.Gameplay.Characters.Enemies.Animal
             return false;
         }
 
+        bool IsInHitAnim()
+        {
+            if (animator == null) return false;
+            var st = animator.GetCurrentAnimatorStateInfo(0);
+
+            foreach (var n in hitStateNames)
+                if (!string.IsNullOrEmpty(n) && st.IsName(n))
+                    return true;
+
+            foreach (var t in hitStateTags)
+                if (!string.IsNullOrEmpty(t) && st.IsTag(t))
+                    return true;
+
+            return false;
+        }
+
         void AnimatorSpeed(float v)
         {
             if (animator != null) animator.SetFloat("Speed", v);
@@ -506,9 +587,11 @@ namespace Geneforge.Gameplay.Characters.Enemies.Animal
 
             if (hardStopRigidbodyWhenLocked && _rb)
             {
-                // CORREÇÃO: usar velocity (não linearVelocity)
-                _rb.linearVelocity = Vector3.zero;
-                _rb.angularVelocity = Vector3.zero;
+                if (!_rb.isKinematic)
+                {
+                    _rb.linearVelocity = Vector3.zero;
+                    _rb.angularVelocity = Vector3.zero;
+                }
 
                 if (alsoFreezeRotationY && hardStopFreezeRotationY)
                     _rb.constraints |= RigidbodyConstraints.FreezeRotationY;
