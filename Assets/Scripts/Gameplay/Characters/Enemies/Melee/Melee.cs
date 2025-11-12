@@ -40,6 +40,23 @@ namespace Geneforge.Gameplay.Characters.Enemies.Melee
         [Header("Damage Pause")]
         public float damagePauseDuration = 0.5f;
 
+        // ------- Lock / Motion Control -------
+        [Header("Motion Control")]
+        public bool disableRootMotionWhenLocked = true;
+        public bool hardStopRigidbodyWhenLocked = true;
+        public bool hardStopFreezeRotationY = true;
+
+        [Header("Attack Lock / Detection")]
+        public bool freezeRotationWhileAttacking = true;
+        public string[] attackStateNames = { "Attack", "AttackB", "AttackC" };
+        public string[] attackStateTags  = { "Attack" };
+
+        [Header("Hit Lock / Detection")]
+        public bool freezeRotationWhileHit = true;
+        public string[] hitStateNames = { "Damaged", "Hit", "Hurt" }; // ajusta aos teus nomes
+        public string[] hitStateTags  = { "Hurt", "Damaged" };
+        // ------------------------------------
+
         Vector3 spawnPos;
         Vector3 wanderTarget;
         float wanderTimer;
@@ -53,9 +70,30 @@ namespace Geneforge.Gameplay.Characters.Enemies.Melee
         bool isIdleWaiting = false;
         float idleWaitTimer = 0f;
 
-        // Damage pause fields
+        // Damage pause
         bool isDamagePaused = false;
         float damagePauseTimer = 0f;
+
+        // Enemy ref (para morte/despawn)
+        Geneforge.Gameplay.Characters.Enemies.Enemy enemy;
+
+        // --- Lock de Translação (anti-deslize) ---
+        bool _translationLocked = false;
+        Vector3 _pinnedXZ; // XZ ancorados durante lock
+        Rigidbody _rb;
+        CharacterController _cc;
+        RigidbodyConstraints _rbPrevConstraints;
+        bool _rbHadConstraints = false;
+
+        // --- Pin de rotação durante ataque/hit ---
+        bool _attackFacingPinned = false;
+        Quaternion _attackFacing;
+
+        void Awake()
+        {
+            _rb = GetComponent<Rigidbody>();
+            _cc = GetComponent<CharacterController>();
+        }
 
         void Start()
         {
@@ -66,15 +104,13 @@ namespace Geneforge.Gameplay.Characters.Enemies.Melee
             if (player != null && playerHealth == null)
                 playerHealth = player.GetComponent<PlayerHealth>();
 
-            // Subscribe to damage event
-            var enemy = GetComponent<Enemy>();
+            enemy = GetComponent<Geneforge.Gameplay.Characters.Enemies.Enemy>();
             if (enemy != null)
                 enemy.OnDamaged += HandleOnDamaged;
         }
 
         void OnDestroy()
         {
-            var enemy = GetComponent<Enemy>();
             if (enemy != null)
                 enemy.OnDamaged -= HandleOnDamaged;
         }
@@ -88,83 +124,131 @@ namespace Geneforge.Gameplay.Characters.Enemies.Melee
             }
         }
 
+        void StartTranslationLock()
+        {
+            _translationLocked = true;
+            var p = transform.position;
+            _pinnedXZ = new Vector3(p.x, 0f, p.z);
+
+            if (_rb)
+            {
+                if (!_rb.isKinematic)
+                {
+                    _rb.linearVelocity = Vector3.zero;
+                    _rb.angularVelocity = Vector3.zero;
+                }
+
+                _rbPrevConstraints = _rb.constraints;
+                _rbHadConstraints = true;
+
+                _rb.constraints = _rbPrevConstraints
+                                  | RigidbodyConstraints.FreezePositionX
+                                  | RigidbodyConstraints.FreezePositionZ;
+
+                if (hardStopFreezeRotationY)
+                    _rb.constraints |= RigidbodyConstraints.FreezeRotationY;
+            }
+
+            ApplyRootMotionLock(true);
+        }
+
+        void EndTranslationLock()
+        {
+            _translationLocked = false;
+
+            if (_rb && _rbHadConstraints)
+            {
+                _rb.constraints = _rbPrevConstraints;
+                _rbHadConstraints = false;
+            }
+
+            ApplyRootMotionLock(false);
+            ReleaseRotationFreeze();
+        }
+
         void Update()
         {
-            // 1) Handle damage pause
-            if (isDamagePaused)
+            // --- MORTE: parar já; Enemy destrói aos ~5s ---
+            if (enemy != null && enemy.CurrentHealth <= 0f)
             {
-                damagePauseTimer += Time.deltaTime;
-                if (animator != null)
-                    animator.SetFloat("Speed", 0f);
-
-                if (damagePauseTimer >= damagePauseDuration)
-                    isDamagePaused = false;
-
+                AnimatorSpeed(0f);
+                HardStopNow();
+                if (!_translationLocked) StartTranslationLock(); // fica pregado até desaparecer
                 return;
             }
 
-            // After the damage-pause return, before using 'dist' to pick state:
+            // Estados de animação "ocupados"
+            bool inAttackAnim = IsInAttackAnim();
+            bool inHitAnim    = IsInHitAnim();
+            bool inBusyAnim   = inAttackAnim || inHitAnim;
+
+            // -------- Lock de Translação (sem returns) ----------
+            // Lock durante: dano (timer) OU enquanto o clip de hit/ataque está ativo
+            bool wantsTranslationLock = isDamagePaused || inBusyAnim;
+
+            if (wantsTranslationLock && !_translationLocked) StartTranslationLock();
+            else if (!wantsTranslationLock && _translationLocked) EndTranslationLock();
+            // ----------------------------------------------------
+
+            // --- Pin de rotação enquanto a animação "ocupada" decorre ---
+            bool shouldPinFacing =
+                (inAttackAnim && freezeRotationWhileAttacking) ||
+                (inHitAnim    && freezeRotationWhileHit);
+
+            if (inBusyAnim && !_attackFacingPinned && shouldPinFacing)
+            {
+                _attackFacingPinned = true;
+                _attackFacing = transform.rotation;
+            }
+            else if (!inBusyAnim && _attackFacingPinned)
+            {
+                _attackFacingPinned = false;
+            }
+
+            // Dano: avançar timer (não fazemos return — mantém lógica viva)
+            if (isDamagePaused)
+            {
+                damagePauseTimer += Time.deltaTime;
+                AnimatorSpeed(0f);
+                HardStopNow(alsoFreezeRotationY: true);
+
+                if (damagePauseTimer >= damagePauseDuration)
+                    isDamagePaused = false;
+            }
+
+            // Invisibilidade → como se o player não existisse
             if (A_ChameleonCamouflage.InvisibleActive)
             {
-                // Behave as if the player isn't there
                 state = State.Wandering;
                 currentSpeed = 0f;
-
-                // Idle animation (or continue wandering if you prefer)
-                if (animator != null) animator.SetFloat("Speed", 0f);
-
-                // Skip chase/attack for this frame
+                AnimatorSpeed(0f);
+                HardStopNow(alsoFreezeRotationY: false);
                 return;
             }
 
             if (player == null) return;
 
-            // 2) Determine state
+            // Estado
             float dist = Vector3.Distance(transform.position, player.position);
 
-            if (dist <= attackRange)
-            {
-                state = State.Attacking;
-            }
-            else if (!stayStationary && dist <= detectionRadius)
-            {
-                state = State.Chasing;
-            }
-            else
-            {
-                state = State.Wandering;
-            }
+            if (dist <= attackRange) state = State.Attacking;
+            else if (!stayStationary && dist <= detectionRadius) state = State.Chasing;
+            else state = State.Wandering;
 
-            // 3) Movement
+            // Movimento
             float targetSpeed;
             Vector3 targetPos;
 
             switch (state)
             {
                 case State.Chasing:
-                    if (stayStationary)
-                    {
-                        targetPos = transform.position;
-                        targetSpeed = 0f;
-                    }
-                    else
-                    {
-                        targetPos = player.position;
-                        targetSpeed = chaseSpeed;
-                    }
+                    if (stayStationary) { targetPos = transform.position; targetSpeed = 0f; }
+                    else { targetPos = player.position; targetSpeed = chaseSpeed; }
                     break;
 
                 case State.Wandering:
-                    if (stayStationary)
-                    {
-                        targetPos = transform.position;
-                        targetSpeed = 0f;
-                    }
-                    else
-                    {
-                        targetPos = wanderTarget;
-                        targetSpeed = isIdleWaiting ? 0f : wanderSpeed;
-                    }
+                    if (stayStationary) { targetPos = transform.position; targetSpeed = 0f; }
+                    else { targetPos = wanderTarget; targetSpeed = isIdleWaiting ? 0f : wanderSpeed; }
                     break;
 
                 default: // Attacking
@@ -174,49 +258,57 @@ namespace Geneforge.Gameplay.Characters.Enemies.Melee
             }
 
             currentSpeed = targetSpeed;
+
             if (currentSpeed > 0f)
             {
                 Vector3 dir = targetPos - transform.position;
                 dir.y = 0f;
                 if (dir.sqrMagnitude > 0.01f)
                 {
-                    transform.position += dir.normalized * currentSpeed * Time.deltaTime;
-                    transform.rotation = Quaternion.LookRotation(dir.normalized);
+                    if (!_translationLocked)
+                        transform.position += dir.normalized * currentSpeed * Time.deltaTime;
+
+                    // Não rodar se a rotação estiver pinada (ataque ou hit)
+                    if (!_attackFacingPinned)
+                        transform.rotation = Quaternion.LookRotation(dir.normalized);
+                }
+            }
+            else
+            {
+                HardStopNow(alsoFreezeRotationY: false);
+            }
+
+            // Rodar em ataque (tracking), mas não durante o pin
+            if (state == State.Attacking && rotateInPlace && player != null)
+            {
+                if (!_attackFacingPinned)
+                {
+                    Vector3 face = player.position - transform.position;
+                    face.y = 0f;
+                    if (face.sqrMagnitude > 0.001f)
+                        transform.rotation = Quaternion.LookRotation(face.normalized);
                 }
             }
 
-            // Rotate in place while attacking
-            if (state == State.Attacking && rotateInPlace && player != null)
-            {
-                Vector3 face = player.position - transform.position;
-                face.y = 0f;
-                if (face.sqrMagnitude > 0.001f)
-                    transform.rotation = Quaternion.LookRotation(face.normalized);
-            }
+            // Reaplica rotação pinada (garante que nada a altera)
+            if (_attackFacingPinned)
+                transform.rotation = _attackFacing;
 
-            // Animate
-            float normSpeed = chaseSpeed > 0f
-                ? Mathf.Clamp01(currentSpeed / chaseSpeed)
-                : 0f;
-            if (animator != null)
-                animator.SetFloat("Speed", normSpeed);
+            // Animação
+            float normSpeed = chaseSpeed > 0f ? Mathf.Clamp01(currentSpeed / chaseSpeed) : 0f;
+            AnimatorSpeed(normSpeed);
 
-            // 6) Attack timing  (🆕 inclui AttackC)
+            // Ataque (timing)
             if (state == State.Attacking && Time.time >= lastAttackTime + attackRate)
             {
                 lastAttackTime = Time.time;
 
-                // Ajusta as percentagens como quiseres:
                 float roll = Random.value;          // 0..1
-                if (roll < 0.6f)                    // 60% → Attack
-                    animator.SetTrigger("Attack");
-                else if (roll < 0.85f)              // 25% → AttackB
-                    animator.SetTrigger("AttackB");
-                else                                 // 15% → AttackC
-                    animator.SetTrigger("AttackC");
+                if (roll < 0.6f) animator.SetTrigger("Attack");
+                else if (roll < 0.85f) animator.SetTrigger("AttackB");
+                else animator.SetTrigger("AttackC");
             }
-
-            // 7) Wander logic
+            // Wander
             if (!stayStationary && state == State.Wandering)
             {
                 if (!isIdleWaiting)
@@ -242,6 +334,29 @@ namespace Geneforge.Gameplay.Characters.Enemies.Melee
             }
         }
 
+        // Re-pin em física e em late (cobre drift pós-Update)
+        void FixedUpdate()
+        {
+            if (_translationLocked) PinXZ();
+        }
+
+        void LateUpdate()
+        {
+            if (_translationLocked) PinXZ();
+        }
+
+        void PinXZ()
+        {
+            var p = transform.position;
+            transform.position = new Vector3(_pinnedXZ.x, p.y, _pinnedXZ.z);
+
+            if (_rb && !_rb.isKinematic)
+            {
+                _rb.linearVelocity = new Vector3(0f, _rb.linearVelocity.y, 0f);
+                _rb.angularVelocity = Vector3.zero;
+            }
+        }
+
         public void OnAttackHit()
         {
             if (playerHealth != null)
@@ -249,7 +364,7 @@ namespace Geneforge.Gameplay.Characters.Enemies.Melee
 
             if (!applyKnockback || player == null) return;
 
-            // Knockback
+            // Knockback no PLAYER (não no inimigo)
             Vector3 dir = (player.position - transform.position);
             dir.y = 0f;
             if (dir.sqrMagnitude < 0.0001f) dir = transform.forward;
@@ -262,11 +377,7 @@ namespace Geneforge.Gameplay.Characters.Enemies.Melee
                 root.GetComponentInChildren<KnockbackReceiver>() ??
                 root.GetComponentInParent<KnockbackReceiver>();
 
-            if (receiver != null)
-            {
-                receiver.ApplyImpulse(impulse);
-                return;
-            }
+            if (receiver != null) { receiver.ApplyImpulse(impulse); return; }
 
             var rb =
                 root.GetComponentInChildren<Rigidbody>() ??
@@ -278,7 +389,7 @@ namespace Geneforge.Gameplay.Characters.Enemies.Melee
 
                 if (knockbackMaxSpeed > 0f)
                 {
-                    Vector3 v = rb.linearVelocity; // mantém como no teu código atual
+                    Vector3 v = rb.linearVelocity;
                     Vector3 horiz = new Vector3(v.x, 0f, v.z);
                     if (horiz.magnitude > knockbackMaxSpeed)
                     {
@@ -330,6 +441,79 @@ namespace Geneforge.Gameplay.Characters.Enemies.Melee
                 Gizmos.color = Color.magenta; Gizmos.DrawWireSphere(transform.position, detectionRadius);
             }
             Gizmos.color = Color.red; Gizmos.DrawWireSphere(transform.position, attackRange);
+        }
+
+        // ----------------- Helpers -----------------
+
+        bool IsInAttackAnim()
+        {
+            if (animator == null) return false;
+            var st = animator.GetCurrentAnimatorStateInfo(0);
+
+            foreach (var n in attackStateNames)
+                if (!string.IsNullOrEmpty(n) && st.IsName(n))
+                    return true;
+
+            foreach (var t in attackStateTags)
+                if (!string.IsNullOrEmpty(t) && st.IsTag(t))
+                    return true;
+
+            return false;
+        }
+
+        bool IsInHitAnim()
+        {
+            if (animator == null) return false;
+            var st = animator.GetCurrentAnimatorStateInfo(0);
+
+            foreach (var n in hitStateNames)
+                if (!string.IsNullOrEmpty(n) && st.IsName(n))
+                    return true;
+
+            foreach (var t in hitStateTags)
+                if (!string.IsNullOrEmpty(t) && st.IsTag(t))
+                    return true;
+
+            return false;
+        }
+
+        void AnimatorSpeed(float v)
+        {
+            if (animator != null) animator.SetFloat("Speed", v);
+        }
+
+        void ApplyRootMotionLock(bool locked)
+        {
+            if (animator == null || !disableRootMotionWhenLocked) return;
+            animator.applyRootMotion = !locked;
+        }
+
+        void HardStopNow(bool alsoFreezeRotationY = true)
+        {
+            if (animator)
+            {
+                animator.applyRootMotion = false;
+                animator.SetFloat("Speed", 0f);
+            }
+
+            if (hardStopRigidbodyWhenLocked && _rb)
+            {
+                if (!_rb.isKinematic)
+                {
+                    _rb.linearVelocity = Vector3.zero;
+                    _rb.angularVelocity = Vector3.zero;
+                }
+
+                if (alsoFreezeRotationY && hardStopFreezeRotationY)
+                    _rb.constraints |= RigidbodyConstraints.FreezeRotationY;
+            }
+            // CharacterController: basta não chamar Move
+        }
+
+        void ReleaseRotationFreeze()
+        {
+            if (_rb && hardStopFreezeRotationY)
+                _rb.constraints &= ~RigidbodyConstraints.FreezeRotationY;
         }
     }
 }

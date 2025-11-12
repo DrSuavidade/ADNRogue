@@ -959,37 +959,6 @@ Transform:
   - {fileID: 12354342}
   m_Father: {fileID: 543193782}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
---- !u!1 &653344346
-GameObject:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  serializedVersion: 6
-  m_Component:
-  - component: {fileID: 653344347}
-  m_Layer: 0
-  m_Name: EnemyManager
-  m_TagString: Untagged
-  m_Icon: {fileID: 0}
-  m_NavMeshLayer: 0
-  m_StaticEditorFlags: 0
-  m_IsActive: 1
---- !u!4 &653344347
-Transform:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 653344346}
-  serializedVersion: 2
-  m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
-  m_LocalPosition: {x: -3.6234, y: 4.097493, z: 12.724355}
-  m_LocalScale: {x: 1, y: 1, z: 1}
-  m_ConstrainProportionsScale: 0
-  m_Children: []
-  m_Father: {fileID: 0}
-  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
 --- !u!1 &688362319
 GameObject:
   m_ObjectHideFlags: 0
@@ -1363,6 +1332,10 @@ PrefabInstance:
     - target: {fileID: 5365526907987867840, guid: 9a2e906a8baa52647b62fcf360ca1661, type: 3}
       propertyPath: m_Name
       value: T Rex final
+      objectReference: {fileID: 0}
+    - target: {fileID: 5365526907987867840, guid: 9a2e906a8baa52647b62fcf360ca1661, type: 3}
+      propertyPath: m_IsActive
+      value: 1
       objectReference: {fileID: 0}
     - target: {fileID: 7227936378016305263, guid: 9a2e906a8baa52647b62fcf360ca1661, type: 3}
       propertyPath: m_IsTrigger
@@ -2784,7 +2757,6 @@ SceneRoots:
   - {fileID: 360335390}
   - {fileID: 1666462699}
   - {fileID: 764815259}
-  - {fileID: 653344347}
   - {fileID: 929210905}
   - {fileID: 20945885}
   - {fileID: 1184064733}
