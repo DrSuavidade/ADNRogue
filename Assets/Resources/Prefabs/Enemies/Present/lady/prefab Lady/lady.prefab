@@ -71,10 +71,10 @@ PrefabInstance:
       addedObject: {fileID: 7059816664007069371}
     - targetCorrespondingSourceObject: {fileID: 919132149155446097, guid: b2d11e9a156cb0b42aff9a9f0fe3fb13, type: 3}
       insertIndex: -1
-      addedObject: {fileID: 3418604194190040357}
+      addedObject: {fileID: 4828208988622770995}
     - targetCorrespondingSourceObject: {fileID: 919132149155446097, guid: b2d11e9a156cb0b42aff9a9f0fe3fb13, type: 3}
       insertIndex: -1
-      addedObject: {fileID: 4828208988622770995}
+      addedObject: {fileID: 128927694649485304}
   m_SourcePrefab: {fileID: 100100000, guid: b2d11e9a156cb0b42aff9a9f0fe3fb13, type: 3}
 --- !u!4 &3486959224906069963 stripped
 Transform:
@@ -127,39 +127,6 @@ MonoBehaviour:
   deathAnimDuration: 5
   damageTextPrefab: {fileID: 8104875995613135839, guid: 51bfa69456bef62438805f10c2608f9f, type: 3}
   damageTextOffset: {x: 0, y: 2.5, z: 0}
---- !u!114 &3418604194190040357
-MonoBehaviour:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 4264902645732109681}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: b52db176e47bca942b26cdc96ba47292, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: 
-  animator: {fileID: 5139662441246052636}
-  playerHealth: {fileID: 0}
-  stayStationary: 1
-  rotateInPlace: 1
-  wanderRadius: 5
-  wanderInterval: 3
-  wanderSpeed: 2
-  idleWaitDuration: 1
-  detectionRadius: 15
-  chaseSpeed: 4
-  attackRange: 2.2
-  attackRate: 1.5
-  damagePerHit: 10
-  knockbackRootOverride: {fileID: 0}
-  applyKnockback: 1
-  knockbackForce: 6
-  knockbackUpward: 0.5
-  knockbackMaxSpeed: 12
-  ccKnockbackDuration: 0.25
-  ccKnockbackDecay: 8
-  damagePauseDuration: 0.5
 --- !u!65 &4828208988622770995
 BoxCollider:
   m_ObjectHideFlags: 0
@@ -181,6 +148,55 @@ BoxCollider:
   serializedVersion: 3
   m_Size: {x: 0.41411155, y: 2.043159, z: 0.5141988}
   m_Center: {x: 0.06350634, y: 1.1297691, z: 0.07396572}
+--- !u!114 &128927694649485304
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 4264902645732109681}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 9f5333ad6dd6de548a6f720b49aea61f, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  animator: {fileID: 5139662441246052636}
+  playerHealth: {fileID: 0}
+  stayStationary: 0
+  rotateInPlace: 1
+  wanderRadius: 5
+  wanderInterval: 3
+  wanderSpeed: 2
+  idleWaitDuration: 1
+  detectionRadius: 20
+  chaseSpeed: 4
+  attackRange: 1.5
+  attackRate: 1
+  damagePerHit: 10
+  knockbackRootOverride: {fileID: 0}
+  applyKnockback: 1
+  knockbackForce: 6
+  knockbackUpward: 0.5
+  knockbackMaxSpeed: 12
+  damagePauseDuration: 0.5
+  disableRootMotionWhenLocked: 1
+  hardStopRigidbodyWhenLocked: 1
+  hardStopFreezeRotationY: 1
+  freezeRotationWhileAttacking: 1
+  attackStateNames:
+  - Attack
+  - AttackB
+  - AttackC
+  attackStateTags:
+  - Attack
+  freezeRotationWhileHit: 1
+  hitStateNames:
+  - Damaged
+  - Hit
+  - Hurt
+  hitStateTags:
+  - Hurt
+  - Damaged
 --- !u!1001 &4580945771878581739
 PrefabInstance:
   m_ObjectHideFlags: 0
