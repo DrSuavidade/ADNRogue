@@ -42,9 +42,23 @@ namespace Geneforge.Gameplay.Characters.Enemies.Ranged
         [Header("Pausa ao sofrer dano")]
         public float damagePauseDuration = 0.5f;
 
-        [Header("Motion Control (Death Lock)")]
+        // ------- Lock / Motion Control -------
+        [Header("Motion Control (Lock de Movimento)")]
+        public bool disableRootMotionWhenLocked = true;
         public bool hardStopRigidbodyWhenLocked = true;
         public bool hardStopFreezeRotationY = true;
+
+        [Header("Attack Lock / Detection")]
+        public bool freezeRotationWhileAttacking = true;
+        // igual ao Melee (caso tenhas mais do que um tipo de ataque)
+        public string[] attackStateNames = { "Attack", "AttackB", "AttackC" };
+        public string[] attackStateTags  = { "Attack" };
+
+        [Header("Hit Lock / Detection")]
+        public bool freezeRotationWhileHit = true;
+        // igual ao Melee → garante que apanha "Damaged", "Hit" ou "Hurt"
+        public string[] hitStateNames = { "Damaged", "Hit", "Hurt" };
+        public string[] hitStateTags  = { "Hurt", "Damaged" };
 
         [Header("Animator – Estado de Morte (nome do clip/estado)")]
         public string deathStateName = "Death";
@@ -60,6 +74,7 @@ namespace Geneforge.Gameplay.Characters.Enemies.Ranged
         bool isIdleWaiting = false;
         float idleWaitTimer = 0f;
 
+        // Damage pause
         bool isDamagePaused = false;
         float damagePauseTimer = 0f;
 
@@ -70,19 +85,28 @@ namespace Geneforge.Gameplay.Characters.Enemies.Ranged
         Rigidbody _rb;
         CharacterController _cc;
 
+        // --- Translation Lock (anti-deslize) ---
         bool _translationLocked = false;
         Vector3 _pinnedXZ;
+        RigidbodyConstraints _rbPrevConstraints;
+        bool _rbHadConstraints = false;
 
+        // --- Death / freeze ---
         bool _deadLatched = false;
-        bool _deathFrozen = false;   // já congelei o animator após 1ª morte?
+        bool _deathFrozen = false;
         int _deathHash = 0;
         Coroutine _freezeDeathCo;
+
+        // --- Pin de rotação durante ataque/hit ---
+        bool _attackFacingPinned = false;
+        Quaternion _attackFacing;
 
         void Awake()
         {
             _rb  = GetComponent<Rigidbody>();
             _cc  = GetComponent<CharacterController>();
             enemy = GetComponent<Enemy>();
+
             if (!string.IsNullOrEmpty(deathStateName))
                 _deathHash = Animator.StringToHash(deathStateName);
         }
@@ -108,9 +132,10 @@ namespace Geneforge.Gameplay.Characters.Enemies.Ranged
             CancelInvoke(nameof(SpawnHeldSpear));
         }
 
+        // igual em espírito ao Melee: ativa só o timer
         void HandleOnDamaged(float dmg)
         {
-            if (!_deadLatched && !isDamagePaused)
+            if (!isDamagePaused)
             {
                 isDamagePaused = true;
                 damagePauseTimer = 0f;
@@ -119,39 +144,83 @@ namespace Geneforge.Gameplay.Characters.Enemies.Ranged
 
         void Update()
         {
-            // --- MORTE: parar tudo aqui, sem tocar no Enemy ---
+            // --- MORTE: parar já; Enemy destrói aos ~5s ---
             if (!_deadLatched && enemy != null && enemy.CurrentHealth <= 0f)
             {
                 LatchDeathStop();
             }
+
             if (_deadLatched)
             {
-                // manter fixo até o Enemy destruir o GO (~5s)
                 PinXZ();
                 return;
             }
-            // ---------------------------------------------------
+            // ------------------------------------------------
 
-            // 1) pausa por dano
+            // Estados de animação "ocupados"
+            bool inAttackAnim = IsInAttackAnim();
+            bool inHitAnim    = IsInHitAnim();
+            bool inBusyAnim   = inAttackAnim || inHitAnim;
+
+            // -------- Lock de Translação ----------
+            // EXACTO ao Melee: dano (timer) OU enquanto o clip de hit/ataque está ativo
+            bool wantsTranslationLock = isDamagePaused || inBusyAnim;
+
+            if (wantsTranslationLock && !_translationLocked) StartTranslationLock();
+            else if (!wantsTranslationLock && _translationLocked) EndTranslationLock();
+            // --------------------------------------
+
+            // --- Pin de rotação enquanto a animação "ocupada" decorre ---
+            bool shouldPinFacing =
+                (inAttackAnim && freezeRotationWhileAttacking) ||
+                (inHitAnim    && freezeRotationWhileHit);
+
+            if (inBusyAnim && !_attackFacingPinned && shouldPinFacing)
+            {
+                _attackFacingPinned = true;
+                _attackFacing = transform.rotation;
+            }
+            else if (!inBusyAnim && _attackFacingPinned)
+            {
+                _attackFacingPinned = false;
+            }
+
+            // Dano: avançar timer (não fazemos return — mantém lógica viva,
+            // mas o lock + HardStopNow impedem movimento real)
             if (isDamagePaused)
             {
                 damagePauseTimer += Time.deltaTime;
-                if (animator) animator.SetFloat("Speed", 0f);
-                if (damagePauseTimer >= damagePauseDuration) isDamagePaused = false;
-                return;
+                AnimatorSpeed(0f);
+                HardStopNow(alsoFreezeRotationY: true);
+
+                if (damagePauseTimer >= damagePauseDuration)
+                    isDamagePaused = false;
             }
 
+            // -------- BLOQUEIO TOTAL ENQUANTO ESTÁ EM HIT --------
+            // Tal e qual o comportamento que queres: enquanto o clip de Hit
+            // estiver ativo, ele não anda nem roda (fica “pregado”).
+            if (inHitAnim)
+            {
+                AnimatorSpeed(0f);
+                HardStopNow(alsoFreezeRotationY: true);
+                return;
+            }
+            // ------------------------------------------------------
+
+            // Invisibilidade → como se o player não existisse
             if (A_ChameleonCamouflage.InvisibleActive)
             {
                 state = State.Wandering;
                 currentSpeed = 0f;
-                if (animator != null) animator.SetFloat("Speed", 0f);
+                AnimatorSpeed(0f);
+                HardStopNow(alsoFreezeRotationY: false);
                 return;
             }
 
             if (!player) return;
 
-            // 2) estado
+            // 2) estado (com LOS)
             float dist = Vector3.Distance(transform.position, player.position);
             if (dist <= attackRange && (!requireLineOfSight || HasLineOfSight()))
                 state = State.Attacking;
@@ -180,29 +249,44 @@ namespace Geneforge.Gameplay.Characters.Enemies.Ranged
             }
 
             currentSpeed = targetSpeed;
-            if (currentSpeed > 0f && !_translationLocked)
+            if (currentSpeed > 0f)
             {
                 Vector3 dir = targetPos - transform.position; dir.y = 0f;
                 if (dir.sqrMagnitude > 0.01f)
                 {
-                    transform.position += dir.normalized * currentSpeed * Time.deltaTime;
-                    transform.rotation = Quaternion.LookRotation(dir.normalized);
+                    if (!_translationLocked)
+                        transform.position += dir.normalized * currentSpeed * Time.deltaTime;
+
+                    // Não rodar se a rotação estiver pinada (ataque ou hit)
+                    if (!_attackFacingPinned)
+                        transform.rotation = Quaternion.LookRotation(dir.normalized);
+                }
+            }
+            else
+            {
+                HardStopNow(alsoFreezeRotationY: false);
+            }
+
+            // 4) olhar para o alvo (attack / rotateInPlace), mas não durante pin
+            if ((state == State.Attacking || rotateInPlace) && player != null)
+            {
+                if (!_attackFacingPinned)
+                {
+                    Vector3 face = player.position - transform.position; face.y = 0f;
+                    if (face.sqrMagnitude > 0.001f)
+                        transform.rotation = Quaternion.LookRotation(face.normalized);
                 }
             }
 
-            // 4) olhar para o alvo
-            if ((state == State.Attacking || rotateInPlace) && player != null)
-            {
-                Vector3 face = player.position - transform.position; face.y = 0f;
-                if (face.sqrMagnitude > 0.001f)
-                    transform.rotation = Quaternion.LookRotation(face.normalized);
-            }
+            // Reaplica rotação pinada (garante que nada a altera)
+            if (_attackFacingPinned)
+                transform.rotation = _attackFacing;
 
             // 5) locomotion -> "Speed"
             if (animator)
             {
                 float normSpeed = chaseSpeed > 0f ? Mathf.Clamp01(currentSpeed / chaseSpeed) : 0f;
-                animator.SetFloat("Speed", normSpeed);
+                AnimatorSpeed(normSpeed);
             }
 
             // 6) ataque → Trigger "Attack"
@@ -234,13 +318,28 @@ namespace Geneforge.Gameplay.Characters.Enemies.Ranged
                     }
                 }
             }
-
-            if (_translationLocked) PinXZ();
         }
 
         void FixedUpdate()
         {
             if (_translationLocked || _deadLatched) PinXZ();
+        }
+
+        void LateUpdate()
+        {
+            if (_translationLocked || _deadLatched) PinXZ();
+        }
+
+        void PinXZ()
+        {
+            var p = transform.position;
+            transform.position = new Vector3(_pinnedXZ.x, p.y, _pinnedXZ.z);
+
+            if (_rb && !_rb.isKinematic)
+            {
+                _rb.linearVelocity = new Vector3(0f, _rb.linearVelocity.y, 0f);
+                _rb.angularVelocity = Vector3.zero;
+            }
         }
 
         // ============================
@@ -359,6 +458,7 @@ namespace Geneforge.Gameplay.Characters.Enemies.Ranged
                 heldSpear = null;
             }
 
+            HardStopNow();
             StartTranslationLock();
 
             // Congelar o Animator após a 1ª reprodução do estado "Death"
@@ -368,22 +468,21 @@ namespace Geneforge.Gameplay.Characters.Enemies.Ranged
 
         IEnumerator FreezeAfterDeathOnce()
         {
-            // esperar o Animator entrar no estado de morte
             yield return null;
             int safety = 0;
             while (animator && !_IsInDeathState() && safety++ < 300)
                 yield return null;
 
-            // esperar o fim da 1ª volta do clip (normalizedTime >= 1)
             safety = 0;
-            while (animator && _IsInDeathState() && animator.GetCurrentAnimatorStateInfo(0).normalizedTime < 1f && safety++ < 600)
+            while (animator && _IsInDeathState() &&
+                   animator.GetCurrentAnimatorStateInfo(0).normalizedTime < 1f &&
+                   safety++ < 600)
                 yield return null;
 
             if (animator)
             {
-                // congela na última pose → impede repetir
                 animator.speed = 0f;
-                // (opcional) animator.enabled = false;  // se preferires desligar por completo
+                // opcional: animator.enabled = false;
             }
             _deathFrozen = true;
             _freezeDeathCo = null;
@@ -394,40 +493,123 @@ namespace Geneforge.Gameplay.Characters.Enemies.Ranged
             if (!animator) return false;
             if (_deathHash != 0)
                 return animator.GetCurrentAnimatorStateInfo(0).shortNameHash == _deathHash;
-            // fallback por nome (menos eficiente)
             var st = animator.GetCurrentAnimatorStateInfo(0);
             return st.IsName(deathStateName);
         }
 
+        // ---------- Translation Lock ----------
         void StartTranslationLock()
         {
             _translationLocked = true;
             var p = transform.position;
             _pinnedXZ = new Vector3(p.x, 0f, p.z);
 
-            if (_rb && !_rb.isKinematic)
-            {
-                _rb.linearVelocity = Vector3.zero;
-                _rb.angularVelocity = Vector3.zero;
-            }
             if (_rb)
             {
-                _rb.constraints |= RigidbodyConstraints.FreezePositionX | RigidbodyConstraints.FreezePositionZ;
+                if (!_rb.isKinematic)
+                {
+                    _rb.linearVelocity = Vector3.zero;
+                    _rb.angularVelocity = Vector3.zero;
+                }
+
+                _rbPrevConstraints = _rb.constraints;
+                _rbHadConstraints = true;
+
+                _rb.constraints = _rbPrevConstraints
+                                  | RigidbodyConstraints.FreezePositionX
+                                  | RigidbodyConstraints.FreezePositionZ;
+
                 if (hardStopFreezeRotationY)
                     _rb.constraints |= RigidbodyConstraints.FreezeRotationY;
             }
+
+            ApplyRootMotionLock(true);
         }
 
-        void PinXZ()
+        void EndTranslationLock()
         {
-            var p = transform.position;
-            transform.position = new Vector3(_pinnedXZ.x, p.y, _pinnedXZ.z);
+            _translationLocked = false;
 
-            if (_rb && !_rb.isKinematic)
+            if (_rb && _rbHadConstraints)
             {
-                _rb.linearVelocity = new Vector3(0f, _rb.linearVelocity.y, 0f);
-                _rb.angularVelocity = Vector3.zero;
+                _rb.constraints = _rbPrevConstraints;
+                _rbHadConstraints = false;
             }
+
+            ApplyRootMotionLock(false);
+            ReleaseRotationFreeze();
+        }
+
+        // ----------------- Helpers de animação / movimento -----------------
+        bool IsInAttackAnim()
+        {
+            if (animator == null) return false;
+            var st = animator.GetCurrentAnimatorStateInfo(0);
+
+            foreach (var n in attackStateNames)
+                if (!string.IsNullOrEmpty(n) && st.IsName(n))
+                    return true;
+
+            foreach (var t in attackStateTags)
+                if (!string.IsNullOrEmpty(t) && st.IsTag(t))
+                    return true;
+
+            return false;
+        }
+
+        bool IsInHitAnim()
+        {
+            if (animator == null) return false;
+            var st = animator.GetCurrentAnimatorStateInfo(0);
+
+            foreach (var n in hitStateNames)
+                if (!string.IsNullOrEmpty(n) && st.IsName(n))
+                    return true;
+
+            foreach (var t in hitStateTags)
+                if (!string.IsNullOrEmpty(t) && st.IsTag(t))
+                    return true;
+
+            return false;
+        }
+
+        void AnimatorSpeed(float v)
+        {
+            if (animator != null) animator.SetFloat("Speed", v);
+        }
+
+        void ApplyRootMotionLock(bool locked)
+        {
+            if (animator == null || !disableRootMotionWhenLocked) return;
+            animator.applyRootMotion = !locked;
+        }
+
+        void HardStopNow(bool alsoFreezeRotationY = true)
+        {
+            if (animator)
+            {
+                animator.applyRootMotion = false;
+                animator.SetFloat("Speed", 0f);
+            }
+
+            if (hardStopRigidbodyWhenLocked && _rb)
+            {
+                if (!_rb.isKinematic)
+                {
+                    _rb.linearVelocity = Vector3.zero;
+                    _rb.angularVelocity = Vector3.zero;
+                }
+
+                if (alsoFreezeRotationY && hardStopFreezeRotationY)
+                    _rb.constraints |= RigidbodyConstraints.FreezeRotationY;
+            }
+            // CharacterController: basta não chamar Move
+        }
+
+        void ReleaseRotationFreeze()
+        {
+            if (_rb && hardStopFreezeRotationY)
+                _rb.constraints &= ~RigidbodyConstraints.FreezeRotationY;
         }
     }
 }
