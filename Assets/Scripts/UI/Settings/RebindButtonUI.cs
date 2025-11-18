@@ -37,7 +37,7 @@ namespace Game.UI.Settings
                     action.Enable();
                     SaveRebindsFromAsset();
 
-                    var pi = FindObjectOfType<PlayerInput>();
+                    var pi = FindAnyObjectByType<PlayerInput>();
                     if (pi != null)
                     {
                         var json = PlayerPrefs.GetString(PlayerPrefsKey, "");
