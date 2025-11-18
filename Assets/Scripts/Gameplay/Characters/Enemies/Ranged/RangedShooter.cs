@@ -9,8 +9,8 @@ namespace Geneforge.Gameplay.Characters.Enemies.Ranged
     {
         public enum WeaponType
         {
-            Projectile,   // dispara balas / lanças
-            Flamethrower  // instância um prefab de fogo
+            Projectile,   // dispara projétil
+            Flamethrower  // dano por área (retângulo no chão)
         }
 
         [Header("Referências")]
@@ -25,19 +25,19 @@ namespace Geneforge.Gameplay.Characters.Enemies.Ranged
         public bool stayStationary = false;
         public bool rotateInPlace = true;
 
-        [Header("Wander")]
+        [Header("Wander Settings")]
         public float wanderRadius = 5f;
         public float wanderInterval = 3f;
         public float wanderSpeed = 2f;
         public float idleWaitDuration = 1f;
 
         [Header("Perceção / Ataque")]
-        public float detectionRadius = 20f;   // até onde ele vê / persegue
+        public float detectionRadius = 20f;   // até onde vê / persegue
         public float chaseSpeed = 4f;
         public float attackRange = 10f;       // distância a que pode atacar
         public float attackRate = 1.25f;
 
-        [Header("Direção do disparo")]
+        [Header("LOS / Raycasts")]
         public bool requireLineOfSight = true;
         public LayerMask lineOfSightMask = ~0;
         public float lineOfSightPadding = 0.1f;
@@ -52,16 +52,25 @@ namespace Geneforge.Gameplay.Characters.Enemies.Ranged
         [Header("Tipo de arma")]
         public WeaponType weaponType = WeaponType.Flamethrower;
 
-        [Header("Fogo (Prefab de lança-chamas)")]
-        [Tooltip("Prefab com ParticleSystem que se destrói sozinho")]
-        public GameObject flamePrefab;
-        public float flameDamage = 10f;   // por agora não usado
-        public float flameRange = 8f;     // por agora não usado
+        // ---------- ATAQUE DE FOGO POR ÁREA ----------
+        [Header("Flamethrower (Retângulo no chão)")]
+        [Tooltip("Comprimento da área à frente do inimigo")]
+        public float flameLength = 6f;
+        [Tooltip("Largura da área (esquerda-direita)")]
+        public float flameWidth = 3f;
+        [Tooltip("Altura da área (em Y)")]
+        public float flameHeight = 2f;
+        [Tooltip("Dano aplicado por cada 'tic' de ataque (ligado ao attackRate)")]
+        public float flameDamage = 10f;
+        [Tooltip("Afasta a hitbox da origem do inimigo")]
+        public float flameForwardOffset = 0.5f;
+        [Tooltip("Offset vertical em relação ao transform (ex: -1 para encostar ao chão)")]
+        public float flameVerticalOffset = 0f;
 
         [Header("Pausa ao sofrer dano")]
         public float damagePauseDuration = 0.5f;
 
-        // ------- Lock / Motion Control (como no Melee) -------
+        // ------- Lock / Motion Control (igual Melee) -------
         [Header("Motion Control")]
         public bool disableRootMotionWhenLocked = true;
         public bool hardStopRigidbodyWhenLocked = true;
@@ -76,12 +85,15 @@ namespace Geneforge.Gameplay.Characters.Enemies.Ranged
         public bool freezeRotationWhileHit = true;
         public string[] hitStateNames = { "Damaged", "Hit", "Hurt" };
         public string[] hitStateTags  = { "Hurt", "Damaged" };
-        // -----------------------------------------------------
+        // ---------------------------------------------------
 
         // ----------------- estado interno -----------------
-        Vector3 spawnPos, wanderTarget;
-        float wanderTimer, lastAttackTime;
-        enum State { Wandering, Chasing }
+        Vector3 spawnPos;
+        Vector3 wanderTarget;
+        float wanderTimer;
+        float lastAttackTime;
+
+        enum State { Wandering, Chasing, Attacking }
         State state = State.Wandering;
 
         Transform player;
@@ -96,21 +108,21 @@ namespace Geneforge.Gameplay.Characters.Enemies.Ranged
         // Despawn após morte
         bool _deathDespawnScheduled = false;
 
-        Collider[] ownerCols;
-
         Enemy enemy;
-        Rigidbody _rb;
-        CharacterController _cc;
 
-        // Lock de Translação (anti-deslize)
+        // --- Lock de Translação (anti-deslize) ---
         bool _translationLocked = false;
         Vector3 _pinnedXZ; // XZ ancorados durante lock
+        Rigidbody _rb;
+        CharacterController _cc;
         RigidbodyConstraints _rbPrevConstraints;
         bool _rbHadConstraints = false;
 
-        // Pin de rotação durante ataque/hit
+        // --- Pin de rotação durante ataque/hit ---
         bool _attackFacingPinned = false;
         Quaternion _attackFacing;
+
+        Collider[] ownerCols;
 
         void Awake()
         {
@@ -132,6 +144,9 @@ namespace Geneforge.Gameplay.Characters.Enemies.Ranged
                 enemy.OnDamaged += HandleOnDamaged;
 
             ownerCols = GetComponentsInChildren<Collider>(true);
+
+            if (animator)
+                animator.applyRootMotion = false;
         }
 
         void OnDestroy()
@@ -149,332 +164,7 @@ namespace Geneforge.Gameplay.Characters.Enemies.Ranged
             }
         }
 
-        void Update()
-        {
-            // --- MORTE: parar já e marcar para desaparecer ---
-            if (enemy != null && enemy.CurrentHealth <= 0f)
-            {
-                AnimatorSpeed(0f);
-                HardStopNow();
-
-                if (!_translationLocked)
-                    StartTranslationLock();
-
-                if (!_deathDespawnScheduled)
-                {
-                    _deathDespawnScheduled = true;
-                    Destroy(gameObject, 5f); // desaparece ao fim de 5 segundos
-                }
-
-                return; // não segue mais o player, nem faz AI
-            }
-
-            // Estados de animação "ocupados"
-            bool inAttackAnim = IsInAttackAnim();
-            bool inHitAnim    = IsInHitAnim();
-            bool inBusyAnim   = inAttackAnim || inHitAnim;
-
-            // Lock de Translação durante:
-            //  - dano (timer) OU
-            //  - enquanto o clip de hit/ataque está ativo
-            bool wantsTranslationLock = isDamagePaused || inBusyAnim;
-
-            if (wantsTranslationLock && !_translationLocked) StartTranslationLock();
-            else if (!wantsTranslationLock && _translationLocked) EndTranslationLock();
-
-            // --- Pin de rotação enquanto a animação "ocupada" decorre ---
-            bool shouldPinFacing =
-                (inAttackAnim && freezeRotationWhileAttacking) ||
-                (inHitAnim    && freezeRotationWhileHit);
-
-            if (inBusyAnim && !_attackFacingPinned && shouldPinFacing)
-            {
-                _attackFacingPinned = true;
-                _attackFacing = transform.rotation;
-            }
-            else if (!inBusyAnim && _attackFacingPinned)
-            {
-                _attackFacingPinned = false;
-            }
-
-            // Dano: avançar timer (não fazemos return — mantém lógica viva)
-            if (isDamagePaused)
-            {
-                damagePauseTimer += Time.deltaTime;
-                AnimatorSpeed(0f);
-                HardStopNow(alsoFreezeRotationY: true);
-
-                if (damagePauseTimer >= damagePauseDuration)
-                    isDamagePaused = false;
-            }
-
-            // Invisibilidade → como se o player não existisse
-            if (A_ChameleonCamouflage.InvisibleActive)
-            {
-                state = State.Wandering;
-                currentSpeed = 0f;
-                AnimatorSpeed(0f);
-                HardStopNow(alsoFreezeRotationY: false);
-                return;
-            }
-
-            if (player == null) return;
-
-            // distância ao player
-            float dist = Vector3.Distance(transform.position, player.position);
-
-            // ---- decidir movimento (estado) ----
-            if (!stayStationary && dist <= detectionRadius)
-                state = State.Chasing;
-            else
-                state = State.Wandering;
-
-            // ---- se pode atacar (independente do estado) ----
-            bool canAttack = dist <= attackRange &&
-                             (!requireLineOfSight || HasLineOfSight());
-
-            // movimento
-            float targetSpeed;
-            Vector3 targetPos;
-
-            switch (state)
-            {
-                case State.Chasing:
-                    if (stayStationary)
-                    {
-                        targetPos = transform.position;
-                        targetSpeed = 0f;
-                    }
-                    else
-                    {
-                        targetPos = player.position;
-
-                        // 👉 só anda enquanto estiver fora do alcance de ataque
-                        if (dist > attackRange)
-                            targetSpeed = chaseSpeed;
-                        else
-                            targetSpeed = 0f;       // em range → pára de andar
-                    }
-                    break;
-
-                default: // Wandering
-                    if (stayStationary)
-                    {
-                        targetPos = transform.position;
-                        targetSpeed = 0f;
-                    }
-                    else
-                    {
-                        targetPos = wanderTarget;
-                        targetSpeed = isIdleWaiting ? 0f : wanderSpeed;
-                    }
-                    break;
-            }
-
-            currentSpeed = targetSpeed;
-
-            if (currentSpeed > 0f)
-            {
-                Vector3 dir = targetPos - transform.position;
-                dir.y = 0f;  // sem subir/descer, só plano XZ
-
-                if (dir.sqrMagnitude > 0.01f)
-                {
-                    // não mexe na posição se estiver em lock (hit/ataque)
-                    if (!_translationLocked)
-                        transform.position += dir.normalized * currentSpeed * Time.deltaTime;
-
-                    // não rodar se a rotação estiver pinada (ataque ou hit)
-                    if (!_attackFacingPinned)
-                        transform.rotation = Quaternion.LookRotation(dir.normalized);
-                }
-            }
-            else
-            {
-                // garante que não fica a “escorregar”
-                HardStopNow(alsoFreezeRotationY: false);
-            }
-
-            // Rodar para o jogador (mas não durante pin)
-            if (player != null)
-            {
-                bool wantRotateToPlayer =
-                    (rotateInPlace && currentSpeed <= 0.01f) || canAttack;
-
-                if (wantRotateToPlayer && !_attackFacingPinned)
-                {
-                    Vector3 face = player.position - transform.position;
-                    face.y = 0f;
-                    if (face.sqrMagnitude > 0.001f)
-                        transform.rotation = Quaternion.LookRotation(face.normalized);
-                }
-            }
-
-            // Reaplica rotação pinada (garante que nada a altera)
-            if (_attackFacingPinned)
-                transform.rotation = _attackFacing;
-
-            // animação de movimento (se não estiver em pausa de dano)
-            if (!isDamagePaused)
-            {
-                float normSpeed = chaseSpeed > 0f ? Mathf.Clamp01(currentSpeed / chaseSpeed) : 0f;
-                AnimatorSpeed(normSpeed);
-            }
-
-            // ataque (independente do estado, mas NÃO ataca se estiver em pausa de dano)
-            if (!isDamagePaused && canAttack && Time.time >= lastAttackTime + attackRate)
-            {
-                lastAttackTime = Time.time;
-
-                if (animator && !string.IsNullOrEmpty(attackTriggerName))
-                {
-                    animator.ResetTrigger(attackTriggerName);
-                    animator.SetTrigger(attackTriggerName);
-                }
-
-                if (weaponType == WeaponType.Projectile)
-                    ShootProjectile();
-                else if (weaponType == WeaponType.Flamethrower)
-                    DoFlameAttack();
-            }
-
-            // wander
-            if (!stayStationary && state == State.Wandering)
-            {
-                if (!isIdleWaiting)
-                {
-                    wanderTimer += Time.deltaTime;
-                    if (wanderTimer >= wanderInterval ||
-                        Vector3.Distance(transform.position, wanderTarget) < 0.2f)
-                    {
-                        isIdleWaiting = true;
-                        idleWaitTimer = 0f;
-                    }
-                }
-                else
-                {
-                    idleWaitTimer += Time.deltaTime;
-                    if (idleWaitTimer >= idleWaitDuration)
-                    {
-                        isIdleWaiting = false;
-                        wanderTimer = 0f;
-                        PickWanderTarget();
-                    }
-                }
-            }
-
-            if (_translationLocked)
-                PinXZ();
-        }
-
-        void FixedUpdate()
-        {
-            if (_translationLocked)
-                PinXZ();
-        }
-
-        // ============================
-        //   Arma de fogo / Disparo
-        // ============================
-        public void OnThrowRelease() { }
-        public void OnAttackHit() { }
-
-        void ShootProjectile()
-        {
-            if (bulletPrefab == null) return;
-
-            if (ownerCols == null || ownerCols.Length == 0)
-                ownerCols = GetComponentsInChildren<Collider>(true);
-
-            Vector3 originPos = firePoint ? firePoint.position : transform.position;
-            Vector3 targetPos = (player ? player.position : transform.position + transform.forward * 5f) + aimOffset;
-            Vector3 dir = (targetPos - originPos).normalized;
-
-            GameObject bullet = Instantiate(bulletPrefab, originPos, Quaternion.LookRotation(dir));
-
-            var proj = bullet.GetComponent<SpearProjectile>();
-            var rb   = bullet.GetComponent<Rigidbody>();
-            var col  = bullet.GetComponent<Collider>();
-            if (!proj || !rb || !col) return;
-
-            proj.Launch(dir * bulletSpeed, ownerCols);
-        }
-
-        // ---------- ATAQUE DE FOGO (só visual) ----------
-        void DoFlameAttack()
-        {
-            if (!firePoint) return;
-            SpawnFlamePrefab();
-        }
-
-        void SpawnFlamePrefab()
-        {
-            if (!firePoint || !flamePrefab) return;
-
-            Vector3 dir;
-            if (player != null)
-                dir = (player.position - firePoint.position).normalized;
-            else
-                dir = firePoint.forward;
-
-            dir.y = 0f;
-            if (dir.sqrMagnitude < 0.0001f)
-                dir = firePoint.forward;
-
-            Quaternion rot = Quaternion.LookRotation(dir);
-
-            GameObject flame = Instantiate(flamePrefab, firePoint.position, rot);
-            flame.transform.SetParent(firePoint, true);
-        }
-
-        public void flamefx()
-        {
-            if (weaponType == WeaponType.Flamethrower && !isDamagePaused)
-                DoFlameAttack();
-        }
-
-        // ============================
-        //    Auxiliares
-        // ============================
-        bool HasLineOfSight()
-        {
-            if (!requireLineOfSight || player == null) return true;
-
-            Vector3 origin = (firePoint ? firePoint.position : transform.position);
-            Vector3 target = player.position + aimOffset;
-
-            Vector3 diff = target - origin;
-            float dist = Mathf.Max(0f, diff.magnitude - lineOfSightPadding);
-            if (dist <= 0.001f) return true;
-
-            Vector3 dir = diff / (diff.magnitude > 0.0001f ? diff.magnitude : 1f);
-
-            if (Physics.Raycast(origin, dir, out RaycastHit hit, dist, lineOfSightMask, QueryTriggerInteraction.Ignore))
-            {
-                if (hit.collider && hit.collider.transform != player && !hit.collider.transform.IsChildOf(player))
-                    return false;
-            }
-            return true;
-        }
-
-        void PickWanderTarget()
-        {
-            Vector2 rnd = Random.insideUnitCircle * wanderRadius;
-            wanderTarget = spawnPos + new Vector3(rnd.x, 0f, rnd.y);
-        }
-
-        void OnDrawGizmosSelected()
-        {
-            if (!stayStationary)
-            {
-                Gizmos.color = Color.yellow; Gizmos.DrawWireSphere(transform.position, wanderRadius);
-                Gizmos.color = Color.magenta; Gizmos.DrawWireSphere(transform.position, detectionRadius);
-            }
-            Gizmos.color = Color.red; Gizmos.DrawWireSphere(transform.position, attackRange);
-        }
-
-        // ----------------- Helpers de lock / animação -----------------
-
+        // --------- LOCK DE TRANSLATION ---------
         void StartTranslationLock()
         {
             _translationLocked = true;
@@ -517,6 +207,216 @@ namespace Geneforge.Gameplay.Characters.Enemies.Ranged
             ReleaseRotationFreeze();
         }
 
+        void Update()
+        {
+            // --- MORTE ---
+            if (enemy != null && enemy.CurrentHealth <= 0f)
+            {
+                AnimatorSpeed(0f);
+                HardStopNow();
+                if (!_translationLocked) StartTranslationLock();
+
+                if (!_deathDespawnScheduled)
+                {
+                    _deathDespawnScheduled = true;
+                    Destroy(gameObject, 5f);
+                }
+                return;
+            }
+
+            // Estados de animação "ocupados"
+            bool inAttackAnim = IsInAttackAnim();
+            bool inHitAnim    = IsInHitAnim();
+            bool inBusyAnim   = inAttackAnim || inHitAnim;
+
+            // Lock enquanto está em dano OU em clip de hit/ataque
+            bool wantsTranslationLock = isDamagePaused || inBusyAnim;
+
+            if (wantsTranslationLock && !_translationLocked) StartTranslationLock();
+            else if (!wantsTranslationLock && _translationLocked) EndTranslationLock();
+
+            // --- Pin de rotação enquanto a animação "ocupada" decorre ---
+            bool shouldPinFacing =
+                (inAttackAnim && freezeRotationWhileAttacking) ||
+                (inHitAnim    && freezeRotationWhileHit);
+
+            if (inBusyAnim && !_attackFacingPinned && shouldPinFacing)
+            {
+                _attackFacingPinned = true;
+                _attackFacing = transform.rotation;
+            }
+            else if (!inBusyAnim && _attackFacingPinned)
+            {
+                _attackFacingPinned = false;
+            }
+
+            // Dano: avançar timer
+            if (isDamagePaused)
+            {
+                damagePauseTimer += Time.deltaTime;
+                AnimatorSpeed(0f);
+                HardStopNow(alsoFreezeRotationY: true);
+
+                if (damagePauseTimer >= damagePauseDuration)
+                    isDamagePaused = false;
+            }
+
+            // Invisibilidade → como se o player não existisse
+            if (A_ChameleonCamouflage.InvisibleActive)
+            {
+                state = State.Wandering;
+                currentSpeed = 0f;
+                AnimatorSpeed(0f);
+                HardStopNow(alsoFreezeRotationY: false);
+                return;
+            }
+
+            if (player == null) return;
+
+            // -------- ESTADO --------
+            float dist = Vector3.Distance(transform.position, player.position);
+            bool hasLOS = !requireLineOfSight || HasLineOfSight();
+            bool inRange = dist <= attackRange && hasLOS;
+
+            if (inRange)
+                state = State.Attacking;
+            else if (!stayStationary && dist <= detectionRadius)
+                state = State.Chasing;
+            else
+                state = State.Wandering;
+
+            // -------- MOVIMENTO --------
+            float targetSpeed;
+            Vector3 targetPos;
+
+            switch (state)
+            {
+                case State.Chasing:
+                    if (stayStationary)
+                    {
+                        targetPos = transform.position;
+                        targetSpeed = 0f;
+                    }
+                    else
+                    {
+                        targetPos = player.position;
+                        targetSpeed = chaseSpeed;
+                    }
+                    break;
+
+                case State.Wandering:
+                    if (stayStationary)
+                    {
+                        targetPos = transform.position;
+                        targetSpeed = 0f;
+                    }
+                    else
+                    {
+                        targetPos = wanderTarget;
+                        targetSpeed = isIdleWaiting ? 0f : wanderSpeed;
+                    }
+                    break;
+
+                default: // Attacking
+                    targetPos = transform.position;
+                    targetSpeed = 0f; // parado a atacar
+                    break;
+            }
+
+            currentSpeed = targetSpeed;
+
+            if (currentSpeed > 0f)
+            {
+                Vector3 dir = targetPos - transform.position;
+                dir.y = 0f;
+                if (dir.sqrMagnitude > 0.01f)
+                {
+                    if (!_translationLocked)
+                        transform.position += dir.normalized * currentSpeed * Time.deltaTime;
+
+                    if (!_attackFacingPinned)
+                        transform.rotation = Quaternion.LookRotation(dir.normalized);
+                }
+            }
+            else
+            {
+                HardStopNow(alsoFreezeRotationY: false);
+            }
+
+            // Rodar para o jogador
+            if (player != null)
+            {
+                bool wantRotateToPlayer =
+                    (state == State.Attacking || (rotateInPlace && currentSpeed <= 0.01f));
+
+                if (wantRotateToPlayer && !_attackFacingPinned)
+                {
+                    Vector3 face = player.position - transform.position;
+                    face.y = 0f;
+                    if (face.sqrMagnitude > 0.001f)
+                        transform.rotation = Quaternion.LookRotation(face.normalized);
+                }
+            }
+
+            // Reaplica rotação pinada
+            if (_attackFacingPinned)
+                transform.rotation = _attackFacing;
+
+            // Animação de movimento
+            float normSpeed = chaseSpeed > 0f ? Mathf.Clamp01(currentSpeed / chaseSpeed) : 0f;
+            AnimatorSpeed(normSpeed);
+
+            // ---------- ATAQUE (trigger) ----------
+            if (state == State.Attacking && Time.time >= lastAttackTime + attackRate && !isDamagePaused)
+            {
+                lastAttackTime = Time.time;
+
+                if (animator && !string.IsNullOrEmpty(attackTriggerName))
+                {
+                    animator.ResetTrigger(attackTriggerName);
+                    animator.SetTrigger(attackTriggerName);
+                }
+                // Dano é feito pelos Animation Events:
+                // - OnThrowRelease()  -> projétil
+                // - flamefx()         -> hitbox no chão
+            }
+
+            // ---------- WANDER ----------
+            if (!stayStationary && state == State.Wandering)
+            {
+                if (!isIdleWaiting)
+                {
+                    wanderTimer += Time.deltaTime;
+                    if (wanderTimer >= wanderInterval ||
+                        Vector3.Distance(transform.position, wanderTarget) < 0.2f)
+                    {
+                        isIdleWaiting = true;
+                        idleWaitTimer = 0f;
+                    }
+                }
+                else
+                {
+                    idleWaitTimer += Time.deltaTime;
+                    if (idleWaitTimer >= idleWaitDuration)
+                    {
+                        isIdleWaiting = false;
+                        wanderTimer = 0f;
+                        PickWanderTarget();
+                    }
+                }
+            }
+        }
+
+        void FixedUpdate()
+        {
+            if (_translationLocked) PinXZ();
+        }
+
+        void LateUpdate()
+        {
+            if (_translationLocked) PinXZ();
+        }
+
         void PinXZ()
         {
             var p = transform.position;
@@ -528,6 +428,178 @@ namespace Geneforge.Gameplay.Characters.Enemies.Ranged
                 _rb.angularVelocity = Vector3.zero;
             }
         }
+
+        // ============================
+        //   Arma de fogo / Disparo
+        // ============================
+
+        // Animation Event no ataque de projétil
+        public void OnThrowRelease()
+        {
+            if (weaponType == WeaponType.Projectile && !isDamagePaused)
+                ShootProjectile();
+        }
+
+        // Compat por causa do Melee (não usado aqui)
+        public void OnAttackHit() { }
+
+        void ShootProjectile()
+        {
+            if (bulletPrefab == null) return;
+
+            if (ownerCols == null || ownerCols.Length == 0)
+                ownerCols = GetComponentsInChildren<Collider>(true);
+
+            Vector3 originPos = firePoint ? firePoint.position : transform.position;
+            Vector3 targetPos = (player ? player.position : transform.position + transform.forward * 5f) + aimOffset;
+            Vector3 dir = (targetPos - originPos).normalized;
+
+            GameObject bullet = Instantiate(bulletPrefab, originPos, Quaternion.LookRotation(dir));
+
+            var proj = bullet.GetComponent<SpearProjectile>();
+            var rb   = bullet.GetComponent<Rigidbody>();
+            var col  = bullet.GetComponent<Collider>();
+            if (!proj || !rb || !col) return;
+
+            proj.Launch(dir * bulletSpeed, ownerCols);
+        }
+
+        // ---------- ATAQUE DE FOGO (RETÂNGULO NO CHÃO) ----------
+        // Animation Event no ataque de fogo
+        public void flamefx()
+        {
+            if (weaponType == WeaponType.Flamethrower && !isDamagePaused)
+                ApplyFlameDamageBox();
+        }
+
+        void ApplyFlameDamageBox()
+        {
+            if (player == null || playerHealth == null)
+                return;
+
+            if (A_ChameleonCamouflage.InvisibleActive)
+                return;
+
+            // Origem do inimigo
+            Vector3 origin = transform.position;
+
+            // Direção para a frente, no plano XZ
+            Vector3 fwd = transform.forward;
+            Vector3 flatFwd = new Vector3(fwd.x, 0f, fwd.z);
+            if (flatFwd.sqrMagnitude < 1e-4f)
+                flatFwd = Vector3.forward;
+            flatFwd.Normalize();
+
+            // Tamanho da caixa
+            Vector3 halfExtents = new Vector3(
+                flameWidth  * 0.5f,
+                flameHeight * 0.5f,
+                flameLength * 0.5f
+            );
+
+            // Altura (no chão + offset)
+            Vector3 ground = origin;
+            ground.y = origin.y + flameVerticalOffset + halfExtents.y;
+
+            // Centro totalmente à frente do inimigo
+            float forwardDist = flameLength * 0.5f + flameForwardOffset;
+            Vector3 center = ground + flatFwd * forwardDist;
+
+            Quaternion rot = Quaternion.LookRotation(flatFwd, Vector3.up);
+
+            Collider[] hits = Physics.OverlapBox(
+                center,
+                halfExtents,
+                rot,
+                lineOfSightMask,
+                QueryTriggerInteraction.Ignore
+            );
+
+            for (int i = 0; i < hits.Length; i++)
+            {
+                var h = hits[i];
+                if (h == null) continue;
+
+                if (h.transform == player || h.transform.IsChildOf(player))
+                {
+                    playerHealth.ApplyDamage(flameDamage);
+                }
+            }
+        }
+
+        // ============================
+        //    Auxiliares
+        // ============================
+        bool HasLineOfSight()
+        {
+            if (!requireLineOfSight || player == null) return true;
+
+            Vector3 origin = (firePoint ? firePoint.position : transform.position);
+            Vector3 target = player.position + aimOffset;
+
+            Vector3 diff = target - origin;
+            float dist = Mathf.Max(0f, diff.magnitude - lineOfSightPadding);
+            if (dist <= 0.001f) return true;
+
+            Vector3 dir = diff / (diff.magnitude > 0.0001f ? diff.magnitude : 1f);
+
+            if (Physics.Raycast(origin, dir, out RaycastHit hit, dist, lineOfSightMask, QueryTriggerInteraction.Ignore))
+            {
+                if (hit.collider && hit.collider.transform != player && !hit.collider.transform.IsChildOf(player))
+                    return false;
+            }
+            return true;
+        }
+
+        void PickWanderTarget()
+        {
+            Vector2 rnd = Random.insideUnitCircle * wanderRadius;
+            wanderTarget = spawnPos + new Vector3(rnd.x, 0f, rnd.y);
+        }
+
+        void OnDrawGizmosSelected()
+        {
+            if (!stayStationary)
+            {
+                Gizmos.color = Color.yellow; Gizmos.DrawWireSphere(transform.position, wanderRadius);
+                Gizmos.color = Color.magenta; Gizmos.DrawWireSphere(transform.position, detectionRadius);
+            }
+            Gizmos.color = Color.red; Gizmos.DrawWireSphere(transform.position, attackRange);
+
+            // Gizmo da área de flame (retângulo) para debug
+            if (weaponType == WeaponType.Flamethrower)
+            {
+                Vector3 origin = transform.position;
+
+                Vector3 fwd = transform.forward;
+                Vector3 flatFwd = new Vector3(fwd.x, 0f, fwd.z);
+                if (flatFwd.sqrMagnitude < 1e-4f)
+                    flatFwd = Vector3.forward;
+                flatFwd.Normalize();
+
+                Vector3 halfExtents = new Vector3(
+                    flameWidth  * 0.5f,
+                    flameHeight * 0.5f,
+                    flameLength * 0.5f
+                );
+
+                Vector3 ground = origin;
+                ground.y = origin.y + flameVerticalOffset + halfExtents.y;
+
+                float forwardDist = flameLength * 0.5f + flameForwardOffset;
+                Vector3 center = ground + flatFwd * forwardDist;
+
+                Quaternion rot = Quaternion.LookRotation(flatFwd, Vector3.up);
+
+                Gizmos.color = new Color(1f, 0.5f, 0f, 0.25f);
+                Matrix4x4 old = Gizmos.matrix;
+                Gizmos.matrix = Matrix4x4.TRS(center, rot, Vector3.one);
+                Gizmos.DrawCube(Vector3.zero, halfExtents * 2f);
+                Gizmos.matrix = old;
+            }
+        }
+
+        // ----------------- Helpers de animação / movimento -----------------
 
         bool IsInAttackAnim()
         {
@@ -563,8 +635,7 @@ namespace Geneforge.Gameplay.Characters.Enemies.Ranged
 
         void AnimatorSpeed(float v)
         {
-            if (animator != null)
-                animator.SetFloat("Speed", v);
+            if (animator != null) animator.SetFloat("Speed", v);
         }
 
         void ApplyRootMotionLock(bool locked)

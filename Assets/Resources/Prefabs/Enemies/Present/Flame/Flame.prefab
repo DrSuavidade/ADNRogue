@@ -870,13 +870,31 @@ MonoBehaviour:
   bulletSpeed: 30
   aimOffset: {x: 0, y: 0, z: 0}
   weaponType: 1
-  flamePrefab: {fileID: 8418156172347864564, guid: 9dfd4632d64c0214d9785b8e9316bc3f, type: 3}
+  flameLength: 5
+  flameWidth: 3
+  flameHeight: 1
   flameDamage: 10
-  flameRange: 20
+  flameForwardOffset: 1.5
+  flameVerticalOffset: 0.1
   damagePauseDuration: 0.5
+  disableRootMotionWhenLocked: 1
   hardStopRigidbodyWhenLocked: 1
   hardStopFreezeRotationY: 1
-  deathStateName: Death
+  freezeRotationWhileAttacking: 1
+  attackStateNames:
+  - Attack
+  - AttackB
+  - AttackC
+  attackStateTags:
+  - Attack
+  freezeRotationWhileHit: 1
+  hitStateNames:
+  - Damaged
+  - Hit
+  - Hurt
+  hitStateTags:
+  - Hurt
+  - Damaged
 --- !u!4 &8947418058167633407 stripped
 Transform:
   m_CorrespondingSourceObject: {fileID: -8679921383154817045, guid: 10e7ac08a1e5c544e8dd52d07a524f6c, type: 3}
