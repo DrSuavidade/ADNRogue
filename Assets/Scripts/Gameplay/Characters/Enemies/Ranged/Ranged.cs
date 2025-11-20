@@ -13,7 +13,7 @@ namespace Geneforge.Gameplay.Characters.Enemies.Ranged
 
         [Header("Comportamento")]
         public bool stayStationary = false;
-        public bool rotateInPlace = true;
+        public bool rotateInPlace = true;        // já não manda rodar sempre para o player
 
         [Header("Wander")]
         public float wanderRadius = 5f;
@@ -163,7 +163,6 @@ namespace Geneforge.Gameplay.Characters.Enemies.Ranged
             bool inBusyAnim   = inAttackAnim || inHitAnim;
 
             // -------- Lock de Translação ----------
-            // EXACTO ao Melee: dano (timer) OU enquanto o clip de hit/ataque está ativo
             bool wantsTranslationLock = isDamagePaused || inBusyAnim;
 
             if (wantsTranslationLock && !_translationLocked) StartTranslationLock();
@@ -185,8 +184,7 @@ namespace Geneforge.Gameplay.Characters.Enemies.Ranged
                 _attackFacingPinned = false;
             }
 
-            // Dano: avançar timer (não fazemos return — mantém lógica viva,
-            // mas o lock + HardStopNow impedem movimento real)
+            // Dano: avançar timer
             if (isDamagePaused)
             {
                 damagePauseTimer += Time.deltaTime;
@@ -198,8 +196,6 @@ namespace Geneforge.Gameplay.Characters.Enemies.Ranged
             }
 
             // -------- BLOQUEIO TOTAL ENQUANTO ESTÁ EM HIT --------
-            // Tal e qual o comportamento que queres: enquanto o clip de Hit
-            // estiver ativo, ele não anda nem roda (fica “pregado”).
             if (inHitAnim)
             {
                 AnimatorSpeed(0f);
@@ -249,30 +245,65 @@ namespace Geneforge.Gameplay.Characters.Enemies.Ranged
             }
 
             currentSpeed = targetSpeed;
+
+            // ---------- MOVIMENTO CORRIGIDO (SEM DESLIZE OBLÍQUO) ----------
             if (currentSpeed > 0f)
             {
-                Vector3 dir = targetPos - transform.position; dir.y = 0f;
+                Vector3 dir = targetPos - transform.position;
+                dir.y = 0f;
+
                 if (dir.sqrMagnitude > 0.01f)
                 {
-                    if (!_translationLocked)
-                        transform.position += dir.normalized * currentSpeed * Time.deltaTime;
-
-                    // Não rodar se a rotação estiver pinada (ataque ou hit)
+                    // ROTATION SUAVE NA DIREÇÃO DO ALVO (se não estiver pinado por ataque/hit)
                     if (!_attackFacingPinned)
-                        transform.rotation = Quaternion.LookRotation(dir.normalized);
+                    {
+                        Quaternion targetRot = Quaternion.LookRotation(dir.normalized);
+                        transform.rotation = Quaternion.Slerp(
+                            transform.rotation,
+                            targetRot,
+                            Time.deltaTime * 6f
+                        );
+                    }
+
+                    // MOVIMENTO – anda sempre para a frente, sem deslize diagonal
+                    if (!_translationLocked)
+                    {
+                        Vector3 forwardMovement = transform.forward * currentSpeed * Time.deltaTime;
+
+                        if (_rb)
+                        {
+                            if (_rb.isKinematic)
+                            {
+                                // Rigidbody kinematic → mexemos o transform
+                                transform.position += forwardMovement;
+                            }
+                            else
+                            {
+                                // Rigidbody dinâmico → MovePosition (mais estável)
+                                _rb.MovePosition(_rb.position + forwardMovement);
+                            }
+                        }
+                        else
+                        {
+                            // Sem Rigidbody → mexemos o transform
+                            transform.position += forwardMovement;
+                        }
+                    }
                 }
             }
             else
             {
                 HardStopNow(alsoFreezeRotationY: false);
             }
+            // ---------------------------------------------------------------
 
-            // 4) olhar para o alvo (attack / rotateInPlace), mas não durante pin
-            if ((state == State.Attacking || rotateInPlace) && player != null)
+            // 4) olhar para o PLAYER APENAS quando está a perseguir ou a atacar
+            if (player != null && (state == State.Attacking || state == State.Chasing))
             {
                 if (!_attackFacingPinned)
                 {
-                    Vector3 face = player.position - transform.position; face.y = 0f;
+                    Vector3 face = player.position - transform.position;
+                    face.y = 0f;
                     if (face.sqrMagnitude > 0.001f)
                         transform.rotation = Quaternion.LookRotation(face.normalized);
                 }
