@@ -1,5 +1,67 @@
 %YAML 1.1
 %TAG !u! tag:unity3d.com,2011:
+--- !u!1 &732284002805255838
+GameObject:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  serializedVersion: 6
+  m_Component:
+  - component: {fileID: 2836622034603942497}
+  m_Layer: 0
+  m_Name: Throworigin
+  m_TagString: Untagged
+  m_Icon: {fileID: 0}
+  m_NavMeshLayer: 0
+  m_StaticEditorFlags: 0
+  m_IsActive: 1
+--- !u!4 &2836622034603942497
+Transform:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 732284002805255838}
+  serializedVersion: 2
+  m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
+  m_LocalPosition: {x: -0.051, y: 0.065, z: -0.052}
+  m_LocalScale: {x: 1, y: 1, z: 1}
+  m_ConstrainProportionsScale: 0
+  m_Children: []
+  m_Father: {fileID: 393358656026768894}
+  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
+--- !u!1 &1793998210005756559
+GameObject:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  serializedVersion: 6
+  m_Component:
+  - component: {fileID: 5676758924182534692}
+  m_Layer: 0
+  m_Name: SpearSocket
+  m_TagString: Untagged
+  m_Icon: {fileID: 0}
+  m_NavMeshLayer: 0
+  m_StaticEditorFlags: 0
+  m_IsActive: 1
+--- !u!4 &5676758924182534692
+Transform:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1793998210005756559}
+  serializedVersion: 2
+  m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
+  m_LocalPosition: {x: 0, y: 0, z: 0}
+  m_LocalScale: {x: 1, y: 1, z: 1}
+  m_ConstrainProportionsScale: 0
+  m_Children: []
+  m_Father: {fileID: 393358656026768894}
+  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
 --- !u!1001 &2071886001670130230
 PrefabInstance:
   m_ObjectHideFlags: 0
@@ -50,7 +112,7 @@ PrefabInstance:
       objectReference: {fileID: 0}
     - target: {fileID: 919132149155446097, guid: bee172f8f16246f4ebc7c4e9745f24cb, type: 3}
       propertyPath: m_Name
-      value: Tammer
+      value: Tammer_Prefab
       objectReference: {fileID: 0}
     - target: {fileID: 4436688111662040078, guid: bee172f8f16246f4ebc7c4e9745f24cb, type: 3}
       propertyPath: 'm_Materials.Array.data[0]'
@@ -62,6 +124,12 @@ PrefabInstance:
     - targetCorrespondingSourceObject: {fileID: -8679921383154817045, guid: bee172f8f16246f4ebc7c4e9745f24cb, type: 3}
       insertIndex: 0
       addedObject: {fileID: 4346716489672809189}
+    - targetCorrespondingSourceObject: {fileID: 1852576806548013000, guid: bee172f8f16246f4ebc7c4e9745f24cb, type: 3}
+      insertIndex: -1
+      addedObject: {fileID: 5676758924182534692}
+    - targetCorrespondingSourceObject: {fileID: 1852576806548013000, guid: bee172f8f16246f4ebc7c4e9745f24cb, type: 3}
+      insertIndex: -1
+      addedObject: {fileID: 2836622034603942497}
     m_AddedComponents:
     - targetCorrespondingSourceObject: {fileID: 919132149155446097, guid: bee172f8f16246f4ebc7c4e9745f24cb, type: 3}
       insertIndex: -1
@@ -71,14 +139,19 @@ PrefabInstance:
       addedObject: {fileID: 2451748846125868023}
     - targetCorrespondingSourceObject: {fileID: 919132149155446097, guid: bee172f8f16246f4ebc7c4e9745f24cb, type: 3}
       insertIndex: -1
-      addedObject: {fileID: 1322637700684948288}
-    - targetCorrespondingSourceObject: {fileID: 919132149155446097, guid: bee172f8f16246f4ebc7c4e9745f24cb, type: 3}
-      insertIndex: -1
       addedObject: {fileID: 4264821275478113555}
     - targetCorrespondingSourceObject: {fileID: 919132149155446097, guid: bee172f8f16246f4ebc7c4e9745f24cb, type: 3}
       insertIndex: -1
       addedObject: {fileID: 2114927845467425706}
+    - targetCorrespondingSourceObject: {fileID: 919132149155446097, guid: bee172f8f16246f4ebc7c4e9745f24cb, type: 3}
+      insertIndex: -1
+      addedObject: {fileID: 630686925217297215}
   m_SourcePrefab: {fileID: 100100000, guid: bee172f8f16246f4ebc7c4e9745f24cb, type: 3}
+--- !u!4 &393358656026768894 stripped
+Transform:
+  m_CorrespondingSourceObject: {fileID: 1852576806548013000, guid: bee172f8f16246f4ebc7c4e9745f24cb, type: 3}
+  m_PrefabInstance: {fileID: 2071886001670130230}
+  m_PrefabAsset: {fileID: 0}
 --- !u!1 &1153405868413957991 stripped
 GameObject:
   m_CorrespondingSourceObject: {fileID: 919132149155446097, guid: bee172f8f16246f4ebc7c4e9745f24cb, type: 3}
@@ -125,37 +198,6 @@ MonoBehaviour:
   deathAnimDuration: 5
   damageTextPrefab: {fileID: 8104875995613135839, guid: 51bfa69456bef62438805f10c2608f9f, type: 3}
   damageTextOffset: {x: 0, y: 2.5, z: 0}
---- !u!114 &1322637700684948288
-MonoBehaviour:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 1153405868413957991}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: b52db176e47bca942b26cdc96ba47292, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: 
-  animator: {fileID: 3686557578153561116}
-  playerHealth: {fileID: 0}
-  stayStationary: 0
-  rotateInPlace: 1
-  wanderRadius: 5
-  wanderInterval: 3
-  wanderSpeed: 2
-  idleWaitDuration: 1
-  detectionRadius: 15
-  chaseSpeed: 4
-  attackRange: 2.2
-  attackRate: 1.5
-  damagePerHit: 10
-  knockbackRootOverride: {fileID: 0}
-  applyKnockback: 1
-  knockbackForce: 6
-  knockbackUpward: 0.5
-  knockbackMaxSpeed: 12
-  damagePauseDuration: 0.5
 --- !u!65 &4264821275478113555
 BoxCollider:
   m_ObjectHideFlags: 0
@@ -196,10 +238,9 @@ MonoBehaviour:
   groundMask:
     serializedVersion: 2
     m_Bits: 4294967295
-  maxAlive: 3
-  summonCooldown: 3
-  loopWhileAliveAndSeeingPlayer: 1
-  loopInterval: 6
+  targetAlive: 5
+  refillWithoutCooldown: 1
+  refillDelay: 0.15
   playerTag: Player
   viewDistance: 18
   viewHalfAngle: 60
@@ -210,6 +251,60 @@ MonoBehaviour:
   visionCheckEvery: 0.15
   enableTestKey: 0
   testKey: 116
+--- !u!114 &630686925217297215
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1153405868413957991}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 9917ed6e72275ce4caafa7bcb7fefd71, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  animator: {fileID: 3686557578153561116}
+  playerHealth: {fileID: 0}
+  stayStationary: 0
+  rotateInPlace: 1
+  wanderRadius: 5
+  wanderInterval: 3
+  wanderSpeed: 2
+  idleWaitDuration: 1
+  detectionRadius: 20
+  chaseSpeed: 4
+  attackRange: 12
+  attackRate: 1.25
+  requireLineOfSight: 1
+  lineOfSightMask:
+    serializedVersion: 2
+    m_Bits: 8
+  lineOfSightPadding: 0.1
+  spearPrefab: {fileID: 3478011260350783487, guid: f40eaff574c5d104093df1d1004e0474, type: 3}
+  spearSocket: {fileID: 5676758924182534692}
+  throwOrigin: {fileID: 2836622034603942497}
+  throwForce: 30
+  aimOffset: {x: 0, y: 0, z: 0}
+  damagePauseDuration: 0.5
+  disableRootMotionWhenLocked: 1
+  hardStopRigidbodyWhenLocked: 1
+  hardStopFreezeRotationY: 1
+  freezeRotationWhileAttacking: 1
+  attackStateNames:
+  - Attack
+  - AttackB
+  - AttackC
+  attackStateTags:
+  - Attack
+  freezeRotationWhileHit: 1
+  hitStateNames:
+  - Damaged
+  - Hit
+  - Hurt
+  hitStateTags:
+  - Hurt
+  - Damaged
+  deathStateName: Death
 --- !u!4 &1966498717537824221 stripped
 Transform:
   m_CorrespondingSourceObject: {fileID: -8679921383154817045, guid: bee172f8f16246f4ebc7c4e9745f24cb, type: 3}
