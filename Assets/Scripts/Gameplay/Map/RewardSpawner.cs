@@ -4,35 +4,41 @@ namespace Geneforge.Gameplay.Map
 {
     public class RewardSpawner : MonoBehaviour
     {
-        [Header("Prefabs")]
-        [Tooltip("Prefab for the key pickup; must have a KeyPickup component.")]
-        public GameObject keyPickupPrefab;
-
-        [Tooltip("Optional: some generic reward prefab if you want non-key loot too.")]
-        public GameObject regularRewardPrefab;
-
         [Header("State (runtime)")]
         [SerializeField] private bool spawnKey;
+        [SerializeField] private bool hasSpawned;
 
         public bool WillSpawnKey => spawnKey;
 
+        /// <summary>
+        /// Called by RoomInstance when it is chosen as the key room.
+        /// </summary>
         public void ConfigureKeySpawn(bool shouldSpawnKey)
         {
             spawnKey = shouldSpawnKey;
         }
 
         /// <summary>
-        /// Call this from your combat-clear logic.
+        /// Called by RoomInstance when the room is cleared.
         /// </summary>
         public void SpawnRewards()
         {
-            if (spawnKey && keyPickupPrefab != null)
+            if (hasSpawned) return;
+            hasSpawned = true;
+
+            if (DungeonMapManager.Instance == null)
             {
-                Instantiate(keyPickupPrefab, transform.position, transform.rotation);
+                Debug.LogWarning("[RewardSpawner] No DungeonMapManager instance found.");
+                return;
             }
-            else if (regularRewardPrefab != null)
+
+            if (spawnKey)
             {
-                Instantiate(regularRewardPrefab, transform.position, transform.rotation);
+                DungeonMapManager.Instance.SpawnKeyAt(this);
+            }
+            else
+            {
+                DungeonMapManager.Instance.SpawnRewardAt(this);
             }
         }
     }

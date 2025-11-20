@@ -5,6 +5,14 @@ using UnityEngine;
 namespace Geneforge.Gameplay.Map
 {
     [Serializable]
+    public class WeightedPrefab
+    {
+        public GameObject prefab;
+        [Tooltip("Relative chance; values are normalized at runtime.")]
+        public float weight = 1f;
+    }
+
+    [Serializable]
     public class TimelineRoomSet
     {
         public TimelineId timelineId;
@@ -14,14 +22,25 @@ namespace Geneforge.Gameplay.Map
         [Header("Prefabs (SE-oriented where applicable)")]
         public GameObject hubPrefab;
 
-        [Tooltip("Combat rooms used for the four diagonal slots (NE, SE, SW, NW). Oriented to SE by default.")]
-        public List<GameObject> combatRoomsSE = new List<GameObject>();
+        [Tooltip("Weighted combat rooms for NE/SE/SW/NW (prefabs oriented to SE).")]
+        public List<WeightedPrefab> combatRoomsSE = new List<WeightedPrefab>();
 
         [Tooltip("Reserved for shops on East/West openings.")]
-        public List<GameObject> shopRoomsSE = new List<GameObject>();
+        public List<WeightedPrefab> shopRoomsSE = new List<WeightedPrefab>();
 
         [Tooltip("Reserved for special events on East/West openings.")]
-        public List<GameObject> eventRoomsSE = new List<GameObject>();
+        public List<WeightedPrefab> eventRoomsSE = new List<WeightedPrefab>();
+
+        [Header("Rewards (per timeline/floor)")]
+        [Tooltip("Key pickup prefab used on every floor of this timeline (must have KeyPickup).")]
+        public GameObject keyPickupPrefab;
+
+        [Tooltip("Weighted non-key reward pool used on all floors of this timeline.")]
+        public List<WeightedPrefab> floorRewardPrefabs = new List<WeightedPrefab>();
+
+        [Header("Enemies")]
+        [Tooltip("Weighted enemy prefabs used in combat rooms for this timeline.")]
+        public List<WeightedPrefab> enemyPrefabs = new List<WeightedPrefab>();
     }
 
     [CreateAssetMenu(menuName = "Geneforge/Map/DungeonConfig", fileName = "DungeonConfig")]

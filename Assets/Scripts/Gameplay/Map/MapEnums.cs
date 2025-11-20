@@ -80,7 +80,7 @@ namespace Geneforge.Gameplay.Map
             float baseAngle = baseDir.AngleFromNorth();
             float targetAngle = targetDir.AngleFromNorth();
             float delta = targetAngle - baseAngle;
-            return Quaternion.Euler(0f, delta, 0f);
+            return Quaternion.Euler(0f, delta + 180f, 0f);
         }
 
         public static bool IsDiagonal(this RoomDirection dir)

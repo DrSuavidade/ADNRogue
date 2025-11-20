@@ -9,6 +9,7 @@ GameObject:
   serializedVersion: 6
   m_Component:
   - component: {fileID: 2377030975028557077}
+  - component: {fileID: 5039402578712732327}
   m_Layer: 0
   m_Name: RoomSmall
   m_TagString: Untagged
@@ -30,8 +31,77 @@ Transform:
   m_ConstrainProportionsScale: 0
   m_Children:
   - {fileID: 1132343198312467067}
+  - {fileID: 1271255589338904186}
   m_Father: {fileID: 0}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
+--- !u!114 &5039402578712732327
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 746481366048017339}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: bcf094e44b87e8449b68b168ff11ce87, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  roomType: 1
+  rewardSpawner: {fileID: 6252314004127570146}
+  enemySpawners: []
+  timelineId: 0
+  floorIndex: 0
+  directionFromHub: 0
+  visitOrderGlobal: -1
+  visitOrderAmongDiagonals: -1
+  isKeyRoom: 0
+--- !u!1 &763424140437237600
+GameObject:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  serializedVersion: 6
+  m_Component:
+  - component: {fileID: 1271255589338904186}
+  - component: {fileID: 6252314004127570146}
+  m_Layer: 0
+  m_Name: RewardSpawner
+  m_TagString: Untagged
+  m_Icon: {fileID: 0}
+  m_NavMeshLayer: 0
+  m_StaticEditorFlags: 0
+  m_IsActive: 1
+--- !u!4 &1271255589338904186
+Transform:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 763424140437237600}
+  serializedVersion: 2
+  m_LocalRotation: {x: -0, y: -0, z: -0, w: 1}
+  m_LocalPosition: {x: -3.9, y: 0, z: 2.2}
+  m_LocalScale: {x: 1, y: 1, z: 1}
+  m_ConstrainProportionsScale: 0
+  m_Children: []
+  m_Father: {fileID: 2377030975028557077}
+  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
+--- !u!114 &6252314004127570146
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 763424140437237600}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 48df27a1c54e966428f3c4c1c5ac4430, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  keyPickupPrefab: {fileID: 8435360267250068082, guid: 438f9d65be92b23449ffe69fc6d0f25a, type: 3}
+  regularRewardPrefab: {fileID: 1714695668134714555, guid: 3467938649e56404a94dff219afe3899, type: 3}
+  spawnKey: 0
 --- !u!1001 &593451912662347152
 PrefabInstance:
   m_ObjectHideFlags: 0

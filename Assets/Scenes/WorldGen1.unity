@@ -1546,6 +1546,59 @@ CanvasRenderer:
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 1760903970}
   m_CullTransparentMesh: 1
+--- !u!1 &1793901098
+GameObject:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  serializedVersion: 6
+  m_Component:
+  - component: {fileID: 1793901100}
+  - component: {fileID: 1793901099}
+  m_Layer: 0
+  m_Name: DungeonMapManager
+  m_TagString: Untagged
+  m_Icon: {fileID: 0}
+  m_NavMeshLayer: 0
+  m_StaticEditorFlags: 0
+  m_IsActive: 1
+--- !u!114 &1793901099
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1793901098}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 50967252aac4e4344a9cc84251fe64cc, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  dungeonConfig: {fileID: 11400000, guid: 7113e3301dafe774c98e2f8eeba90a07, type: 2}
+  startingTimeline: 0
+  overrideFloors: -1
+  player: {fileID: 1943555254}
+  onBossStairsUsed:
+    m_PersistentCalls:
+      m_Calls: []
+  roomSpacing: 23
+  defaultKeyPickupPrefab: {fileID: 8435360267250068082, guid: 438f9d65be92b23449ffe69fc6d0f25a, type: 3}
+--- !u!4 &1793901100
+Transform:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1793901098}
+  serializedVersion: 2
+  m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
+  m_LocalPosition: {x: 0, y: 0, z: 0}
+  m_LocalScale: {x: 1, y: 1, z: 1}
+  m_ConstrainProportionsScale: 0
+  m_Children: []
+  m_Father: {fileID: 0}
+  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
 --- !u!1 &1802108669
 GameObject:
   m_ObjectHideFlags: 0
@@ -1815,3 +1868,4 @@ SceneRoots:
   - {fileID: 391336601}
   - {fileID: 726163640}
   - {fileID: 656501815}
+  - {fileID: 1793901100}

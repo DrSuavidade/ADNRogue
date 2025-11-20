@@ -16,24 +16,68 @@ MonoBehaviour:
   - timelineId: 0
     floors: 0
     hubPrefab: {fileID: 7832423919791031066, guid: 86afca2c8ad159848a25948fd07ab13b, type: 3}
-    combatRoomsSE: []
+    combatRoomsSE:
+    - prefab: {fileID: 1946875364467675688, guid: 5e6748d1b2c13294d869262939233cbe, type: 3}
+      weight: 2
+    - prefab: {fileID: 7252525873038237485, guid: fb958005200bcb3478052e070347d070, type: 3}
+      weight: 2
+    - prefab: {fileID: 2214833083107177488, guid: d10c884af618eb54098eb2e07ec3844d, type: 3}
+      weight: 1
+    - prefab: {fileID: 4956762915531176615, guid: 852d224eeb2ad7e49bb1fae5f422b009, type: 3}
+      weight: 3
+    - prefab: {fileID: 8891846385303532220, guid: b203cf46e1d6d5940a7b517773f13d88, type: 3}
+      weight: 3
+    - prefab: {fileID: 746481366048017339, guid: 44f78d313bd85384eae0c624109c5b5e, type: 3}
+      weight: 4
     shopRoomsSE: []
     eventRoomsSE: []
+    keyPickupPrefab: {fileID: 8435360267250068082, guid: 438f9d65be92b23449ffe69fc6d0f25a, type: 3}
+    floorRewardPrefabs:
+    - prefab: {fileID: 1714695668134714555, guid: 3467938649e56404a94dff219afe3899, type: 3}
+      weight: 1
+    - prefab: {fileID: 1179994856488095173, guid: 14fb7b4e38bc1df4c872ad35a0e6132d, type: 3}
+      weight: 1
+    - prefab: {fileID: 8835146898180081796, guid: 7201d182e7df0ff4d8dbc8ae77b4eac6, type: 3}
+      weight: 2
+    - prefab: {fileID: 1548549465973550650, guid: 235decd26f96bd843967b37b47e8ed93, type: 3}
+      weight: 2
+    enemyPrefabs:
+    - prefab: {fileID: 0}
+      weight: 0
+    - prefab: {fileID: 0}
+      weight: 0
+    - prefab: {fileID: 0}
+      weight: 0
+    - prefab: {fileID: 0}
+      weight: 0
+    - prefab: {fileID: 0}
+      weight: 0
+    - prefab: {fileID: 0}
+      weight: 0
   - timelineId: 1
     floors: 0
     hubPrefab: {fileID: 0}
     combatRoomsSE: []
     shopRoomsSE: []
     eventRoomsSE: []
+    keyPickupPrefab: {fileID: 0}
+    floorRewardPrefabs: []
+    enemyPrefabs: []
   - timelineId: 2
     floors: 0
     hubPrefab: {fileID: 0}
     combatRoomsSE: []
     shopRoomsSE: []
     eventRoomsSE: []
+    keyPickupPrefab: {fileID: 0}
+    floorRewardPrefabs: []
+    enemyPrefabs: []
   - timelineId: 3
     floors: 0
     hubPrefab: {fileID: 0}
     combatRoomsSE: []
     shopRoomsSE: []
     eventRoomsSE: []
+    keyPickupPrefab: {fileID: 0}
+    floorRewardPrefabs: []
+    enemyPrefabs: []

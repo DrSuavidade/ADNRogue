@@ -64,7 +64,7 @@ MeshRenderer:
   m_RenderingLayerMask: 1
   m_RendererPriority: 0
   m_Materials:
-  - {fileID: 2100000, guid: eec0667ab60b98946b8568702dbc78ff, type: 2}
+  - {fileID: 2100000, guid: 5f09635644a0e6d4892a559768da8d03, type: 2}
   m_StaticBatchInfo:
     firstSubMesh: 0
     subMeshCount: 0
@@ -160,17 +160,12 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: cbe0686a3bb149948bf0becd34b29f4c, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  lifeTime: 3
   damage: 1
   knockbackForce: 0
   isCrit: 0
+  lifeTime: 3
   impactEffectPrefab: {fileID: 25857733397299485, guid: 1168fe8bd7731c6488c329322accff4f, type: 3}
-  enableChainLightning: 0
-  chainLightningRadius: 6
-  chainLightningDamage: 2
-  chainLightningEffectPrefab: {fileID: 285656054538791525, guid: dc0dcd1aa86e1e74c94eafd8a4beb5c7, type: 3}
-  chainMaxJumps: 12
-  chainDelayBetweenJumps: 0.32
+  showAoeRingOnHit: 1
 --- !u!136 &4076745888941996120
 CapsuleCollider:
   m_ObjectHideFlags: 0
