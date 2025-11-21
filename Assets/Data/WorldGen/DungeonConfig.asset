@@ -42,18 +42,18 @@ MonoBehaviour:
     - prefab: {fileID: 1548549465973550650, guid: 235decd26f96bd843967b37b47e8ed93, type: 3}
       weight: 2
     enemyPrefabs:
-    - prefab: {fileID: 0}
-      weight: 0
-    - prefab: {fileID: 0}
-      weight: 0
-    - prefab: {fileID: 0}
-      weight: 0
-    - prefab: {fileID: 0}
-      weight: 0
-    - prefab: {fileID: 0}
-      weight: 0
-    - prefab: {fileID: 0}
-      weight: 0
+    - prefab: {fileID: 1691396493127541165, guid: a41b73f7d6f47cf458faccbb3ebb4bd0, type: 3}
+      weight: 1
+    - prefab: {fileID: 3325723471878475444, guid: e4b063766821bf84aa81279dfc55e73c, type: 3}
+      weight: 1
+    - prefab: {fileID: 4097680685806662130, guid: 9aba47167fca6054ba1d999da72c432e, type: 3}
+      weight: 1
+    - prefab: {fileID: 8616044378864164074, guid: 89bee1d6466f9a14f837c663006e4212, type: 3}
+      weight: 1
+    - prefab: {fileID: 5365526907987867840, guid: 9a2e906a8baa52647b62fcf360ca1661, type: 3}
+      weight: 1
+    - prefab: {fileID: 1153405868413957991, guid: 937786c2af231ba4ba1e1afc6ec176f7, type: 3}
+      weight: 1
   - timelineId: 1
     floors: 0
     hubPrefab: {fileID: 0}

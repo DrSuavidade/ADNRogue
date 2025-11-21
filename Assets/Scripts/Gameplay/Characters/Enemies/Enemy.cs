@@ -82,7 +82,7 @@ namespace Geneforge.Gameplay.Characters.Enemies
             isDead = true;
 
             // 1) parar AI/movimento imediatamente
-            var animal = GetComponent<Geneforge.Gameplay.Characters.Enemies.Animal.Animal>();
+            var animal = GetComponent<Animal.Animal>();
             if (animal != null) animal.enabled = false;
 
             var col = GetComponent<Collider>();
@@ -112,6 +112,8 @@ namespace Geneforge.Gameplay.Characters.Enemies
                 animator.SetFloat("Speed", 0f);
                 animator.SetTrigger(deathTrigger);
             }
+
+            GetComponent<Map.EnemyDeathNotifier>()?.ReportDeath();
 
             // 3) despawn em tempo REAL (não para com pause)
             if (_despawnCo == null)

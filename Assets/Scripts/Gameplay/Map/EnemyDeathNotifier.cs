@@ -3,18 +3,25 @@ using UnityEngine;
 namespace Geneforge.Gameplay.Map
 {
     /// <summary>
-    /// Lightweight bridge: whenever this enemy is destroyed, it notifies its spawner.
+    /// Lightweight bridge: call ReportDeath() from your enemy's death logic,
+    /// and it will notify the owning EnemySpawner/RoomInstance.
     /// </summary>
     public class EnemyDeathNotifier : MonoBehaviour
     {
         [HideInInspector] public EnemySpawner ownerSpawner;
 
-        private void OnDestroy()
+        public void ReportDeath()
         {
             if (ownerSpawner != null)
             {
                 ownerSpawner.NotifyEnemyDied();
             }
+        }
+
+        private void OnDestroy()
+        {
+            // Still supports the simple "Destroy(enemy)" case.
+            ReportDeath();
         }
     }
 }

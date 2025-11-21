@@ -11,9 +11,21 @@ EditorBuildSettings:
   - enabled: 1
     path: Assets/Scenes/TesteRun.unity
     guid: 59784f62dfc22e64b93ef8b86d49d82b
-  - enabled: 0
-    path: Assets/Scenes/SampleScene.unity
-    guid: 99c9720ab356a0642a771bea13969a05
+  - enabled: 1
+    path: Assets/Scenes/WorldGen1.unity
+    guid: 9ff4cf22f98198449b7cced72d59cc1a
+  - enabled: 1
+    path: Assets/Scenes/1stBoss.unity
+    guid: e3e65a3b4294a09479c9f60b35252a7a
+  - enabled: 1
+    path: Assets/Scenes/2ndBoss.unity
+    guid: 384a9c4b02298ae49a6c8449a550cce4
+  - enabled: 1
+    path: Assets/Scenes/3rdBoss.unity
+    guid: dbbaf86d3787b0c4ab56f97abe8ceced
+  - enabled: 1
+    path: Assets/Scenes/4thBoss.unity
+    guid: 69614317c40cc4f48877069ac32c965a
   m_configObjects:
     com.unity.input.settings.actions: {fileID: -944628639613478452, guid: 052faaac586de48259a63d0c4782560b, type: 3}
   m_UseUCBPForAssetBundles: 0

@@ -1,6 +1,8 @@
+using System;
 using System.Collections.Generic;
 using UnityEngine;
 using UnityEngine.Events;
+using Geneforge.Gameplay.Progression;
 
 namespace Geneforge.Gameplay.Map
 {
@@ -26,6 +28,7 @@ namespace Geneforge.Gameplay.Map
         [Tooltip("Fallback key prefab if TimelineRoomSet.keyPickupPrefab is not set.")]
         public GameObject defaultKeyPickupPrefab;
 
+
         // Current run state
         private TimelineId currentTimeline;
         private int currentFloorIndex;
@@ -47,6 +50,13 @@ namespace Geneforge.Gameplay.Map
         private RoomInstance keyRoom;
         private bool playerHasKey;
 
+        // Events
+
+        public event Action<bool> KeyStateChanged;
+        public bool PlayerHasKey => playerHasKey;
+        private void RaiseKeyStateChanged() => KeyStateChanged?.Invoke(playerHasKey);
+
+
         private void Awake()
         {
             if (Instance != null && Instance != this)
@@ -59,7 +69,17 @@ namespace Geneforge.Gameplay.Map
 
         private void Start()
         {
-            currentTimeline = startingTimeline;
+            if (RunState.HasTimelineOverride)
+            {
+                currentTimeline = RunState.CurrentTimeline;
+            }
+            else
+            {
+                currentTimeline = startingTimeline;
+                RunState.CurrentTimeline = currentTimeline;
+                RunState.HasTimelineOverride = true;
+            }
+
             TimelineRoomSet set = dungeonConfig != null ? dungeonConfig.GetTimeline(currentTimeline) : null;
             if (set == null)
             {
@@ -71,6 +91,7 @@ namespace Geneforge.Gameplay.Map
             currentFloorIndex = 0;
             GenerateFloor();
         }
+
 
         #region Generation
 
@@ -101,7 +122,9 @@ namespace Geneforge.Gameplay.Map
             diagonalVisitCounter = 0;
             keyRoom = null;
             playerHasKey = false;
-            keyWillAppearOnDiagonalVisitIndex = Random.Range(2, 5); // 2..4
+            keyWillAppearOnDiagonalVisitIndex = UnityEngine.Random.Range(2, 5); // 2..4
+
+            RaiseKeyStateChanged();
 
             // Hub
             GameObject hubGO = Instantiate(set.hubPrefab, Vector3.zero, Quaternion.identity);
@@ -227,6 +250,7 @@ namespace Geneforge.Gameplay.Map
         public void NotifyPlayerPickedUpKey()
         {
             playerHasKey = true;
+            RaiseKeyStateChanged();
             Debug.Log("[DungeonMapManager] Player picked up floor key.");
         }
 
@@ -280,7 +304,7 @@ namespace Geneforge.Gameplay.Map
 
             if (totalWeight <= 0f) return null;
 
-            float r = Random.value * totalWeight;
+            float r = UnityEngine.Random.value * totalWeight;
             for (int i = 0; i < list.Count; i++)
             {
                 var entry = list[i];
@@ -312,6 +336,7 @@ namespace Geneforge.Gameplay.Map
             }
 
             playerHasKey = false;
+            RaiseKeyStateChanged();
 
             bool lastFloor = (currentFloorIndex >= floorsInThisTimeline - 1);
             if (lastFloor)
