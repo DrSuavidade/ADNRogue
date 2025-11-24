@@ -1,5 +1,67 @@
 %YAML 1.1
 %TAG !u! tag:unity3d.com,2011:
+--- !u!1 &4727817885164469906
+GameObject:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  serializedVersion: 6
+  m_Component:
+  - component: {fileID: 5475705581017533725}
+  m_Layer: 0
+  m_Name: TailPoint
+  m_TagString: Untagged
+  m_Icon: {fileID: 0}
+  m_NavMeshLayer: 0
+  m_StaticEditorFlags: 0
+  m_IsActive: 1
+--- !u!4 &5475705581017533725
+Transform:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 4727817885164469906}
+  serializedVersion: 2
+  m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
+  m_LocalPosition: {x: 0, y: 0, z: 0}
+  m_LocalScale: {x: 1, y: 1, z: 1}
+  m_ConstrainProportionsScale: 0
+  m_Children: []
+  m_Father: {fileID: 2338309197410250422}
+  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
+--- !u!1 &8307109103377049865
+GameObject:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  serializedVersion: 6
+  m_Component:
+  - component: {fileID: 8991069242287590059}
+  m_Layer: 0
+  m_Name: BitePoint
+  m_TagString: Untagged
+  m_Icon: {fileID: 0}
+  m_NavMeshLayer: 0
+  m_StaticEditorFlags: 0
+  m_IsActive: 1
+--- !u!4 &8991069242287590059
+Transform:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 8307109103377049865}
+  serializedVersion: 2
+  m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
+  m_LocalPosition: {x: 0, y: 0, z: 0}
+  m_LocalScale: {x: 1, y: 1, z: 1}
+  m_ConstrainProportionsScale: 0
+  m_Children: []
+  m_Father: {fileID: 2111096629473781723}
+  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
 --- !u!1001 &5444757885434930790
 PrefabInstance:
   m_ObjectHideFlags: 0
@@ -66,11 +128,17 @@ PrefabInstance:
       objectReference: {fileID: 0}
     - target: {fileID: 919132149155446097, guid: 60313d3283bc2a548a8edf2abe5b67fa, type: 3}
       propertyPath: m_Name
-      value: Raptor
+      value: Raptor_Prefab
       objectReference: {fileID: 0}
     m_RemovedComponents: []
     m_RemovedGameObjects: []
-    m_AddedGameObjects: []
+    m_AddedGameObjects:
+    - targetCorrespondingSourceObject: {fileID: 6252039994455884221, guid: 60313d3283bc2a548a8edf2abe5b67fa, type: 3}
+      insertIndex: -1
+      addedObject: {fileID: 8991069242287590059}
+    - targetCorrespondingSourceObject: {fileID: 7781373121972504784, guid: 60313d3283bc2a548a8edf2abe5b67fa, type: 3}
+      insertIndex: -1
+      addedObject: {fileID: 5475705581017533725}
     m_AddedComponents:
     - targetCorrespondingSourceObject: {fileID: 919132149155446097, guid: 60313d3283bc2a548a8edf2abe5b67fa, type: 3}
       insertIndex: -1
@@ -85,6 +153,16 @@ PrefabInstance:
       insertIndex: -1
       addedObject: {fileID: 384482645458902651}
   m_SourcePrefab: {fileID: 100100000, guid: 60313d3283bc2a548a8edf2abe5b67fa, type: 3}
+--- !u!4 &2111096629473781723 stripped
+Transform:
+  m_CorrespondingSourceObject: {fileID: 6252039994455884221, guid: 60313d3283bc2a548a8edf2abe5b67fa, type: 3}
+  m_PrefabInstance: {fileID: 5444757885434930790}
+  m_PrefabAsset: {fileID: 0}
+--- !u!4 &2338309197410250422 stripped
+Transform:
+  m_CorrespondingSourceObject: {fileID: 7781373121972504784, guid: 60313d3283bc2a548a8edf2abe5b67fa, type: 3}
+  m_PrefabInstance: {fileID: 5444757885434930790}
+  m_PrefabAsset: {fileID: 0}
 --- !u!1 &5138259329276058423 stripped
 GameObject:
   m_CorrespondingSourceObject: {fileID: 919132149155446097, guid: 60313d3283bc2a548a8edf2abe5b67fa, type: 3}
@@ -162,6 +240,34 @@ MonoBehaviour:
   knockbackUpward: 0.5
   knockbackMaxSpeed: 12
   damagePauseDuration: 0.5
+  bitePoint: {fileID: 8991069242287590059}
+  tailPoint: {fileID: 5475705581017533725}
+  biteRadius: 0.9
+  tailRadius: 1.1
+  playerMask:
+    serializedVersion: 2
+    m_Bits: 8
+  lockDuringAttack: 1
+  attackLockExtraTime: 0.05
+  freezeRotationWhileAttacking: 1
+  lockOnDamage: 1
+  lockOnAttack: 1
+  attackStateNames:
+  - Attack
+  - AttackB
+  attackStateTags:
+  - Attack
+  disableRootMotionWhenLocked: 1
+  hardStopRigidbodyWhenLocked: 1
+  hardStopFreezeRotationY: 1
+  freezeRotationWhileHit: 1
+  hitStateNames:
+  - Damaged
+  - Hit
+  - Hurt
+  hitStateTags:
+  - Hurt
+  - Damaged
 --- !u!65 &384482645458902651
 BoxCollider:
   m_ObjectHideFlags: 0
