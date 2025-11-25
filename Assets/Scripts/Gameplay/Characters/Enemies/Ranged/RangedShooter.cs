@@ -1,6 +1,7 @@
 using UnityEngine;
 using System.Collections;
 using Geneforge.Gameplay.Characters.Player;
+using Geneforge.Gameplay.Weapons.Bullets;
 
 namespace Geneforge.Gameplay.Characters.Enemies.Ranged
 {
@@ -9,8 +10,8 @@ namespace Geneforge.Gameplay.Characters.Enemies.Ranged
     {
         public enum WeaponType
         {
-            Projectile,   // dispara projétil
-            Flamethrower  // dano por área (retângulo no chão)
+            Projectile,
+            Flamethrower
         }
 
         [Header("Referências")]
@@ -18,7 +19,6 @@ namespace Geneforge.Gameplay.Characters.Enemies.Ranged
         public PlayerHealth playerHealth;
 
         [Header("Animator")]
-        [Tooltip("Nome do Trigger de ataque no Animator (ex: 'Attack')")]
         public string attackTriggerName = "Attack";
 
         [Header("Comportamento")]
@@ -32,9 +32,9 @@ namespace Geneforge.Gameplay.Characters.Enemies.Ranged
         public float idleWaitDuration = 1f;
 
         [Header("Perceção / Ataque")]
-        public float detectionRadius = 20f;   // até onde vê / persegue
+        public float detectionRadius = 20f;
         public float chaseSpeed = 4f;
-        public float attackRange = 10f;       // distância a que pode atacar
+        public float attackRange = 10f;
         public float attackRate = 1.25f;
 
         [Header("LOS / Raycasts")]
@@ -43,7 +43,6 @@ namespace Geneforge.Gameplay.Characters.Enemies.Ranged
         public float lineOfSightPadding = 0.1f;
 
         [Header("Arma de fogo (projétil)")]
-        [Tooltip("Só é usado se WeaponType == Projectile")]
         public GameObject bulletPrefab;
         public Transform firePoint;
         public float bulletSpeed = 30f;
@@ -52,25 +51,17 @@ namespace Geneforge.Gameplay.Characters.Enemies.Ranged
         [Header("Tipo de arma")]
         public WeaponType weaponType = WeaponType.Flamethrower;
 
-        // ---------- ATAQUE DE FOGO POR ÁREA ----------
-        [Header("Flamethrower (Retângulo no chão)")]
-        [Tooltip("Comprimento da área à frente do inimigo")]
+        [Header("Flamethrower")]
         public float flameLength = 6f;
-        [Tooltip("Largura da área (esquerda-direita)")]
         public float flameWidth = 3f;
-        [Tooltip("Altura da área (em Y)")]
         public float flameHeight = 2f;
-        [Tooltip("Dano aplicado por cada 'tic' de ataque (ligado ao attackRate)")]
         public float flameDamage = 10f;
-        [Tooltip("Afasta a hitbox da origem do inimigo")]
         public float flameForwardOffset = 0.5f;
-        [Tooltip("Offset vertical em relação ao transform (ex: -1 para encostar ao chão)")]
         public float flameVerticalOffset = 0f;
 
         [Header("Pausa ao sofrer dano")]
         public float damagePauseDuration = 0.5f;
 
-        // ------- Lock / Motion Control (igual Melee) -------
         [Header("Motion Control")]
         public bool disableRootMotionWhenLocked = true;
         public bool hardStopRigidbodyWhenLocked = true;
@@ -79,20 +70,17 @@ namespace Geneforge.Gameplay.Characters.Enemies.Ranged
         [Header("Attack Lock / Detection")]
         public bool freezeRotationWhileAttacking = true;
         public string[] attackStateNames = { "Attack", "AttackB", "AttackC" };
-        public string[] attackStateTags  = { "Attack" };
+        public string[] attackStateTags = { "Attack" };
 
         [Header("Hit Lock / Detection")]
         public bool freezeRotationWhileHit = true;
         public string[] hitStateNames = { "Damaged", "Hit", "Hurt" };
-        public string[] hitStateTags  = { "Hurt", "Damaged" };
-        // ---------------------------------------------------
+        public string[] hitStateTags = { "Hurt", "Damaged" };
 
-        // ----------------- estado interno -----------------
         Vector3 spawnPos;
         Vector3 wanderTarget;
         float wanderTimer;
         float lastAttackTime;
-
         enum State { Wandering, Chasing, Attacking }
         State state = State.Wandering;
 
@@ -101,24 +89,20 @@ namespace Geneforge.Gameplay.Characters.Enemies.Ranged
         bool isIdleWaiting = false;
         float idleWaitTimer = 0f;
 
-        // Damage pause
         bool isDamagePaused = false;
         float damagePauseTimer = 0f;
 
-        // Despawn após morte
         bool _deathDespawnScheduled = false;
 
         Enemy enemy;
 
-        // --- Lock de Translação (anti-deslize) ---
         bool _translationLocked = false;
-        Vector3 _pinnedXZ; // XZ ancorados durante lock
+        Vector3 _pinnedXZ;
         Rigidbody _rb;
         CharacterController _cc;
         RigidbodyConstraints _rbPrevConstraints;
         bool _rbHadConstraints = false;
 
-        // --- Pin de rotação durante ataque/hit ---
         bool _attackFacingPinned = false;
         Quaternion _attackFacing;
 
@@ -126,8 +110,8 @@ namespace Geneforge.Gameplay.Characters.Enemies.Ranged
 
         void Awake()
         {
-            _rb  = GetComponent<Rigidbody>();
-            _cc  = GetComponent<CharacterController>();
+            _rb = GetComponent<Rigidbody>();
+            _cc = GetComponent<CharacterController>();
             enemy = GetComponent<Enemy>();
         }
 
@@ -164,7 +148,6 @@ namespace Geneforge.Gameplay.Characters.Enemies.Ranged
             }
         }
 
-        // --------- LOCK DE TRANSLATION ---------
         void StartTranslationLock()
         {
             _translationLocked = true;
@@ -209,7 +192,6 @@ namespace Geneforge.Gameplay.Characters.Enemies.Ranged
 
         void Update()
         {
-            // --- MORTE ---
             if (enemy != null && enemy.CurrentHealth <= 0f)
             {
                 AnimatorSpeed(0f);
@@ -224,21 +206,18 @@ namespace Geneforge.Gameplay.Characters.Enemies.Ranged
                 return;
             }
 
-            // Estados de animação "ocupados"
             bool inAttackAnim = IsInAttackAnim();
-            bool inHitAnim    = IsInHitAnim();
-            bool inBusyAnim   = inAttackAnim || inHitAnim;
+            bool inHitAnim = IsInHitAnim();
+            bool inBusyAnim = inAttackAnim || inHitAnim;
 
-            // Lock enquanto está em dano OU em clip de hit/ataque
             bool wantsTranslationLock = isDamagePaused || inBusyAnim;
 
             if (wantsTranslationLock && !_translationLocked) StartTranslationLock();
             else if (!wantsTranslationLock && _translationLocked) EndTranslationLock();
 
-            // --- Pin de rotação enquanto a animação "ocupada" decorre ---
             bool shouldPinFacing =
                 (inAttackAnim && freezeRotationWhileAttacking) ||
-                (inHitAnim    && freezeRotationWhileHit);
+                (inHitAnim && freezeRotationWhileHit);
 
             if (inBusyAnim && !_attackFacingPinned && shouldPinFacing)
             {
@@ -250,30 +229,27 @@ namespace Geneforge.Gameplay.Characters.Enemies.Ranged
                 _attackFacingPinned = false;
             }
 
-            // Dano: avançar timer
             if (isDamagePaused)
             {
                 damagePauseTimer += Time.deltaTime;
                 AnimatorSpeed(0f);
-                HardStopNow(alsoFreezeRotationY: true);
+                HardStopNow(true);
 
                 if (damagePauseTimer >= damagePauseDuration)
                     isDamagePaused = false;
             }
 
-            // Invisibilidade → como se o player não existisse
             if (A_ChameleonCamouflage.InvisibleActive)
             {
                 state = State.Wandering;
                 currentSpeed = 0f;
                 AnimatorSpeed(0f);
-                HardStopNow(alsoFreezeRotationY: false);
+                HardStopNow(false);
                 return;
             }
 
             if (player == null) return;
 
-            // -------- ESTADO --------
             float dist = Vector3.Distance(transform.position, player.position);
             bool hasLOS = !requireLineOfSight || HasLineOfSight();
             bool inRange = dist <= attackRange && hasLOS;
@@ -285,7 +261,6 @@ namespace Geneforge.Gameplay.Characters.Enemies.Ranged
             else
                 state = State.Wandering;
 
-            // -------- MOVIMENTO --------
             float targetSpeed;
             Vector3 targetPos;
 
@@ -317,9 +292,9 @@ namespace Geneforge.Gameplay.Characters.Enemies.Ranged
                     }
                     break;
 
-                default: // Attacking
+                default:
                     targetPos = transform.position;
-                    targetSpeed = 0f; // parado a atacar
+                    targetSpeed = 0f;
                     break;
             }
 
@@ -340,10 +315,9 @@ namespace Geneforge.Gameplay.Characters.Enemies.Ranged
             }
             else
             {
-                HardStopNow(alsoFreezeRotationY: false);
+                HardStopNow(false);
             }
 
-            // Rodar para o jogador
             if (player != null)
             {
                 bool wantRotateToPlayer =
@@ -358,15 +332,12 @@ namespace Geneforge.Gameplay.Characters.Enemies.Ranged
                 }
             }
 
-            // Reaplica rotação pinada
             if (_attackFacingPinned)
                 transform.rotation = _attackFacing;
 
-            // Animação de movimento
             float normSpeed = chaseSpeed > 0f ? Mathf.Clamp01(currentSpeed / chaseSpeed) : 0f;
             AnimatorSpeed(normSpeed);
 
-            // ---------- ATAQUE (trigger) ----------
             if (state == State.Attacking && Time.time >= lastAttackTime + attackRate && !isDamagePaused)
             {
                 lastAttackTime = Time.time;
@@ -376,12 +347,8 @@ namespace Geneforge.Gameplay.Characters.Enemies.Ranged
                     animator.ResetTrigger(attackTriggerName);
                     animator.SetTrigger(attackTriggerName);
                 }
-                // Dano é feito pelos Animation Events:
-                // - OnThrowRelease()  -> projétil
-                // - flamefx()         -> hitbox no chão
             }
 
-            // ---------- WANDER ----------
             if (!stayStationary && state == State.Wandering)
             {
                 if (!isIdleWaiting)
@@ -430,25 +397,21 @@ namespace Geneforge.Gameplay.Characters.Enemies.Ranged
         }
 
         // ============================
-        //   Arma de fogo / Disparo
+        //   DISPARO — **EDITADO**
         // ============================
 
-        // Animation Event no ataque de projétil
         public void OnThrowRelease()
         {
             if (weaponType == WeaponType.Projectile && !isDamagePaused)
                 ShootProjectile();
         }
 
-        // Compat por causa do Melee (não usado aqui)
         public void OnAttackHit() { }
+
 
         void ShootProjectile()
         {
             if (bulletPrefab == null) return;
-
-            if (ownerCols == null || ownerCols.Length == 0)
-                ownerCols = GetComponentsInChildren<Collider>(true);
 
             Vector3 originPos = firePoint ? firePoint.position : transform.position;
             Vector3 targetPos = (player ? player.position : transform.position + transform.forward * 5f) + aimOffset;
@@ -456,16 +419,31 @@ namespace Geneforge.Gameplay.Characters.Enemies.Ranged
 
             GameObject bullet = Instantiate(bulletPrefab, originPos, Quaternion.LookRotation(dir));
 
-            var proj = bullet.GetComponent<SpearProjectile>();
-            var rb   = bullet.GetComponent<Rigidbody>();
-            var col  = bullet.GetComponent<Collider>();
-            if (!proj || !rb || !col) return;
+            Rigidbody rb = bullet.GetComponent<Rigidbody>();
+            if (rb != null)
+            {
+                rb.useGravity = false;
+                rb.isKinematic = false;
+#if UNITY_6000_0_OR_NEWER
+                rb.linearVelocity = dir * bulletSpeed;
+#else
+                rb.velocity = dir * bulletSpeed;
+#endif
+            }
 
-            proj.Launch(dir * bulletSpeed, ownerCols);
+            // ============
+            //  DANO DA BALA — NOVO
+            // ============
+            Bullet stats = bullet.GetComponent<Bullet>();
+            if (stats != null)
+            {
+                stats.damage = 15f;          // podes ajustar aqui
+                stats.isCrit = false;
+                stats.knockbackForce = 0f;
+            }
         }
 
-        // ---------- ATAQUE DE FOGO (RETÂNGULO NO CHÃO) ----------
-        // Animation Event no ataque de fogo
+        // ---------- ATAQUE DE FOGO ----------
         public void flamefx()
         {
             if (weaponType == WeaponType.Flamethrower && !isDamagePaused)
@@ -480,28 +458,23 @@ namespace Geneforge.Gameplay.Characters.Enemies.Ranged
             if (A_ChameleonCamouflage.InvisibleActive)
                 return;
 
-            // Origem do inimigo
             Vector3 origin = transform.position;
 
-            // Direção para a frente, no plano XZ
             Vector3 fwd = transform.forward;
             Vector3 flatFwd = new Vector3(fwd.x, 0f, fwd.z);
             if (flatFwd.sqrMagnitude < 1e-4f)
                 flatFwd = Vector3.forward;
             flatFwd.Normalize();
 
-            // Tamanho da caixa
             Vector3 halfExtents = new Vector3(
-                flameWidth  * 0.5f,
+                flameWidth * 0.5f,
                 flameHeight * 0.5f,
                 flameLength * 0.5f
             );
 
-            // Altura (no chão + offset)
             Vector3 ground = origin;
             ground.y = origin.y + flameVerticalOffset + halfExtents.y;
 
-            // Centro totalmente à frente do inimigo
             float forwardDist = flameLength * 0.5f + flameForwardOffset;
             Vector3 center = ground + flatFwd * forwardDist;
 
@@ -527,9 +500,6 @@ namespace Geneforge.Gameplay.Characters.Enemies.Ranged
             }
         }
 
-        // ============================
-        //    Auxiliares
-        // ============================
         bool HasLineOfSight()
         {
             if (!requireLineOfSight || player == null) return true;
@@ -565,41 +535,7 @@ namespace Geneforge.Gameplay.Characters.Enemies.Ranged
                 Gizmos.color = Color.magenta; Gizmos.DrawWireSphere(transform.position, detectionRadius);
             }
             Gizmos.color = Color.red; Gizmos.DrawWireSphere(transform.position, attackRange);
-
-            // Gizmo da área de flame (retângulo) para debug
-            if (weaponType == WeaponType.Flamethrower)
-            {
-                Vector3 origin = transform.position;
-
-                Vector3 fwd = transform.forward;
-                Vector3 flatFwd = new Vector3(fwd.x, 0f, fwd.z);
-                if (flatFwd.sqrMagnitude < 1e-4f)
-                    flatFwd = Vector3.forward;
-                flatFwd.Normalize();
-
-                Vector3 halfExtents = new Vector3(
-                    flameWidth  * 0.5f,
-                    flameHeight * 0.5f,
-                    flameLength * 0.5f
-                );
-
-                Vector3 ground = origin;
-                ground.y = origin.y + flameVerticalOffset + halfExtents.y;
-
-                float forwardDist = flameLength * 0.5f + flameForwardOffset;
-                Vector3 center = ground + flatFwd * forwardDist;
-
-                Quaternion rot = Quaternion.LookRotation(flatFwd, Vector3.up);
-
-                Gizmos.color = new Color(1f, 0.5f, 0f, 0.25f);
-                Matrix4x4 old = Gizmos.matrix;
-                Gizmos.matrix = Matrix4x4.TRS(center, rot, Vector3.one);
-                Gizmos.DrawCube(Vector3.zero, halfExtents * 2f);
-                Gizmos.matrix = old;
-            }
         }
-
-        // ----------------- Helpers de animação / movimento -----------------
 
         bool IsInAttackAnim()
         {
