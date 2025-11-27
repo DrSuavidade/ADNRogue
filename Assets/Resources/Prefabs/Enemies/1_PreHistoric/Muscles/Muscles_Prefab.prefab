@@ -844,6 +844,7 @@ MonoBehaviour:
   attackRange: 1.5
   attackRate: 1
   damagePerHit: 10
+  attackVariants: 2
   knockbackRootOverride: {fileID: 0}
   applyKnockback: 1
   knockbackForce: 6
@@ -860,6 +861,14 @@ MonoBehaviour:
   - AttackC
   attackStateTags:
   - Attack
+  freezeRotationWhileHit: 1
+  hitStateNames:
+  - Damaged
+  - Hit
+  - Hurt
+  hitStateTags:
+  - Hurt
+  - Damaged
 --- !u!54 &4049140026613856608
 Rigidbody:
   m_ObjectHideFlags: 0

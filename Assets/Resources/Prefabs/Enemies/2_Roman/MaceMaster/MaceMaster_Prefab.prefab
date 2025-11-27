@@ -82,7 +82,7 @@ PrefabInstance:
       objectReference: {fileID: 0}
     - target: {fileID: 919132149155446097, guid: 17a92684daa17d24c8b1fa9f45ef3815, type: 3}
       propertyPath: m_Name
-      value: Mace
+      value: MaceMaster_Prefab
       objectReference: {fileID: 0}
     - target: {fileID: 4436688111662040078, guid: 17a92684daa17d24c8b1fa9f45ef3815, type: 3}
       propertyPath: 'm_Materials.Array.data[0]'
@@ -208,12 +208,31 @@ MonoBehaviour:
   attackRange: 1.5
   attackRate: 1
   damagePerHit: 10
+  attackVariants: 2
   knockbackRootOverride: {fileID: 0}
   applyKnockback: 1
   knockbackForce: 6
   knockbackUpward: 0.5
   knockbackMaxSpeed: 12
   damagePauseDuration: 0.5
+  disableRootMotionWhenLocked: 1
+  hardStopRigidbodyWhenLocked: 1
+  hardStopFreezeRotationY: 1
+  freezeRotationWhileAttacking: 1
+  attackStateNames:
+  - Attack
+  - AttackB
+  - AttackC
+  attackStateTags:
+  - Attack
+  freezeRotationWhileHit: 1
+  hitStateNames:
+  - Damaged
+  - Hit
+  - Hurt
+  hitStateTags:
+  - Hurt
+  - Damaged
 --- !u!4 &1798682922263034192 stripped
 Transform:
   m_CorrespondingSourceObject: {fileID: 1852576806548013000, guid: 17a92684daa17d24c8b1fa9f45ef3815, type: 3}
@@ -355,7 +374,7 @@ PrefabInstance:
       objectReference: {fileID: 0}
     - target: {fileID: 6320440017319024251, guid: fbae99ce307c85f42989e3e9d541584f, type: 3}
       propertyPath: m_LocalPosition.z
-      value: 24.539337
+      value: 0
       objectReference: {fileID: 0}
     - target: {fileID: 6320440017319024251, guid: fbae99ce307c85f42989e3e9d541584f, type: 3}
       propertyPath: m_LocalRotation.w
@@ -375,7 +394,7 @@ PrefabInstance:
       objectReference: {fileID: 0}
     - target: {fileID: 6320440017319024251, guid: fbae99ce307c85f42989e3e9d541584f, type: 3}
       propertyPath: m_AnchoredPosition.x
-      value: -3.5960007
+      value: 0
       objectReference: {fileID: 0}
     - target: {fileID: 6320440017319024251, guid: fbae99ce307c85f42989e3e9d541584f, type: 3}
       propertyPath: m_AnchoredPosition.y

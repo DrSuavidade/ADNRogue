@@ -205,6 +205,7 @@ MonoBehaviour:
   attackRange: 1.5
   attackRate: 1
   damagePerHit: 10
+  attackVariants: 1
   knockbackRootOverride: {fileID: 0}
   applyKnockback: 1
   knockbackForce: 6

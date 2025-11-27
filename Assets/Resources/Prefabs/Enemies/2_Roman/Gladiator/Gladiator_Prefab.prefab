@@ -407,7 +407,7 @@ PrefabInstance:
       objectReference: {fileID: 0}
     - target: {fileID: 919132149155446097, guid: 76aa7429ebaa5e546a652523649d3e19, type: 3}
       propertyPath: m_Name
-      value: Gladiator
+      value: Gladiator_Prefab
       objectReference: {fileID: 0}
     - target: {fileID: 4436688111662040078, guid: 76aa7429ebaa5e546a652523649d3e19, type: 3}
       propertyPath: 'm_Materials.Array.data[0]'
@@ -538,12 +538,31 @@ MonoBehaviour:
   attackRange: 1.5
   attackRate: 1
   damagePerHit: 10
+  attackVariants: 1
   knockbackRootOverride: {fileID: 0}
   applyKnockback: 1
   knockbackForce: 6
   knockbackUpward: 0.5
   knockbackMaxSpeed: 12
   damagePauseDuration: 0.5
+  disableRootMotionWhenLocked: 1
+  hardStopRigidbodyWhenLocked: 1
+  hardStopFreezeRotationY: 1
+  freezeRotationWhileAttacking: 1
+  attackStateNames:
+  - Attack
+  - AttackB
+  - AttackC
+  attackStateTags:
+  - Attack
+  freezeRotationWhileHit: 1
+  hitStateNames:
+  - Damaged
+  - Hit
+  - Hurt
+  hitStateTags:
+  - Hurt
+  - Damaged
 --- !u!1001 &4235153845501899688
 PrefabInstance:
   m_ObjectHideFlags: 0
