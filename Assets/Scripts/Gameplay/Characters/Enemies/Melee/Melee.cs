@@ -1,5 +1,4 @@
 using UnityEngine;
-using System.Collections;
 using Geneforge.Gameplay.Characters.Player;
 
 namespace Geneforge.Gameplay.Characters.Enemies.Melee
@@ -18,7 +17,6 @@ namespace Geneforge.Gameplay.Characters.Enemies.Melee
         public float wanderRadius = 5f;
         public float wanderInterval = 3f;
         public float wanderSpeed = 2f;
-        public float idleWaitDuration = 1f;
 
         [Header("Chase & Attack")]
         public float detectionRadius = 20f;
@@ -32,32 +30,8 @@ namespace Geneforge.Gameplay.Characters.Enemies.Melee
         [Range(1, 3)]
         public int attackVariants = 3;
 
-        [Header("Knockback Target (Optional)")]
-        public Transform knockbackRootOverride;
-
-        [Header("Knockback")]
-        public bool applyKnockback = true;
-        public float knockbackForce = 6f;
-        public float knockbackUpward = 0.5f;
-        public float knockbackMaxSpeed = 12f;
-
         [Header("Damage Pause")]
         public float damagePauseDuration = 0.5f;
-
-        [Header("Motion Control")]
-        public bool disableRootMotionWhenLocked = true;
-        public bool hardStopRigidbodyWhenLocked = true;
-        public bool hardStopFreezeRotationY = true;
-
-        [Header("Attack Lock / Detection")]
-        public bool freezeRotationWhileAttacking = true;
-        public string[] attackStateNames = { "Attack", "AttackB", "AttackC" };
-        public string[] attackStateTags  = { "Attack" };
-
-        [Header("Hit Lock / Detection")]
-        public bool freezeRotationWhileHit = true;
-        public string[] hitStateNames = { "Damaged", "Hit", "Hurt" };
-        public string[] hitStateTags  = { "Hurt", "Damaged" };
 
         Vector3 spawnPos;
         Vector3 wanderTarget;
@@ -69,28 +43,16 @@ namespace Geneforge.Gameplay.Characters.Enemies.Melee
 
         Transform player;
         float currentSpeed;
-        bool isIdleWaiting = false;
-        float idleWaitTimer = 0f;
 
         bool isDamagePaused = false;
         float damagePauseTimer = 0f;
 
         Geneforge.Gameplay.Characters.Enemies.Enemy enemy;
-
-        bool _translationLocked = false;
-        Vector3 _pinnedXZ;
         Rigidbody _rb;
-        CharacterController _cc;
-        RigidbodyConstraints _rbPrevConstraints;
-        bool _rbHadConstraints = false;
-
-        bool _attackFacingPinned = false;
-        Quaternion _attackFacing;
 
         void Awake()
         {
             _rb = GetComponent<Rigidbody>();
-            _cc = GetComponent<CharacterController>();
         }
 
         void Start()
@@ -115,11 +77,8 @@ namespace Geneforge.Gameplay.Characters.Enemies.Melee
 
         void HandleOnDamaged(float dmg)
         {
-            if (!isDamagePaused)
-            {
-                isDamagePaused = true;
-                damagePauseTimer = 0f;
-            }
+            isDamagePaused = true;
+            damagePauseTimer = 0f;
         }
 
         void Update()
@@ -156,8 +115,8 @@ namespace Geneforge.Gameplay.Characters.Enemies.Melee
             }
             else if (state == State.Wandering && !stayStationary)
             {
-                targetPos = isIdleWaiting ? transform.position : wanderTarget;
-                targetSpeed = isIdleWaiting ? 0f : wanderSpeed;
+                targetPos = wanderTarget;
+                targetSpeed = wanderSpeed;
             }
 
             currentSpeed = targetSpeed;
@@ -175,21 +134,16 @@ namespace Geneforge.Gameplay.Characters.Enemies.Melee
 
             AnimatorSpeed(currentSpeed / chaseSpeed);
 
-            // ---------------- ATAQUE CORRIGIDO ----------------
+            // ATAQUE COM VARIANTES
             if (state == State.Attacking && Time.time >= lastAttackTime + attackRate)
             {
                 lastAttackTime = Time.time;
                 float roll = Random.value;
 
                 if (attackVariants <= 1)
-                {
                     animator.SetTrigger("Attack");
-                }
                 else if (attackVariants == 2)
-                {
-                    if (roll < 0.6f) animator.SetTrigger("Attack");
-                    else animator.SetTrigger("AttackB");
-                }
+                    animator.SetTrigger(roll < 0.6f ? "Attack" : "AttackB");
                 else
                 {
                     if (roll < 0.6f) animator.SetTrigger("Attack");
@@ -197,7 +151,6 @@ namespace Geneforge.Gameplay.Characters.Enemies.Melee
                     else animator.SetTrigger("AttackC");
                 }
             }
-            // ---------------------------------------------------
 
             if (!stayStationary && state == State.Wandering)
             {

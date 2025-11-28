@@ -32,12 +32,13 @@ namespace Geneforge.Gameplay.Characters.Enemies.Ranged
         public LayerMask lineOfSightMask = ~0;
         public float lineOfSightPadding = 0.1f;
 
-        [Header("Origem do ataque (para LOS)")]
+        [Header("Origem do ataque GLOBAL (mão direita / default)")]
+        [Tooltip("Usado pelo Attack (spellA) e como fallback se a spell não tiver throwOrigins próprios.")]
         public Transform throwOrigin;
         public Vector3 defaultAimOffset = Vector3.zero;
 
         // =========================================================
-        //                    3 ATAQUES MÁGICOS
+        //                    2 ATAQUES MÁGICOS
         // =========================================================
         [System.Serializable]
         public class SpellAttack
@@ -54,6 +55,10 @@ namespace Geneforge.Gameplay.Characters.Enemies.Ranged
 
             [Header("Animator Trigger")]
             public string animatorTrigger = "Attack";
+
+            [Header("Throw Origins específicos (opcional)")]
+            [Tooltip("Se estiver vazio, esta spell usa o throwOrigin global. Para AttackB podes pôr aqui as duas mãos.")]
+            public Transform[] throwOrigins;
         }
 
         [Header("Ataque A (perto)")]
@@ -66,7 +71,7 @@ namespace Geneforge.Gameplay.Characters.Enemies.Ranged
             animatorTrigger = "Attack"
         };
 
-        [Header("Ataque B (médio)")]
+        [Header("Ataque B (médio/longe)")]
         public SpellAttack spellB = new SpellAttack()
         {
             name = "Spell B (Mid)",
@@ -76,18 +81,12 @@ namespace Geneforge.Gameplay.Characters.Enemies.Ranged
             animatorTrigger = "AttackB"
         };
 
-        [Header("Ataque C (longe)")]
-        public SpellAttack spellC = new SpellAttack()
-        {
-            name = "Spell C (Long)",
-            attackRange = 14f,
-            attackRate = 1.8f,
-            damage = 16f,
-            animatorTrigger = "AttackC"
-        };
-
         [Header("Pausa ao sofrer dano")]
         public float damagePauseDuration = 0.5f;
+
+        [Header("Precisão / Dodge")]
+        [Tooltip("Se o player se afastar mais do que isto da posição onde o inimigo mirou, o feitiço falha.")]
+        public float hitToleranceRadius = 1.0f;
 
         // ------- Lock / Motion Control -------
         [Header("Motion Control (Lock de Movimento)")]
@@ -96,8 +95,8 @@ namespace Geneforge.Gameplay.Characters.Enemies.Ranged
         public bool hardStopFreezeRotationY = true;
 
         [Header("Attack Lock / Detection")]
-        public bool freezeRotationWhileAttacking = true;
-        public string[] attackStateNames = { "Attack", "AttackB", "AttackC" };
+        public bool freezeRotationWhileAttacking = false; // ⚠ já não usamos isto para fixar a rotação em ataque
+        public string[] attackStateNames = { "Attack", "AttackB" };
         public string[] attackStateTags = { "Attack" };
 
         [Header("Hit Lock / Detection")]
@@ -142,9 +141,11 @@ namespace Geneforge.Gameplay.Characters.Enemies.Ranged
 
         float lastAttackA = -999f;
         float lastAttackB = -999f;
-        float lastAttackC = -999f;
 
         SpellAttack queuedSpell = null;
+
+        // posição onde o inimigo estava a mirar quando iniciou o ataque
+        Vector3 _queuedAimPosition = Vector3.zero;
 
         void Awake()
         {
@@ -202,8 +203,8 @@ namespace Geneforge.Gameplay.Characters.Enemies.Ranged
             if (wantsTranslationLock && !_translationLocked) StartTranslationLock();
             else if (!wantsTranslationLock && _translationLocked) EndTranslationLock();
 
+            // ⚠ Agora só fixamos rotação em animações de HIT, não em ataque
             bool shouldPinFacing =
-                (inAttackAnim && freezeRotationWhileAttacking) ||
                 (inHitAnim && freezeRotationWhileHit);
 
             if (inBusyAnim && !_attackFacingPinned && shouldPinFacing)
@@ -248,7 +249,7 @@ namespace Geneforge.Gameplay.Characters.Enemies.Ranged
             SpellAttack chosen = ChooseSpell(dist);
 
             if (chosen != null && dist <= chosen.attackRange &&
-                (!requireLineOfSight || HasLineOfSight()))
+                (!requireLineOfSight || HasLineOfSight())) // ← aqui usamos a LOS genérica (global)
                 state = State.Attacking;
             else if (!stayStationary && dist <= detectionRadius)
                 state = State.Chasing;
@@ -287,6 +288,7 @@ namespace Geneforge.Gameplay.Characters.Enemies.Ranged
                     if (!_translationLocked)
                         transform.position += dir.normalized * currentSpeed * Time.deltaTime;
 
+                    // ⚠ já não fixamos rotação em ataque, por isso ele continua a virar para o alvo
                     if (!_attackFacingPinned)
                         transform.rotation = Quaternion.LookRotation(dir.normalized);
                 }
@@ -315,6 +317,10 @@ namespace Geneforge.Gameplay.Characters.Enemies.Ranged
             {
                 MarkCast(chosen);
                 queuedSpell = chosen;
+
+                // Guardar posição onde ele está a mirar no momento do cast
+                _queuedAimPosition = GetAimTargetPosition(chosen);
+
                 animator.SetTrigger(chosen.animatorTrigger);
             }
 
@@ -345,32 +351,66 @@ namespace Geneforge.Gameplay.Characters.Enemies.Ranged
         }
 
         // =========================================================
-        //   EVENTO DA ANIMAÇÃO → aplica dano DIRETO
+        //   EVENTO DA ANIMAÇÃO → aplica dano DIRETO, mas dodgeable
         // =========================================================
         public void OnThrowRelease()
         {
             if (_deadLatched || queuedSpell == null || playerHealth == null) return;
 
-            float dist = Vector3.Distance(transform.position, player.position);
-
-            if (dist <= queuedSpell.attackRange)
+            // Distância atual ao player (ainda precisa estar no range da spell)
+            float distToPlayerNow = Vector3.Distance(transform.position, player.position);
+            if (distToPlayerNow > queuedSpell.attackRange)
             {
-                // opcional LOS no momento do hit
-                if (!requireLineOfSight || HasLineOfSight())
-                {
-                    playerHealth.ApplyDamage(queuedSpell.damage);
-                }
+                // Player saiu do alcance → falha
+                queuedSpell = null;
+                return;
+            }
+
+            // Ver se o player se desviou o suficiente da posição que foi mirado
+            float distFromSavedAim = Vector3.Distance(player.position, _queuedAimPosition);
+            if (distFromSavedAim > hitToleranceRadius)
+            {
+                // Player dodgeou → falha
+                queuedSpell = null;
+                return;
+            }
+
+            // ✅ LOS específico da spell (Attack usa 1 origin global, AttackB pode usar 2 mãos)
+            if (!requireLineOfSight || HasLineOfSight(queuedSpell))
+            {
+                playerHealth.ApplyDamage(queuedSpell.damage);
             }
 
             queuedSpell = null;
         }
 
+        // --------- Calcula a posição de mira no momento do cast ----------
+        Vector3 GetAimTargetPosition(SpellAttack spell)
+        {
+            if (player == null) return transform.position;
+
+            Vector3 baseTarget = player.position;
+
+            // aplica offset local se houver origem de lançamento
+            Vector3 offsetWorld = spell.aimOffset;
+            if (throwOrigin != null)
+                offsetWorld = throwOrigin.TransformVector(spell.aimOffset);
+
+            return baseTarget + offsetWorld;
+        }
+
         // --------- Escolha de magia ----------
         SpellAttack ChooseSpell(float dist)
         {
-            if (dist <= spellA.attackRange && CanCast(spellA)) return spellA;
-            if (dist <= spellB.attackRange && CanCast(spellB)) return spellB;
-            if (dist <= spellC.attackRange && CanCast(spellC)) return spellC;
+            // Perto -> Attack (spellA)
+            if (dist <= spellA.attackRange && CanCast(spellA))
+                return spellA;
+
+            // Mais longe, mas ainda dentro do alcance -> AttackB (spellB)
+            if (dist > spellA.attackRange && dist <= spellB.attackRange && CanCast(spellB))
+                return spellB;
+
+            // Fora de alcance
             return null;
         }
 
@@ -379,38 +419,73 @@ namespace Geneforge.Gameplay.Characters.Enemies.Ranged
             float t = Time.time;
             if (s == spellA) return t >= lastAttackA + spellA.attackRate;
             if (s == spellB) return t >= lastAttackB + spellB.attackRate;
-            if (s == spellC) return t >= lastAttackC + spellC.attackRate;
             return false;
         }
 
         void MarkCast(SpellAttack s)
         {
             float t = Time.time;
-            if (s == spellA) lastAttackA = t;
+            if (s == spellA)      lastAttackA = t;
             else if (s == spellB) lastAttackB = t;
-            else if (s == spellC) lastAttackC = t;
         }
 
-        // --------- Auxiliares ----------
+        // --------- Throw Origins helpers ----------
+        Transform[] GetThrowOrigins(SpellAttack spell)
+        {
+            // 1) Se a spell tiver origins próprios definidos, usa esses
+            if (spell != null && spell.throwOrigins != null && spell.throwOrigins.Length > 0)
+                return spell.throwOrigins;
+
+            // 2) Caso contrário, usa o throwOrigin global (mão direita)
+            if (throwOrigin != null)
+                return new Transform[] { throwOrigin };
+
+            // 3) Fallback: posição do inimigo
+            return new Transform[] { transform };
+        }
+
+        // --------- LOS genérico (para lógica de estado) ----------
         bool HasLineOfSight()
+        {
+            // usa throwOrigin global
+            return HasLineOfSight(null);
+        }
+
+        // --------- LOS específico por spell ----------
+        bool HasLineOfSight(SpellAttack spell)
         {
             if (!requireLineOfSight || player == null) return true;
 
-            Vector3 origin = throwOrigin ? throwOrigin.position : transform.position;
+            Transform[] origins = GetThrowOrigins(spell);
             Vector3 target = player.position + defaultAimOffset;
 
-            Vector3 diff = target - origin;
-            float dist = Mathf.Max(0f, diff.magnitude - lineOfSightPadding);
-            if (dist <= 0.001f) return true;
-
-            Vector3 dir = diff.normalized;
-
-            if (Physics.Raycast(origin, dir, out RaycastHit hit, dist, lineOfSightMask, QueryTriggerInteraction.Ignore))
+            foreach (var o in origins)
             {
-                if (hit.collider && hit.collider.transform != player && !hit.collider.transform.IsChildOf(player))
-                    return false;
+                if (o == null) continue;
+
+                Vector3 originPos = o.position;
+                Vector3 diff = target - originPos;
+                float dist = Mathf.Max(0f, diff.magnitude - lineOfSightPadding);
+                if (dist <= 0.001f)
+                    return true;
+
+                Vector3 dir = diff.normalized;
+
+                if (Physics.Raycast(originPos, dir, out RaycastHit hit, dist, lineOfSightMask, QueryTriggerInteraction.Ignore))
+                {
+                    if (hit.collider && hit.collider.transform != player && !hit.collider.transform.IsChildOf(player))
+                    {
+                        // este origin não tem LOS → tenta o próximo
+                        continue;
+                    }
+                }
+
+                // Se QUALQUER origin tiver LOS, a spell pode acertar
+                return true;
             }
-            return true;
+
+            // Nenhum origin tem LOS
+            return false;
         }
 
         void PickWanderTarget()
@@ -476,7 +551,6 @@ namespace Geneforge.Gameplay.Characters.Enemies.Ranged
             {
                 animator.ResetTrigger("Attack");
                 animator.ResetTrigger("AttackB");
-                animator.ResetTrigger("AttackC");
                 animator.SetFloat("Speed", 0f);
                 animator.applyRootMotion = false;
             }
@@ -581,7 +655,6 @@ namespace Geneforge.Gameplay.Characters.Enemies.Ranged
 
             Gizmos.color = Color.red; Gizmos.DrawWireSphere(transform.position, spellA.attackRange);
             Gizmos.color = new Color(1f, 0.5f, 0f); Gizmos.DrawWireSphere(transform.position, spellB.attackRange);
-            Gizmos.color = Color.cyan; Gizmos.DrawWireSphere(transform.position, spellC.attackRange);
         }
     }
 }
