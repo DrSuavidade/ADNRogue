@@ -1,6 +1,7 @@
 using UnityEngine;
 using System.Collections;
 using System.Collections.Generic;
+using UnityEngine.Events;
 using Geneforge.Gameplay.Characters.Player;
 using Geneforge.Gameplay.Characters.Enemies;
 
@@ -126,6 +127,13 @@ namespace Geneforge.Gameplay.Characters.Enemies.Ranged
 
         [Tooltip("Nome do bool no Animator que indica se está em block.")]
         public string blockBoolName = "IsBlocking";
+
+        // ---------- Eventos para VFX / SFX, etc ----------
+        [Header("Eventos de VFX / Feedback (opcionais)")]
+        public UnityEvent OnBlockStart;
+        public UnityEvent OnBlockEnd;
+        public UnityEvent OnSpellACast;
+        public UnityEvent OnSpellBCast;
 
         // estado interno do block
         bool _isBlocking = false;
@@ -508,8 +516,16 @@ namespace Geneforge.Gameplay.Characters.Enemies.Ranged
         void MarkCast(SpellAttack s)
         {
             float t = Time.time;
-            if (s == spellA)      lastAttackA = t;
-            else if (s == spellB) lastAttackB = t;
+            if (s == spellA)
+            {
+                lastAttackA = t;
+                OnSpellACast?.Invoke();   // evento Spell A
+            }
+            else if (s == spellB)
+            {
+                lastAttackB = t;
+                OnSpellBCast?.Invoke();   // evento Spell B
+            }
         }
 
         Transform[] GetThrowOrigins(SpellAttack spell)
@@ -765,6 +781,9 @@ namespace Geneforge.Gameplay.Characters.Enemies.Ranged
                     animator.SetTrigger(blockAnimatorTrigger);
             }
 
+            // evento de início de block (shield, som, etc)
+            OnBlockStart?.Invoke();
+
             _blockRoutine = StartCoroutine(BlockRoutine());
         }
 
@@ -782,6 +801,9 @@ namespace Geneforge.Gameplay.Characters.Enemies.Ranged
 
             if (animator && !string.IsNullOrEmpty(blockBoolName))
                 animator.SetBool(blockBoolName, false);
+
+            // evento de fim de block
+            OnBlockEnd?.Invoke();
 
             _blockRoutine = null;
         }
