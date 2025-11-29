@@ -6,7 +6,7 @@ namespace Geneforge.UI
     public class KeyHUD : MonoBehaviour
     {
         [Tooltip("Root GameObject (icon) to show/hide. If null, this GameObject is used.")]
-        public GameObject keyIconRoot;
+        [SerializeField] private GameObject keyIconRoot;
 
         private bool _subscribed;
 

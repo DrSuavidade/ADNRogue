@@ -66,8 +66,8 @@ namespace Geneforge.Gameplay.Progression
             var node = e.skillTree.Get(nodeId);
             if (node == null || !CanUnlock(e, nodeId)) return false;
 
-            if (run.dnaSplices < node.dnaCost) return false;
-            run.dnaSplices -= node.dnaCost;
+            if (!run.SpendDnaSplices(node.dnaCost))
+                return false;
 
             Rec(e).unlocked.Add(nodeId);
             return true;

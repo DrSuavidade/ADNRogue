@@ -1,27 +1,38 @@
-// Assets/Scripts/RunStats.cs
 using UnityEngine;
 using System;
 
-namespace Geneforge.Core.Stats 
+namespace Geneforge.Core.Stats
 {
-
-    [RequireComponent(typeof(CharacterController))]
     public class RunStats : MonoBehaviour
     {
         [Header("Health & Lives")]
-        public float maxHP = 100f;
-        public float currentHP;
-        public int lives = 3;
-        [HideInInspector] public int maxLives;
+        [SerializeField] private float maxHP = 100f;
+        [SerializeField] private int startingLives = 3;
 
         [Header("Run Currency & Resources")]
         [Tooltip("Spendable during this dive")]
-        public int currency = 0;
+        [SerializeField] private int startingCurrency = 0;
         [Tooltip("DNA Fragments collected this run")]
-        public int dnaSplices = 0;
+        [SerializeField] private int startingDnaSplices = 0;
         [Tooltip("Number of rerolls/reshuffles you have this run")]
-        public int rolls = 1;
+        [SerializeField] private int startingRolls = 1;
+
+        public float MaxHP => maxHP;
+        public int BaseStartingLives => startingLives;
+        public float CurrentHP { get; private set; }
+
+        public int Lives
+        {
+            get => lives;
+            set => lives = Mathf.Max(0, value);
+        }
+        public int Currency { get; private set; }
+        public int DnaSplices { get; private set; }
+        public int Rolls { get; private set; }
+
         public event Action OnPlayerDeath;
+
+        int lives;
 
         void Awake()
         {
@@ -30,19 +41,20 @@ namespace Geneforge.Core.Stats
 
         public void ResetRunStats()
         {
-            currentHP = maxHP;
-            maxLives = lives;
-            currency = 0;
-            dnaSplices = 0;
-            rolls = 1;
-            // lives carried over from MetaStats
+            CurrentHP = maxHP;
+            Lives = startingLives;
+            Currency = startingCurrency;
+            DnaSplices = startingDnaSplices;
+            Rolls = startingRolls;
         }
 
         public bool TakeDamage(float dmg)
         {
-            currentHP -= dmg;
-            currentHP = Mathf.Max(0f, currentHP);
-            if (currentHP <= 0f)
+            if (dmg <= 0f || CurrentHP <= 0f) return false;
+
+            CurrentHP = Mathf.Max(0f, CurrentHP - dmg);
+
+            if (CurrentHP <= 0f)
             {
                 OnPlayerDeath?.Invoke();
                 return true;
@@ -52,22 +64,45 @@ namespace Geneforge.Core.Stats
 
         public void Heal(float amount)
         {
-            currentHP = Mathf.Min(maxHP, currentHP + amount);
+            if (amount <= 0f || CurrentHP <= 0f) return;
+            CurrentHP = Mathf.Min(maxHP, CurrentHP + amount);
         }
 
         public bool SpendCurrency(int amount)
         {
-            if (currency < amount) return false;
-            currency -= amount;
+            if (amount <= 0) return true;
+            if (Currency < amount) return false;
+
+            Currency -= amount;
             return true;
         }
 
-        public void AddCurrency(int amount) => currency += amount;
-        public void AddDnaSplices(int amount) => dnaSplices += amount;
+        public void AddCurrency(int amount)
+        {
+            if (amount <= 0) return;
+            Currency += amount;
+        }
+
+        public bool SpendDnaSplices(int amount)
+        {
+            if (amount <= 0) return true;
+            if (DnaSplices < amount) return false;
+
+            DnaSplices -= amount;
+            return true;
+        }
+
+
+        public void AddDnaSplices(int amount)
+        {
+            if (amount <= 0) return;
+            DnaSplices += amount;
+        }
+
         public bool UseRoll()
         {
-            if (rolls <= 0) return false;
-            rolls--;
+            if (Rolls <= 0) return false;
+            Rolls--;
             return true;
         }
     }

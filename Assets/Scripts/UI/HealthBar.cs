@@ -20,6 +20,9 @@ namespace Geneforge.UI
             mainCam = Camera.main;
             canvas = GetComponent<Canvas>();
             canvas.enabled = false;
+
+            if (fillImage == null)
+                Debug.LogWarning($"HealthBar on {name} has no fillImage assigned.", this);
         }
 
         void Start()
@@ -46,7 +49,11 @@ namespace Geneforge.UI
 
         void LateUpdate()
         {
-            if (enemy == null) return;
+            if (enemy == null || fillImage == null) return;
+
+            if (mainCam == null)
+                mainCam = Camera.main;
+            if (mainCam == null) return;
 
             // 1) Position above head and face camera
             transform.position = enemy.transform.position + offset;
@@ -58,17 +65,11 @@ namespace Geneforge.UI
 
             // 3) Change color by thresholds
             if (pct <= 0.15f)
-            {
                 fillImage.color = Color.red;
-            }
             else if (pct <= 0.45f)
-            {
                 fillImage.color = Color.yellow;
-            }
             else
-            {
-                fillImage.color = Color.green; // or your default
-            }
+                fillImage.color = Color.green;
         }
     }
 }

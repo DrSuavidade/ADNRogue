@@ -183,4 +183,41 @@ public class A_FrogToxicity : EssenceAbility
         void OnDisable() { if (co != null) { StopCoroutine(co); co = null; } }
         void OnDestroy() { if (co != null) { StopCoroutine(co); co = null; } }
     }
+
+    public override void ApplyUpgrades(AbilityUpgrade[] upgrades)
+    {
+        if (upgrades == null) return;
+
+        for (int i = 0; i < upgrades.Length; i++)
+        {
+            var u = upgrades[i];
+            switch (u.key)
+            {
+                case "Poison/Dps":
+                    poisonDps = Mathf.Max(0f, ApplyNumeric(poisonDps, u));
+                    break;
+
+                case "Poison/Duration":
+                    poisonDuration = Mathf.Max(0f, ApplyNumeric(poisonDuration, u));
+                    break;
+
+                case "Puddle/Chance":
+                    puddleChance = Mathf.Clamp01(ApplyNumeric(puddleChance, u));
+                    break;
+
+                case "Puddle/Radius":
+                    puddleRadius = Mathf.Max(0f, ApplyNumeric(puddleRadius, u));
+                    break;
+
+                case "Puddle/Duration":
+                    puddleDuration = Mathf.Max(0f, ApplyNumeric(puddleDuration, u));
+                    break;
+
+                case "Puddle/Dps":
+                    puddleDps = Mathf.Max(0f, ApplyNumeric(puddleDps, u));
+                    break;
+            }
+        }
+    }
+
 }

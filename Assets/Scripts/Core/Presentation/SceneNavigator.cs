@@ -9,19 +9,17 @@ namespace Geneforge.Core.UI
         {
             if (string.IsNullOrEmpty(sceneName))
             {
-                Debug.LogError("SceneNavigator: Nome da cena está vazio!");
+                Debug.LogError("SceneNavigator: Scene name is empty.");
                 return;
             }
 
-            // Tenta carregar a cena
-            try
+            if (!Application.CanStreamedLevelBeLoaded(sceneName))
             {
-                SceneManager.LoadScene(sceneName);
+                Debug.LogError($"SceneNavigator: Scene '{sceneName}' is not in Build Settings or cannot be loaded.");
+                return;
             }
-            catch
-            {
-                Debug.LogError($"SceneNavigator: Não foi possível carregar a cena '{sceneName}'. Verifica se está na Build Settings.");
-            }
+
+            SceneManager.LoadScene(sceneName);
         }
     }
 }

@@ -190,4 +190,25 @@ public class OwlHuntersMarkAbility : EssenceAbility
 
         void OnDestroy() { onDestroyed?.Invoke(); }
     }
+    public override void ApplyUpgrades(AbilityUpgrade[] upgrades)
+    {
+        if (upgrades == null) return;
+
+        for (int i = 0; i < upgrades.Length; i++)
+        {
+            var u = upgrades[i];
+            switch (u.key)
+            {
+                case "Owl/MarkDuration":
+                    markDuration = Mathf.Max(0.1f, ApplyNumeric(markDuration, u));
+                    break;
+
+                case "Owl/PopDamageFactor":
+                    popDamageFactor = Mathf.Max(0f, ApplyNumeric(popDamageFactor, u));
+                    break;
+
+            }
+        }
+    }
+
 }

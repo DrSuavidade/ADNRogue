@@ -9,9 +9,12 @@ namespace Geneforge.Gameplay.Map
     public class EnemyDeathNotifier : MonoBehaviour
     {
         [HideInInspector] public EnemySpawner ownerSpawner;
+        bool _reported;
 
         public void ReportDeath()
         {
+            if (_reported) return;
+            _reported = true;
             if (ownerSpawner != null)
             {
                 ownerSpawner.NotifyEnemyDied();

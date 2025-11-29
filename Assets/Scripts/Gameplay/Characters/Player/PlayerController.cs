@@ -1,9 +1,11 @@
 using UnityEngine;
 using System.Collections.Generic;
-using UnityEngine.InputSystem; // << novo
+using UnityEngine.InputSystem;
 using Geneforge.Gameplay.Weapons.Bullets;
 using Geneforge.Gameplay.Weapons.Stats;
 using Geneforge.Gameplay.Weapons.Slots;
+using Geneforge.Core.Pooling;
+
 
 namespace Geneforge.Gameplay.Characters.Player
 {
@@ -51,6 +53,7 @@ namespace Geneforge.Gameplay.Characters.Player
         CharacterController cc;
         Camera mainCam;
         PlayerHealth playerHealth;
+        readonly List<Collider> volleyColliders = new List<Collider>(32);
 
         Vector3 currentMoveWorld;   // movimento (mundo) deste frame
         Vector3 rollDirection;      // direção escolhida no início do roll (mundo)
@@ -229,7 +232,7 @@ namespace Geneforge.Gameplay.Characters.Player
             float inaccuracyHalf = (active != null) ? (1f - acc) * Mathf.Max(0f, active.inaccuracyHalfAngle) : 0f;
             float spacing = ((active != null ? active.projectileSize : 1f) * 0.35f);
 
-            List<Collider> volleyColliders = new List<Collider>();
+            volleyColliders.Clear();
 
             Vector3 forward = firePoint.forward;
             Vector3 axis = firePoint.up;
@@ -251,7 +254,11 @@ namespace Geneforge.Gameplay.Characters.Player
                 float lane = (i - (shots - 1) * 0.5f);
                 Vector3 spawnPos = firePoint.position + right * (lane * spacing);
 
-                GameObject bulletGO = Instantiate(bulletPrefab, spawnPos, Quaternion.LookRotation(dir, axis));
+                GameObject bulletGO;
+                if (PoolManager.Instance != null)
+                    bulletGO = PoolManager.Instance.Spawn(bulletPrefab, spawnPos, Quaternion.LookRotation(dir, axis));
+                else
+                    bulletGO = Instantiate(bulletPrefab, spawnPos, Quaternion.LookRotation(dir, axis));
 
                 if (active != null)
                     bulletGO.transform.localScale = Vector3.one * active.projectileSize;
@@ -267,25 +274,46 @@ namespace Geneforge.Gameplay.Characters.Player
                     b.knockbackForce = (active != null) ? active.knockbackForce : 0f;
                     b.isCrit = crit;
 
-                    if (active != null) b.ApplyRuntimeStats(active);
+                    if (gunSlots != null)
+                    {
+                        gunSlots.ApplyToBullet(b);
+                    }
+                    else if (active != null)
+                    {
+                        b.ApplyRuntimeStats(active);
+                    }
 
                     float speed = (active != null) ? active.projectileSpeed : 20f;
                     b.Launch(dir, speed);
 
-                    gunSlots?.ApplyToBullet(b);
-
                     var cols = bulletGO.GetComponentsInChildren<Collider>();
                     if (cols != null && cols.Length > 0) volleyColliders.AddRange(cols);
-                    OnFired?.Invoke((gunSlots != null && gunSlots.ActiveStats != null) ? gunSlots.ActiveStats : stats);
                 }
-                else Debug.LogWarning("Bullet prefab sem componente Bullet.", bulletGO);
+                else
+                {
+                    Debug.LogWarning("Bullet prefab sem componente Bullet.", bulletGO);
+                }
             }
 
+            // Ignore self-collisions inside this volley
             for (int a = 0; a < volleyColliders.Count; a++)
+            {
+                var ca = volleyColliders[a];
+                if (!ca) continue;
+
                 for (int bIdx = a + 1; bIdx < volleyColliders.Count; bIdx++)
-                    if (volleyColliders[a] && volleyColliders[bIdx])
-                        Physics.IgnoreCollision(volleyColliders[a], volleyColliders[bIdx], true);
+                {
+                    var cb = volleyColliders[bIdx];
+                    if (cb)
+                        Physics.IgnoreCollision(ca, cb, true);
+                }
+            }
+
+            // Fire event once per volley, not once per bullet
+            if (OnFired != null)
+                OnFired(active);
         }
+
 
         // -------------------- Roll --------------------
         void TryStartRoll()
@@ -500,11 +528,11 @@ namespace Geneforge.Gameplay.Characters.Player
             float inaccuracyHalf = (1f - Mathf.Clamp01(active.accuracy)) * active.inaccuracyHalfAngle;
             float spacing = active.projectileSize * 0.35f;
 
-            var volleyCols = new System.Collections.Generic.List<Collider>();
+            var volleyCols = new List<Collider>();
 
             Vector3 forward = origin.forward;
-            Vector3 axis    = origin.up;
-            Vector3 right   = origin.right;
+            Vector3 axis = origin.up;
+            Vector3 right = origin.right;
 
             for (int i = 0; i < shots; i++)
             {
@@ -519,7 +547,12 @@ namespace Geneforge.Gameplay.Characters.Player
                 float lane = (i - (shots - 1) * 0.5f);
                 Vector3 spawnPos = origin.position + right * (lane * spacing);
 
-                var go = Instantiate(bulletPrefab, spawnPos, Quaternion.LookRotation(dir, axis));
+                GameObject go;
+                if (PoolManager.Instance != null)
+                    go = PoolManager.Instance.Spawn(bulletPrefab, spawnPos, Quaternion.LookRotation(dir, axis));
+                else
+                    go = Instantiate(bulletPrefab, spawnPos, Quaternion.LookRotation(dir, axis));
+
                 go.transform.localScale = Vector3.one * active.projectileSize;
 
                 var b = go.GetComponent<Bullet>();
@@ -529,10 +562,15 @@ namespace Geneforge.Gameplay.Characters.Player
                     bool crit = false;
                     if (Random.value <= active.critChance) { dmg *= active.critMultiplier; crit = true; }
                     b.damage = dmg; b.isCrit = crit; b.knockbackForce = active.knockbackForce;
-                    b.ApplyRuntimeStats(active);
+                    if (gunSlots != null)
+                    {
+                        gunSlots.ApplyToBullet(b);
+                    }
+                    else if (active != null)
+                    {
+                        b.ApplyRuntimeStats(active);
+                    }   
                     b.Launch(dir, active.projectileSpeed);
-
-                    gunSlots?.ApplyToBullet(b);
                 }
 
                 var cols = go.GetComponentsInChildren<Collider>();
@@ -540,9 +578,17 @@ namespace Geneforge.Gameplay.Characters.Player
             }
 
             for (int a = 0; a < volleyCols.Count; a++)
+            {
+                var ca = volleyCols[a];
+                if (!ca) continue;
+
                 for (int b = a + 1; b < volleyCols.Count; b++)
-                    if (volleyCols[a] && volleyCols[b])
-                        Physics.IgnoreCollision(volleyCols[a], volleyCols[b], true);
+                {
+                    var cb = volleyCols[b];
+                    if (cb)
+                        Physics.IgnoreCollision(ca, cb, true);
+                }
+            }
         }
     }
 }

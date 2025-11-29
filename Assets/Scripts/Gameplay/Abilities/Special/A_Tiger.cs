@@ -349,4 +349,45 @@ public class A_TigerRend : EssenceAbility
         void OnDisable() { if (co != null) { StopCoroutine(co); co = null; } }
         void OnDestroy() { if (co != null) { StopCoroutine(co); co = null; } }
     }
+
+    public override void ApplyUpgrades(AbilityUpgrade[] upgrades)
+    {
+        if (upgrades == null) return;
+
+        for (int i = 0; i < upgrades.Length; i++)
+        {
+            var u = upgrades[i];
+            switch (u.key)
+            {
+                case "Tiger/StacksToBleed":
+                    stacksToBleed = Mathf.Max(1, Mathf.RoundToInt(ApplyNumeric(stacksToBleed, u)));
+                    break;
+
+                case "Tiger/StackExpireSeconds":
+                    stackExpireSeconds = Mathf.Max(0f, ApplyNumeric(stackExpireSeconds, u));
+                    break;
+
+                case "Tiger/BleedDPS":
+                    bleedDps = Mathf.Max(0f, ApplyNumeric(bleedDps, u));
+                    break;
+
+                case "Tiger/BleedDuration":
+                    bleedDuration = Mathf.Max(0.1f, ApplyNumeric(bleedDuration, u));
+                    break;
+
+                case "Tiger/ShredPerStack":
+                    shredPerStack = Mathf.Clamp01(ApplyNumeric(shredPerStack, u));
+                    break;
+
+                case "Tiger/MaxShredStacks":
+                    maxShredStacks = Mathf.Max(1, Mathf.RoundToInt(ApplyNumeric(maxShredStacks, u)));
+                    break;
+
+                case "Tiger/ShredDuration":
+                    shredDuration = Mathf.Max(0.1f, ApplyNumeric(shredDuration, u));
+                    break;
+            }
+        }
+    }
+
 }

@@ -11,8 +11,9 @@ using Geneforge.Core.Stats;                  // RunStats (currentHP, maxHP, etc.
 [CreateAssetMenu(menuName = "Geneforge/Abilities/Mosquito - Siphon")]
 public class A_MosquitoSiphon : EssenceAbility
 {
-    [Range(0f, 1f)] public float lifestealPercent = 0.15f; // 15% of bullet damage
-    public float maxHealPerHit = 9999f;
+    [Header("Lifesteal")]
+    [Range(0f, 1f)] public float lifestealPercent = 0.2f;
+    public float maxHealPerHit = 25f;
 
     // cached references for speed
     static PlayerHealth cachedPlayerHealth;
@@ -37,9 +38,30 @@ public class A_MosquitoSiphon : EssenceAbility
         if (healAmt <= 0f) return;
 
         // Clamp to maxHP
-        cachedRunStats.currentHP = Mathf.Min(cachedRunStats.maxHP, cachedRunStats.currentHP + healAmt);
+        cachedRunStats.Heal(healAmt);
 
         // (Optional) If you have a UI event, you could raise it here to refresh the health bar
         // e.g., cachedRunStats.RaiseOnHealthChanged();
     }
+
+    public override void ApplyUpgrades(AbilityUpgrade[] upgrades)
+    {
+        if (upgrades == null) return;
+
+        for (int i = 0; i < upgrades.Length; i++)
+        {
+            var u = upgrades[i];
+            switch (u.key)
+            {
+                case "Nova/LifestealPercent":
+                    lifestealPercent = Mathf.Clamp01(ApplyNumeric(lifestealPercent, u));
+                    break;
+
+                case "Nova/MaxHealPerHit":
+                    maxHealPerHit = Mathf.Max(0f, ApplyNumeric(maxHealPerHit, u));
+                    break;
+            }
+        }
+    }
+
 }

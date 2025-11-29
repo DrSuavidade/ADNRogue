@@ -68,7 +68,14 @@ namespace Geneforge.Gameplay.Map
         internal void NotifyEnemyDied()
         {
             aliveEnemies--;
-            if (aliveEnemies <= 0 && ownerRoom != null)
+
+            if (aliveEnemies < 0)
+            {
+                Debug.LogWarning($"[EnemySpawner] aliveEnemies went below zero on {name}. Clamping to 0.");
+                aliveEnemies = 0;
+            }
+
+            if (aliveEnemies == 0 && ownerRoom != null)
             {
                 ownerRoom.NotifyEnemyDied();
             }

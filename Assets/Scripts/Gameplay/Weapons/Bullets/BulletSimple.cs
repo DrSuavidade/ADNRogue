@@ -1,5 +1,6 @@
 using UnityEngine;
 using Geneforge.Gameplay.Characters.Player;
+using Geneforge.Core.Pooling;
 
 namespace Geneforge.Gameplay.Weapons.Bullets
 {
@@ -13,9 +14,13 @@ public class BulletSimple : MonoBehaviour
     [Header("Referências")]
     private Rigidbody rb;
 
+    PoolIdentifier poolId;
+
+
     void Start()
     {
         rb = GetComponent<Rigidbody>();
+        poolId = GetComponent<PoolIdentifier>();
         if (rb == null)
         {
             Debug.LogError("A bala precisa de um Rigidbody!");
@@ -33,8 +38,19 @@ public class BulletSimple : MonoBehaviour
 #endif
 
         // Auto-destruição
-        Destroy(gameObject, lifeTime);
+        Invoke(nameof(Despawn), lifeTime);
     }
+
+    void Despawn()
+    {
+        CancelInvoke(nameof(Despawn));
+
+        if (poolId != null && PoolManager.Instance != null)
+            PoolManager.Instance.Reclaim(gameObject);
+        else
+            Destroy(gameObject);
+    }
+
 
     void OnTriggerEnter(Collider other)
     {
@@ -44,13 +60,13 @@ public class BulletSimple : MonoBehaviour
         if (ph != null)
         {
             ph.ApplyDamage(damage);
-            Destroy(gameObject);
+            Despawn();
             return;
         }
 
         // destruir se bater noutro objeto físico (paredes, chão, etc.)
         if (!other.isTrigger)
-            Destroy(gameObject);
+            Despawn();
     }
 }
  }

@@ -98,4 +98,40 @@ public class A_CrabBubbleBurst : EssenceAbility
             r.material = mat;
         }
     }
+
+    public override void ApplyUpgrades(AbilityUpgrade[] upgrades)
+    {
+        if (upgrades == null) return;
+
+        for (int i = 0; i < upgrades.Length; i++)
+        {
+            var u = upgrades[i];
+            switch (u.key)
+            {
+                case "Bubble/ForcedAccuracy":
+                    forcedAccuracy = Mathf.Clamp01(ApplyNumeric(forcedAccuracy, u));
+                    break;
+
+                case "Bubble/ForcedInaccuracyHalf":
+                    forcedInaccuracyHalf = Mathf.Clamp(ApplyNumeric(forcedInaccuracyHalf, u), 0f, 90f);
+                    break;
+
+                case "Bubble/DamageMult":
+                    damageMult = Mathf.Max(0.01f, ApplyNumeric(damageMult, u));
+                    break;
+
+                case "Bubble/FireRateMult":
+                    fireRateMult = Mathf.Max(0.01f, ApplyNumeric(fireRateMult, u));
+                    break;
+
+                case "Bubble/BubbleDrag":
+                    bubbleDrag = Mathf.Max(0f, ApplyNumeric(bubbleDrag, u));
+                    break;
+
+                case "Bubble/SizeMult":
+                    sizeMult = Mathf.Max(0.1f, ApplyNumeric(sizeMult, u));
+                    break;
+            }
+        }
+    }
 }

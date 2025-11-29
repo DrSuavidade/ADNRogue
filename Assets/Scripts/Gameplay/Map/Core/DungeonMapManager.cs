@@ -69,6 +69,8 @@ namespace Geneforge.Gameplay.Map
 
         private void Start()
         {
+            if (dungeonConfig == null) return;
+            
             if (RunState.HasTimelineOverride)
             {
                 currentTimeline = RunState.CurrentTimeline;

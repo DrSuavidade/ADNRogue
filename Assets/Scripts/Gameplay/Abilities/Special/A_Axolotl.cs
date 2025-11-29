@@ -80,8 +80,8 @@ public class A_AxolotlMitoticSplit : EssenceAbility
 
         int DesiredCloneCount()
         {
-            if (run.maxHP <= 0f) return 0;
-            float f = run.currentHP / run.maxHP;
+            if (run == null || run.MaxHP <= 0f) return 0;
+            float f = run.CurrentHP / run.MaxHP;
             // >50% -> 0; 20–50% -> 1; ≤20% -> 3 (so total bodies: 1, 2, 4)
             return (f <= 0.2f) ? 3 : (f <= 0.5f ? 1 : 0);
         }
@@ -235,6 +235,26 @@ public class A_AxolotlMitoticSplit : EssenceAbility
             {
                 var m = clones[i].muzzle;
                 if (m) player.FireOnceFrom(m, active);
+            }
+        }
+    }
+
+    public override void ApplyUpgrades(AbilityUpgrade[] upgrades)
+    {
+        if (upgrades == null) return;
+
+        for (int i = 0; i < upgrades.Length; i++)
+        {
+            var u = upgrades[i];
+            switch (u.key)
+            {
+                case "Split/CloneRadius":
+                    cloneRadius = Mathf.Max(0f, ApplyNumeric(cloneRadius, u));
+                    break;
+
+                case "Split/CloneScale":
+                    cloneScale = Mathf.Max(0.1f, ApplyNumeric(cloneScale, u));
+                    break;
             }
         }
     }

@@ -71,4 +71,28 @@ public class A_BeetleDungRoller : EssenceAbility
             }
         }
     }
+
+    public override void ApplyUpgrades(AbilityUpgrade[] upgrades)
+    {
+        if (upgrades == null) return;
+
+        for (int i = 0; i < upgrades.Length; i++)
+        {
+            var u = upgrades[i];
+            switch (u.key)
+            {
+                case "Dung/GrowthPerMeter":
+                    growthPerMeter = Mathf.Max(0f, ApplyNumeric(growthPerMeter, u));
+                    break;
+
+                case "Dung/MaxSizeMult":
+                    maxSizeMult = Mathf.Max(1f, ApplyNumeric(maxSizeMult, u));
+                    break;
+
+                case "Dung/DamagePerSizeMult":
+                    damagePerSizeMult = Mathf.Max(0f, ApplyNumeric(damagePerSizeMult, u));
+                    break;
+            }
+        }
+    }
 }

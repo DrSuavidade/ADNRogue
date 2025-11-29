@@ -60,4 +60,32 @@ public class A_CrocodileColdBlooded : EssenceAbility
 
         return false;
     }
+    public override void ApplyUpgrades(AbilityUpgrade[] upgrades)
+    {
+        if (upgrades == null) return;
+
+        for (int i = 0; i < upgrades.Length; i++)
+        {
+            var u = upgrades[i];
+            switch (u.key)
+            {
+                case "Croc/BonusCritChance":
+                    bonusCritChance = Mathf.Clamp01(ApplyNumeric(bonusCritChance, u));
+                    break;
+
+                case "Croc/BonusCritMultiplier":
+                    bonusCritMultiplier = Mathf.Max(1f, ApplyNumeric(bonusCritMultiplier, u));
+                    break;
+
+                case "Croc/ExecuteThreshold":
+                    executeThreshold = Mathf.Clamp01(ApplyNumeric(executeThreshold, u));
+                    break;
+
+                case "Croc/ExecuteDamageFactor":
+                    executeDamageFactor = Mathf.Max(1f, ApplyNumeric(executeDamageFactor, u));
+                    break;
+            }
+        }
+    }
+
 }

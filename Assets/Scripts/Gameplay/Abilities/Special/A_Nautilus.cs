@@ -61,7 +61,7 @@ public class A_Nautilus : EssenceAbility
             def = d;
             root = ResolvePlayerRoot(ownerGO.transform);
             run = root.GetComponent<RunStats>();
-            lastHealth = (run != null) ? run.currentHP : -1f;
+            lastHealth = (run != null) ? run.CurrentHP : -1f;
 
             // VFX: shell sphere (only when ready)
             EnsureShellSphere();
@@ -92,7 +92,7 @@ public class A_Nautilus : EssenceAbility
         void Update()
         {
             if (run == null) return;                // no HP source found
-            float h = run.currentHP;                // current HP
+            float h = run.CurrentHP;                // current HP
 
             if (shellReady && lastHealth >= 0f && h < lastHealth)
             {
@@ -108,7 +108,7 @@ public class A_Nautilus : EssenceAbility
             }
 
             // track after potential heal
-            lastHealth = run.currentHP;
+            lastHealth = run.CurrentHP;
         }
 
 
@@ -237,4 +237,32 @@ public class A_Nautilus : EssenceAbility
             }
         }
     }
+    public override void ApplyUpgrades(AbilityUpgrade[] upgrades)
+    {
+        if (upgrades == null) return;
+
+        for (int i = 0; i < upgrades.Length; i++)
+        {
+            var u = upgrades[i];
+            switch (u.key)
+            {
+                case "Nautilus/SurgeInterval":
+                    surgeInterval = Mathf.Max(0.1f, ApplyNumeric(surgeInterval, u));
+                    break;
+
+                case "Nautilus/SurgeRadius":
+                    surgeRadius = Mathf.Max(0.1f, ApplyNumeric(surgeRadius, u));
+                    break;
+
+                case "Nautilus/SurgeDamage":
+                    surgeDamage = Mathf.Max(0f, ApplyNumeric(surgeDamage, u));
+                    break;
+
+                case "Nautilus/ShellCooldown":
+                    shellCooldown = Mathf.Max(0f, ApplyNumeric(shellCooldown, u));
+                    break;
+            }
+        }
+    }
+
 }

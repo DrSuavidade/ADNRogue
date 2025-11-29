@@ -121,4 +121,41 @@ public class HummingbirdMomentumFireAbility : EssenceAbility
 
         lastShotTime = now;
     }
+
+    public override void ApplyUpgrades(AbilityUpgrade[] upgrades)
+    {
+        if (upgrades == null) return;
+
+        for (int i = 0; i < upgrades.Length; i++)
+        {
+            var u = upgrades[i];
+            switch (u.key)
+            {
+                case "Humming/StartMultiplier":
+                    startMultiplier = Mathf.Max(0.01f, ApplyNumeric(startMultiplier, u));
+                    break;
+
+                case "Humming/PerSecondAdd":
+                    perSecondAdd = Mathf.Max(0f, ApplyNumeric(perSecondAdd, u));
+                    break;
+
+                case "Humming/MaxRampSeconds":
+                    maxRampSeconds = Mathf.Max(0f, ApplyNumeric(maxRampSeconds, u));
+                    break;
+
+                case "Humming/DecayRate":
+                    decayRate = Mathf.Max(0f, ApplyNumeric(decayRate, u));
+                    break;
+
+                case "Humming/ExtraPierceAtMax":
+                    extraPierceAtMax = Mathf.Max(0, Mathf.RoundToInt(ApplyNumeric(extraPierceAtMax, u)));
+                    break;
+
+                case "Humming/MinFireInterval":
+                    minFireInterval = Mathf.Max(0.01f, ApplyNumeric(minFireInterval, u));
+                    break;
+            }
+        }
+    }
+
 }

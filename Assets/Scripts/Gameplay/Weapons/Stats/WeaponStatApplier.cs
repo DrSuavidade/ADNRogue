@@ -42,7 +42,7 @@ namespace Geneforge.Gameplay.Weapons.Stats
 
                 case Abilities.WeaponStatId.CritChance:
                     if (m.kind == Abilities.ModifierKind.Multiply) ws.critChance *= m.value;
-                    else ws.critChance = Mathf.Clamp01(ws.critChance + m.value);
+                    else ws.critChance += m.value;
                     ws.critChance = Mathf.Clamp01(ws.critChance);
                     break;
 

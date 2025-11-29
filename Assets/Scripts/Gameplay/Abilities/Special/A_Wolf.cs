@@ -170,4 +170,40 @@ public class A_WolfTwinFangs : EssenceAbility
             return m;
         }
     }
+        public override void ApplyUpgrades(AbilityUpgrade[] upgrades)
+    {
+        if (upgrades == null) return;
+
+        for (int i = 0; i < upgrades.Length; i++)
+        {
+            var u = upgrades[i];
+            switch (u.key)
+            {
+                case "Wolf/ExtraHitCount":
+                    extraHitCount = Mathf.Max(1, Mathf.RoundToInt(ApplyNumeric(extraHitCount, u)));
+                    break;
+
+                case "Wolf/ExtraHitDamageFactor":
+                    extraHitDamageFactor = Mathf.Clamp(ApplyNumeric(extraHitDamageFactor, u), 0f, 3f);
+                    break;
+
+                case "Wolf/FirstExtraDelay":
+                    firstExtraDelay = Mathf.Max(0f, ApplyNumeric(firstExtraDelay, u));
+                    break;
+
+                case "Wolf/BetweenExtrasDelay":
+                    betweenExtrasDelay = Mathf.Max(0f, ApplyNumeric(betweenExtrasDelay, u));
+                    break;
+
+                case "Wolf/ExtraHitKnockback":
+                    extraHitKnockback = Mathf.Max(0f, ApplyNumeric(extraHitKnockback, u));
+                    break;
+
+                case "Wolf/MouthDuration":
+                    mouthDuration = Mathf.Max(0.01f, ApplyNumeric(mouthDuration, u));
+                    break;
+            }
+        }
+    }
+
 }

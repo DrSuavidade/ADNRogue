@@ -20,34 +20,6 @@ public class ChainLightningAbility : EssenceAbility
     public float lineWidth   = 0.06f;
     public Color lineColor   = new Color(0.7f, 0.9f, 1f, 0.95f);
 
-    public override void ApplyUpgrades(AbilityUpgrade[] upgrades)
-    {
-        if (upgrades == null) return;
-        for (int i = 0; i < upgrades.Length; i++)
-        {
-            var u = upgrades[i];
-            switch (u.key)
-            {
-                case "Chain/MaxJumps":
-                    if (u.kind == ModifierKind.Add) maxJumps += Mathf.RoundToInt(u.value);
-                    else maxJumps = Mathf.RoundToInt(maxJumps * u.value);
-                    break;
-                case "Chain/Radius":
-                    if (u.kind == ModifierKind.Add) radius += u.value;
-                    else radius *= Mathf.Max(0f, u.value);
-                    break;
-                case "Chain/JumpDelay":
-                    if (u.kind == ModifierKind.Add) jumpDelay = Mathf.Max(0f, jumpDelay + u.value);
-                    else jumpDelay = Mathf.Max(0f, jumpDelay * u.value);
-                    break;
-                case "Chain/DamageFactorPerJump":
-                    if (u.kind == ModifierKind.Add) damageFactorPerJump = Mathf.Clamp01(damageFactorPerJump + u.value);
-                    else damageFactorPerJump = Mathf.Clamp01(damageFactorPerJump * u.value);
-                    break;
-            }
-        }
-    }
-
     public override void OnHitEnemy(Bullet bullet, Enemy first, WeaponStats stats)
     {
         if (first != null) first.StartCoroutine(ChainRoutine(first, stats));
@@ -152,4 +124,36 @@ public class ChainLightningAbility : EssenceAbility
             if (k >= 1f) Destroy(gameObject);
         }
     }
+
+    public override void ApplyUpgrades(AbilityUpgrade[] upgrades)
+    {
+        if (upgrades == null) return;
+
+        for (int i = 0; i < upgrades.Length; i++)
+        {
+            var u = upgrades[i];
+            switch (u.key)
+            {
+                case "Chain/MaxJumps":
+                {
+                    float v = ApplyNumeric(maxJumps, u);
+                    maxJumps = Mathf.Clamp(Mathf.RoundToInt(v), 0, 32);
+                    break;
+                }
+
+                case "Chain/Radius":
+                    radius = Mathf.Max(0f, ApplyNumeric(radius, u));
+                    break;
+
+                case "Chain/JumpDelay":
+                    jumpDelay = Mathf.Max(0f, ApplyNumeric(jumpDelay, u));
+                    break;
+
+                case "Chain/DamageFactorPerJump":
+                    damageFactorPerJump = Mathf.Clamp01(ApplyNumeric(damageFactorPerJump, u));
+                    break;
+            }
+        }
+    }
+
 }

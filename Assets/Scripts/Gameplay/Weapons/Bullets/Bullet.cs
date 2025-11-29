@@ -4,7 +4,9 @@ using System.Collections.Generic;
 using Geneforge.Gameplay.Characters.Enemies;
 using Geneforge.Gameplay.Weapons.Stats;
 using Geneforge.Gameplay.Abilities;
-using Geneforge.Gameplay.Characters.Enemies.Ranged;   // 👈 para aceder a RangedMagic
+using Geneforge.Gameplay.Characters.Enemies.Ranged;
+using Geneforge.Core.Pooling;
+
 
 namespace Geneforge.Gameplay.Weapons.Bullets
 {
@@ -37,12 +39,15 @@ namespace Geneforge.Gameplay.Weapons.Bullets
         EssenceAbility _ability;                             // bound per-bullet
         WeaponStats _ws;
         AbilityUpgrade[] _upgrades;
+        PoolIdentifier poolId;
+
 
 
         void Awake()
         {
             rb = GetComponent<Rigidbody>();
             myCol = GetComponent<Collider>();
+            poolId = GetComponent<PoolIdentifier>();
         }
 
         // Minimal homing: uses only homingStrength
@@ -114,6 +119,37 @@ namespace Geneforge.Gameplay.Weapons.Bullets
             StartCoroutine(DieAfter(lifeTime));
         }
 
+        void Despawn()
+        {
+            StopAllCoroutines();
+
+            // Clean per-bullet state so pooled bullets are safe to reuse
+            if (_ability != null)
+            {
+                Destroy(_ability);
+                _ability = null;
+            }
+
+            _ws = null;
+            _upgrades = null;
+            _hitEnemies.Clear();
+            lastEnemyHit = null;
+            pierceRemaining = 0;
+            bounceRemaining = 0;
+            homingStrength = 0f;
+            aoeRadius = 0f;
+
+            if (poolId != null && PoolManager.Instance != null)
+            {
+                PoolManager.Instance.Reclaim(gameObject);
+            }
+            else
+            {
+                Destroy(gameObject);
+            }
+        }
+
+
 
         public void BindAbility(EssenceAbility ability,
                                 Geneforge.Gameplay.Weapons.Stats.WeaponStats stats,
@@ -131,7 +167,7 @@ namespace Geneforge.Gameplay.Weapons.Bullets
             _ability?.OnBulletSpawn(this, _ws);
         }
 
-        IEnumerator DieAfter(float t) { yield return new WaitForSeconds(t); Destroy(gameObject); }
+        IEnumerator DieAfter(float t) { yield return new WaitForSeconds(t); Despawn(); }
 
         public void ApplyRuntimeStats(WeaponStats ws)
         {
@@ -150,6 +186,7 @@ namespace Geneforge.Gameplay.Weapons.Bullets
             var enemy = other.GetComponent<Enemy>();
             if (enemy != null) { HandleHitEnemy(enemy, other.ClosestPoint(transform.position)); return; }
             // No bounce on trigger surfaces (no normal) — just destroy unless you want special cases
+            Despawn();
         }
 
         void OnCollisionEnter(Collision collision)
@@ -197,7 +234,7 @@ namespace Geneforge.Gameplay.Weapons.Bullets
             }
 
 
-            Destroy(gameObject);
+            Despawn();
         }
 
         void DepenetrateFrom(Collider other, Vector3 fallbackNormal, Vector3 contactPoint)
@@ -223,13 +260,10 @@ namespace Geneforge.Gameplay.Weapons.Bullets
 
         void HandleHitEnemy(Enemy enemy, Vector3 hitPoint)
         {
-            // 👇 NOVO: verificar se o inimigo tem RangedMagic e está em block
             var rangedMagic = enemy.GetComponent<RangedMagic>();
             if (rangedMagic != null && rangedMagic.IsBlocking)
             {
-                // Bala foi bloqueada → sem dano, sem knockback, só destrói a bala.
-                // Aqui podes instanciar um efeito visual de "block" se quiseres.
-                Destroy(gameObject);
+                Despawn();
                 return;
             }
 
@@ -302,7 +336,7 @@ namespace Geneforge.Gameplay.Weapons.Bullets
                 return; // continue flying
             }
 
-            Destroy(gameObject);
+            Despawn();
         }
 
         void IgnoreEnemyColliders(Geneforge.Gameplay.Characters.Enemies.Enemy enemy, bool ignore)

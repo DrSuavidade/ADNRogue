@@ -16,6 +16,14 @@ namespace Geneforge.Gameplay.Abilities
         public virtual void OnFireHeldStart() { }
         public virtual void OnFireHeldStop() { }
 
-
+        protected static float ApplyNumeric(float current, AbilityUpgrade u)
+        {
+            switch (u.kind)
+            {
+                case ModifierKind.Add:      return current + u.value;
+                case ModifierKind.Multiply: return current * u.value;
+                default:                    return current;
+            }
+        }
     }
 }

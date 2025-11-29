@@ -1,15 +1,15 @@
 using UnityEngine;
 using Geneforge.Core.Stats;
-using Geneforge.Gameplay.Abilities;
 
-namespace Geneforge.Gameplay.Characters.Player 
+namespace Geneforge.Gameplay.Characters.Player
 {
     public class PlayerHealth : MonoBehaviour
     {
         [Header("Revive Settings")]
-        public Transform respawnPoint;          // assign an empty GameObject in-scene
-        public float invulnerableDuration = 2f; // seconds after revive
-        public float postReviveHPPercent = 1f;  // 1 = full HP, 0.5 = half HP
+        [SerializeField] Transform respawnPoint;          // assign an empty GameObject in-scene
+        [SerializeField] float invulnerableDuration = 2f; // seconds after revive
+        [SerializeField, Range(0f, 1f)]
+        float postReviveHPPercent = 1f;  // 1 = full HP, 0.5 = half HP
 
         RunStats runStats;
         bool isInvulnerable;
@@ -19,13 +19,21 @@ namespace Geneforge.Gameplay.Characters.Player
         void Awake()
         {
             runStats = GetComponent<RunStats>();
+            if (runStats == null)
+            {
+                Debug.LogError("PlayerHealth requires a RunStats component on the same GameObject.", this);
+                enabled = false;
+                return;
+            }
+
             runStats.OnPlayerDeath += HandleDeath;
             animator = GetComponentInChildren<Animator>();
         }
 
         void OnDestroy()
         {
-            runStats.OnPlayerDeath -= HandleDeath;
+            if (runStats != null)
+                runStats.OnPlayerDeath -= HandleDeath;
         }
 
         void Update()
@@ -36,6 +44,7 @@ namespace Geneforge.Gameplay.Characters.Player
 
         public void ApplyDamage(float dmg)
         {
+            if (!enabled || runStats == null) return;
             if (isInvulnerable) return;
 
             bool died = runStats.TakeDamage(dmg);
@@ -50,10 +59,12 @@ namespace Geneforge.Gameplay.Characters.Player
 
         void HandleDeath()
         {
-            // Consume a life
-            runStats.lives--;
+            if (runStats == null) return;
 
-            if (runStats.lives > 0)
+            // Consume a life
+            runStats.Lives--;
+
+            if (runStats.Lives > 0)
             {
                 // Play death‐but‐revive animation
                 animator?.SetTrigger("Death");
@@ -73,9 +84,13 @@ namespace Geneforge.Gameplay.Characters.Player
 
         void RevivePlayer()
         {
+            if (runStats == null) return;
+
             // Reset HP (full or partial)
-            float restore = runStats.maxHP * postReviveHPPercent;
-            runStats.currentHP = restore;
+            float targetHP = runStats.MaxHP * Mathf.Clamp01(postReviveHPPercent);
+
+            // CurrentHP is 0 when OnPlayerDeath fired, so Heal() will set it to targetHP
+            runStats.Heal(targetHP);
 
             // Move to respawn point
             if (respawnPoint != null)

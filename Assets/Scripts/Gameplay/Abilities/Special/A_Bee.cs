@@ -395,4 +395,45 @@ public class A_BeeHoneycomb : EssenceAbility
             if (agent) agent.speed = baseSpeed;
         }
     }
+
+    public override void ApplyUpgrades(AbilityUpgrade[] upgrades)
+    {
+        if (upgrades == null) return;
+
+        for (int i = 0; i < upgrades.Length; i++)
+        {
+            var u = upgrades[i];
+            switch (u.key)
+            {
+                case "Honey/SlowPerStack":
+                    slowPerStack = Mathf.Clamp01(ApplyNumeric(slowPerStack, u));
+                    break;
+
+                case "Honey/StackDuration":
+                    stackDuration = Mathf.Max(0.05f, ApplyNumeric(stackDuration, u));
+                    break;
+
+                case "Honey/RootDuration":
+                    rootDuration = Mathf.Max(0f, ApplyNumeric(rootDuration, u));
+                    break;
+
+                case "Honey/CooldownAfterPop":
+                    cooldownAfterPop = Mathf.Max(0f, ApplyNumeric(cooldownAfterPop, u));
+                    break;
+
+                case "Honey/PuddleRadius":
+                    puddleRadius = Mathf.Max(0f, ApplyNumeric(puddleRadius, u));
+                    break;
+
+                case "Honey/PuddleDuration":
+                    puddleDuration = Mathf.Max(0.05f, ApplyNumeric(puddleDuration, u));
+                    break;
+
+                case "Honey/PuddleSlow":
+                    puddleSlow = Mathf.Clamp01(ApplyNumeric(puddleSlow, u));
+                    break;
+            }
+        }
+    }
+
 }

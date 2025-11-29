@@ -217,4 +217,41 @@ public class A_SheepWoolRicochet : EssenceAbility
             transform.forward = keepDir;
         }
     }
+
+    public override void ApplyUpgrades(AbilityUpgrade[] upgrades)
+    {
+        if (upgrades == null) return;
+
+        for (int i = 0; i < upgrades.Length; i++)
+        {
+            var u = upgrades[i];
+            switch (u.key)
+            {
+                case "Sheep/RicochetCount":
+                    ricochetCount = Mathf.Max(0, Mathf.RoundToInt(ApplyNumeric(ricochetCount, u)));
+                    break;
+
+                case "Sheep/SeekRadius":
+                    seekRadius = Mathf.Max(0.1f, ApplyNumeric(seekRadius, u));
+                    break;
+
+                case "Sheep/SpeedRetention":
+                    speedRetention = Mathf.Clamp01(ApplyNumeric(speedRetention, u));
+                    break;
+
+                case "Sheep/IgnoreLastTargetSeconds":
+                    ignoreLastTargetSeconds = Mathf.Max(0f, ApplyNumeric(ignoreLastTargetSeconds, u));
+                    break;
+
+                case "Sheep/ForwardNudge":
+                    forwardNudge = Mathf.Max(0f, ApplyNumeric(forwardNudge, u));
+                    break;
+
+                case "Sheep/LockDuration":
+                    steerLockDuration = Mathf.Max(0f, ApplyNumeric(steerLockDuration, u));
+                    break;
+            }
+        }
+    }
+
 }

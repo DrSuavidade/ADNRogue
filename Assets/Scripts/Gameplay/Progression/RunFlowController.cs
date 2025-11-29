@@ -32,7 +32,7 @@ namespace Geneforge.Gameplay.Progression
         {
             RunState.CurrentTimeline = TimelineId.Prehistoric;
             RunState.HasTimelineOverride = true;
-            SceneManager.LoadScene(dungeonSceneName);
+            SafeLoadScene(dungeonSceneName);
         }
 
         // Hook this to DungeonMapManager.onBossStairsUsed in the dungeon scene.
@@ -48,7 +48,7 @@ namespace Geneforge.Gameplay.Progression
                 return;
             }
 
-            SceneManager.LoadScene(bossScene);
+            SafeLoadScene(bossScene);
         }
 
         // Call this from the boss when it dies.
@@ -66,8 +66,27 @@ namespace Geneforge.Gameplay.Progression
             RunState.CurrentTimeline = next;
             RunState.HasTimelineOverride = true;
 
-            SceneManager.LoadScene(dungeonSceneName);
+            SafeLoadScene(dungeonSceneName);
         }
+
+        private void SafeLoadScene(string sceneName)
+        {
+            if (string.IsNullOrEmpty(sceneName))
+            {
+                Debug.LogError("RunFlowController.SafeLoadScene called with null/empty sceneName.");
+                return;
+            }
+
+            if (!SceneManager.GetSceneByName(sceneName).IsValid() &&
+                !Application.CanStreamedLevelBeLoaded(sceneName))
+            {
+                Debug.LogError($"RunFlowController: Scene '{sceneName}' is not in build settings or cannot be loaded.");
+                return;
+            }
+
+            SceneManager.LoadScene(sceneName);
+        }
+
 
         private string GetBossSceneName(TimelineId t)
         {

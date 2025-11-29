@@ -112,4 +112,33 @@ public class A_ElephantStampede : EssenceAbility
             if (k >= 1f) Destroy(gameObject);
         }
     }
+    public override void ApplyUpgrades(AbilityUpgrade[] upgrades)
+    {
+        if (upgrades == null) return;
+
+        for (int i = 0; i < upgrades.Length; i++)
+        {
+            var u = upgrades[i];
+            switch (u.key)
+            {
+                case "Elephant/SizeMult":
+                    sizeMult = Mathf.Max(0.1f, ApplyNumeric(sizeMult, u));
+                    break;
+
+                case "Elephant/AoeRadius":
+                    aoeRadius = Mathf.Max(0f, ApplyNumeric(aoeRadius, u));
+                    break;
+
+                case "Elephant/AoeDamageFactor":
+                    aoeDamageFactor = Mathf.Max(0f, ApplyNumeric(aoeDamageFactor, u));
+                    break;
+
+                case "Elephant/Knockback":
+                    knockback = Mathf.Max(0f, ApplyNumeric(knockback, u));
+                    break;
+
+            }
+        }
+    }
+
 }

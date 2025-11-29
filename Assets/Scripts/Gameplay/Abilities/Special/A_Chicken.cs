@@ -136,4 +136,36 @@ public class ChickenBeakConeAbility : EssenceAbility
             if (t >= life) Destroy(gameObject);
         }
     }
+    public override void ApplyUpgrades(AbilityUpgrade[] upgrades)
+    {
+        if (upgrades == null) return;
+
+        for (int i = 0; i < upgrades.Length; i++)
+        {
+            var u = upgrades[i];
+            switch (u.key)
+            {
+                case "Beak/ConeAngle":
+                    coneAngle = Mathf.Clamp(ApplyNumeric(coneAngle, u), 1f, 180f);
+                    break;
+
+                case "Beak/ConeRange":
+                    coneRange = Mathf.Max(0.5f, ApplyNumeric(coneRange, u));
+                    break;
+
+                case "Beak/DamageFactor":
+                    damageFactor = Mathf.Max(0f, ApplyNumeric(damageFactor, u));
+                    break;
+
+                case "Beak/HitFalloff":
+                    hitFalloff = Mathf.Clamp01(ApplyNumeric(hitFalloff, u));
+                    break;
+
+                case "Beak/Knockback":
+                    knockback = Mathf.Max(0f, ApplyNumeric(knockback, u));
+                    break;
+            }
+        }
+    }
+
 }

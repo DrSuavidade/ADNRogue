@@ -119,7 +119,7 @@ public class A_ChameleonCamouflage : EssenceAbility
             run = owner.GetComponent<RunStats>();
             rends = owner.GetComponentsInChildren<Renderer>(true);
             cols  = owner.GetComponentsInChildren<Collider>(true);
-            lastHP = run ? run.currentHP : -1f;
+            lastHP = run ? run.CurrentHP : -1f;
 
             // resolve optional layers (ok if not found)
             invisibleLayer = string.IsNullOrEmpty(def.invisibleLayerName) ? -1 : LayerMask.NameToLayer(def.invisibleLayerName);
@@ -133,11 +133,11 @@ public class A_ChameleonCamouflage : EssenceAbility
         {
             if (!run) return;
             // detect damage
-            if (lastHP >= 0f && run.currentHP < lastHP - 1e-4f)
+            if (lastHP >= 0f && run.CurrentHP < lastHP - 1e-4f)
             {
                 BeginInvis();
             }
-            lastHP = run.currentHP;
+            lastHP = run.CurrentHP;
         }
 
         void BeginInvis()
@@ -263,6 +263,29 @@ public class A_ChameleonCamouflage : EssenceAbility
         {
             t.gameObject.layer = layer;
             for (int i = 0; i < t.childCount; i++) SetLayerRecursively(t.GetChild(i), layer);
+        }
+    }
+    public override void ApplyUpgrades(AbilityUpgrade[] upgrades)
+    {
+        if (upgrades == null) return;
+
+        for (int i = 0; i < upgrades.Length; i++)
+        {
+            var u = upgrades[i];
+            switch (u.key)
+            {
+                case "Camouflage/InvisDuration":
+                    invisDuration = Mathf.Max(0.05f, ApplyNumeric(invisDuration, u));
+                    break;
+
+                case "Camouflage/TetherDuration":
+                    tetherDuration = Mathf.Max(0f, ApplyNumeric(tetherDuration, u));
+                    break;
+
+                case "Camouflage/PullForce":
+                    pullForce = Mathf.Max(0f, ApplyNumeric(pullForce, u));
+                    break;
+            }
         }
     }
 }

@@ -241,4 +241,32 @@ public class A_SharkFishProc : EssenceAbility
     {
         public void Run(IEnumerator routine) { StartCoroutine(routine); }
     }
+    public override void ApplyUpgrades(AbilityUpgrade[] upgrades)
+    {
+        if (upgrades == null) return;
+
+        for (int i = 0; i < upgrades.Length; i++)
+        {
+            var u = upgrades[i];
+            switch (u.key)
+            {
+                case "Shark/FishProcChance":
+                    fishChance = Mathf.Clamp01(ApplyNumeric(fishChance, u));
+                    break;
+
+                case "Shark/FishDamageFactor":
+                    biteDamageFactor = Mathf.Max(0f, ApplyNumeric(biteDamageFactor, u));
+                    break;
+
+                case "Shark/FishScale":
+                    fishScale = Mathf.Max(0.1f, ApplyNumeric(fishScale, u));
+                    break;
+
+                case "Shark/FishCooldown":
+                    cooldownSeconds = Mathf.Max(1, ApplyNumeric(cooldownSeconds, u));
+                    break;
+            }
+        }
+    }
+
 }

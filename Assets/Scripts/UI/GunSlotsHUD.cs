@@ -60,7 +60,9 @@ namespace Geneforge.UI
         void RefreshPrimary()
         {
             if (primaryIcon == null) return;
-            var essence = gunSlots != null ? gunSlots.Primary.Essence : null; // Primary slot
+            var essence = (gunSlots != null && gunSlots.Primary != null)
+                ? gunSlots.Primary.Essence
+                : null;
             SetIcon(primaryIcon, essence != null ? essence.icon : null);
         }
 
@@ -72,7 +74,7 @@ namespace Geneforge.UI
                 var img = secondaryIcons[i];
                 if (img == null) continue;
 
-                var essence = (gunSlots != null && i < gunSlots.Secondaries.Length)
+                var essence = (gunSlots != null && gunSlots.Secondaries != null && i < gunSlots.Secondaries.Length && gunSlots.Secondaries[i] != null)
                     ? gunSlots.Secondaries[i].Essence
                     : null;
 
@@ -83,7 +85,7 @@ namespace Geneforge.UI
         void SetIcon(Image img, Sprite sprite)
         {
             img.sprite = sprite != null ? sprite : emptySprite;
-            img.color  = (sprite != null) ? filledColor : emptyColor;
+            img.color = (sprite != null) ? filledColor : emptyColor;
         }
     }
 }

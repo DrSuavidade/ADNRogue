@@ -117,4 +117,36 @@ public class A_DragonflyVectorLock : EssenceAbility
         if (!tr.material) tr.material = new Material(Shader.Find("Sprites/Default"));
         tr.sortingLayerID = bullet.gameObject.layer; // keep on same render layer/culling
     }
+    public override void ApplyUpgrades(AbilityUpgrade[] upgrades)
+    {
+        if (upgrades == null) return;
+
+        for (int i = 0; i < upgrades.Length; i++)
+        {
+            var u = upgrades[i];
+            switch (u.key)
+            {
+                case "Dragonfly/SpeedMultiplier":
+                    speedMultiplier = Mathf.Max(0f, ApplyNumeric(speedMultiplier, u));
+                    break;
+
+                case "Dragonfly/HomingAdd":
+                    homingAdd = Mathf.Clamp01(ApplyNumeric(homingAdd, u));
+                    break;
+
+                case "Dragonfly/SeekRadius":
+                    seekRadius = Mathf.Max(0f, ApplyNumeric(seekRadius, u));
+                    break;
+
+                case "Dragonfly/TrailTime":
+                    trailTime = Mathf.Max(0f, ApplyNumeric(trailTime, u));
+                    break;
+
+                case "Dragonfly/TrailWidth":
+                    trailWidth = Mathf.Max(0.001f, ApplyNumeric(trailWidth, u));
+                    break;
+            }
+        }
+    }
+
 }

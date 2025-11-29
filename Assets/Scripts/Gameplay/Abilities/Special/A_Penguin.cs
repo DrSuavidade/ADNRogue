@@ -284,4 +284,32 @@ public class PenguinIceSlugAbility : EssenceAbility
             if (t >= life) Destroy(gameObject);
         }
     }
+    public override void ApplyUpgrades(AbilityUpgrade[] upgrades)
+    {
+        if (upgrades == null) return;
+
+        for (int i = 0; i < upgrades.Length; i++)
+        {
+            var u = upgrades[i];
+            switch (u.key)
+            {
+                case "Penguin/slowPercent":
+                    slowPercent = Mathf.Clamp01(ApplyNumeric(slowPercent, u));
+                    break;
+
+                case "Penguin/SlowDuration":
+                    slowDuration = Mathf.Max(0.1f, ApplyNumeric(slowDuration, u));
+                    break;
+
+                case "Penguin/freezeDuration":
+                    freezeDuration = Mathf.Max(0.1f, ApplyNumeric(freezeDuration, u));
+                    break;
+
+                case "Penguin/freezeCooldown":
+                    freezeCooldown = Mathf.Max(0.1f, ApplyNumeric(freezeCooldown, u));
+                    break;
+            }
+        }
+    }
+
 }

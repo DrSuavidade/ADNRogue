@@ -403,7 +403,7 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   primary:
     kind: 0
-    essence: {fileID: 11400000, guid: 55323569f4e22794a860c149e31714be, type: 2}
+    essence: {fileID: 11400000, guid: ec7d75390876be34f82c4368b7022e2c, type: 2}
   secondaries:
   - kind: 1
     essence: {fileID: 0}
