@@ -12,28 +12,38 @@ namespace Geneforge.Gameplay.Characters.Enemies
         private float currentHealth;
 
         [Header("Animation")]
-        public Animator animator;                // assign your Animator
+        public Animator animator;                
         public string damagedTrigger = "Damaged";
         public string deathTrigger = "Death";
         [Tooltip("Length of the death animation clip in seconds")]
-        public float deathAnimDuration = 1f;     // já não usamos para Destroy, mas podes manter
+        public float deathAnimDuration = 1f;
 
         // Expose health
         public float CurrentHealth => currentHealth;
-        public float MaxHealth   => maxHealth;
+        public float MaxHealth => maxHealth;
 
-        // Fired the first time the enemy is damaged
+        // Events
         public event Action OnFirstHit;
         public event Action<float> OnDamaged;
 
         private bool hasBeenHit = false;
-        private bool isDead     = false;
+        private bool isDead = false;
 
         [Header("Damage UI")]
-        public GameObject damageTextPrefab;  // assign your DamageText prefab
+        public GameObject damageTextPrefab;
         public Vector3 damageTextOffset = new Vector3(0, 2.5f, 0);
 
-        // --- NEW: refs de coroutines para não as matar acidentalmente ---
+        // =====================================================
+        // HIT REACTION — LIMITADO (MÁXIMO 3 NA VIDA INTEIRA)
+        // =====================================================
+        [Header("Hit Reaction (MAX 3 total)")]
+        [Tooltip("Percentagens de vida (0..1) onde o inimigo reage com Hit.")]
+        public float[] hitHealthThresholds = { 0.7f, 0.4f, 0.15f };
+
+        int _hitReactionIndex = 0;
+        // =====================================================
+
+        // Coroutines
         private Coroutine _despawnCo;
         private Coroutine _knockbackCo;
 
@@ -53,8 +63,10 @@ namespace Geneforge.Gameplay.Characters.Enemies
             }
 
             currentHealth = Mathf.Max(0f, currentHealth - dmg);
+
             Debug.Log($"{name} took {dmg} damage, remaining HP: {currentHealth}");
 
+            // ---------------- DAMAGE TEXT ----------------
             if (damageTextPrefab != null)
             {
                 Vector3 spawnPos = transform.position + damageTextOffset;
@@ -62,18 +74,30 @@ namespace Geneforge.Gameplay.Characters.Enemies
                 var dt = dtObj.GetComponent<DamageText>();
                 if (dt != null) dt.Initialize(dmg, wasCrit);
             }
+            // ---------------------------------------------
 
             OnDamaged?.Invoke(dmg);
 
-            if (currentHealth > 0f)
+            // =====================================================
+            // HIT REACTION — DISPARA SÓ 3 VEZES NO TOTAL
+            // =====================================================
+            if (currentHealth > 0f && animator != null)
             {
-                if (animator != null)
-                    animator.SetTrigger(damagedTrigger);
+                if (_hitReactionIndex < hitHealthThresholds.Length)
+                {
+                    float thresholdHP = maxHealth * hitHealthThresholds[_hitReactionIndex];
+
+                    if (currentHealth <= thresholdHP)
+                    {
+                        animator.SetTrigger(damagedTrigger);
+                        _hitReactionIndex++; // nunca mais repete este marco
+                    }
+                }
             }
-            else
-            {
+            // =====================================================
+
+            if (currentHealth <= 0f)
                 Die();
-            }
         }
 
         void Die()
@@ -91,14 +115,18 @@ namespace Geneforge.Gameplay.Characters.Enemies
             var cc = GetComponent<CharacterController>();
             if (cc != null) cc.enabled = false;
 
-            // Zerar velocidades apenas se NÃO forem cinemáticos e só depois tornar kinematic
+            // Zerar velocidades apenas se NÃO forem cinemáticos
             foreach (var rb in GetComponentsInChildren<Rigidbody>())
             {
                 if (rb == null) continue;
 
                 if (!rb.isKinematic)
                 {
+#if UNITY_6000_0_OR_NEWER
                     rb.linearVelocity = Vector3.zero;
+#else
+                    rb.velocity = Vector3.zero;
+#endif
                     rb.angularVelocity = Vector3.zero;
                 }
 
@@ -115,12 +143,11 @@ namespace Geneforge.Gameplay.Characters.Enemies
 
             GetComponent<Map.EnemyDeathNotifier>()?.ReportDeath();
 
-            // 3) despawn em tempo REAL (não para com pause)
+            // 3) despawn em tempo REAL
             if (_despawnCo == null)
                 _despawnCo = StartCoroutine(DespawnAfterRealtime(5f));
         }
 
-        // Usa tempo não escalado → funciona mesmo com Time.timeScale = 0
         IEnumerator DespawnAfterRealtime(float seconds)
         {
             float t = 0f;
@@ -132,10 +159,10 @@ namespace Geneforge.Gameplay.Characters.Enemies
             Destroy(gameObject);
         }
 
-        // Smooth knockback slide — agora sem StopAllCoroutines()
+        // Smooth knockback slide — sem StopAllCoroutines()
         public void ApplyKnockback(Vector3 direction, float force, float duration = 0.1f)
         {
-            if (isDead) return; // não empurrar cadáver
+            if (isDead) return;
 
             float disp = 0.1f * force;
             Vector3 targetPos = transform.position + direction.normalized * disp;

@@ -4,6 +4,7 @@ using System.Collections.Generic;
 using Geneforge.Gameplay.Characters.Enemies;
 using Geneforge.Gameplay.Weapons.Stats;
 using Geneforge.Gameplay.Abilities;
+using Geneforge.Gameplay.Characters.Enemies.Ranged;   // 👈 para aceder a RangedMagic
 
 namespace Geneforge.Gameplay.Weapons.Bullets
 {
@@ -88,7 +89,11 @@ namespace Geneforge.Gameplay.Weapons.Bullets
 
         void FixedUpdate()
         {
+#if UNITY_6000_0_OR_NEWER
             preStepVel = rb.linearVelocity;
+#else
+            preStepVel = rb.velocity;
+#endif
         }
 
         public void Launch(Vector3 dir, float speed)
@@ -109,7 +114,7 @@ namespace Geneforge.Gameplay.Weapons.Bullets
             StartCoroutine(DieAfter(lifeTime));
         }
 
-        
+
         public void BindAbility(EssenceAbility ability,
                                 Geneforge.Gameplay.Weapons.Stats.WeaponStats stats,
                                 AbilityUpgrade[] upgrades = null)
@@ -218,6 +223,16 @@ namespace Geneforge.Gameplay.Weapons.Bullets
 
         void HandleHitEnemy(Enemy enemy, Vector3 hitPoint)
         {
+            // 👇 NOVO: verificar se o inimigo tem RangedMagic e está em block
+            var rangedMagic = enemy.GetComponent<RangedMagic>();
+            if (rangedMagic != null && rangedMagic.IsBlocking)
+            {
+                // Bala foi bloqueada → sem dano, sem knockback, só destrói a bala.
+                // Aqui podes instanciar um efeito visual de "block" se quiseres.
+                Destroy(gameObject);
+                return;
+            }
+
             if (_hitEnemies.Contains(enemy)) return;
             _hitEnemies.Add(enemy);
 
@@ -338,9 +353,6 @@ namespace Geneforge.Gameplay.Weapons.Bullets
                 // place near the enemy's feet (ground-projected)
                 Vector3 p = target.position;
                 go.transform.position = ProjectToGround(p) + Vector3.up * 0.02f;
-
-                // no spin, stay parallel to ground
-                // go.transform.rotation = Quaternion.identity; // not needed each frame, but harmless
 
                 tSec += Time.deltaTime;
                 yield return null;

@@ -48,7 +48,7 @@ namespace Geneforge.Gameplay.Characters.Enemies.Ranged
             [Header("Ataque")]
             public float attackRange = 8f;
             public float attackRate = 1.2f;
-            public float damage = 10f;               // ✅ dano direto
+            public float damage = 10f;               // dano direto
 
             [Header("Aim")]
             public Vector3 aimOffset = Vector3.zero;
@@ -95,7 +95,7 @@ namespace Geneforge.Gameplay.Characters.Enemies.Ranged
         public bool hardStopFreezeRotationY = true;
 
         [Header("Attack Lock / Detection")]
-        public bool freezeRotationWhileAttacking = false; // ⚠ já não usamos isto para fixar a rotação em ataque
+        public bool freezeRotationWhileAttacking = false; // já não usamos isto para fixar a rotação em ataque
         public string[] attackStateNames = { "Attack", "AttackB" };
         public string[] attackStateTags = { "Attack" };
 
@@ -106,6 +106,37 @@ namespace Geneforge.Gameplay.Characters.Enemies.Ranged
 
         [Header("Animator – Estado de Morte")]
         public string deathStateName = "Death";
+
+        // ---------------- Block / Defesa ----------------
+        [Header("Block / Defesa")]
+        public bool canBlock = true;
+
+        [Tooltip("Percentagem de vida perdida necessária para cada block (0.3 = 30%).")]
+        [Range(0.05f, 1f)]
+        public float blockHealthLossFraction = 0.3f; // 30%
+
+        [Tooltip("Duração do block (segundos).")]
+        public float blockDuration = 5f;
+
+        [Tooltip("Cooldown depois do block acabar (segundos).")]
+        public float blockCooldown = 10f;
+
+        [Tooltip("Trigger da animação de block no Animator.")]
+        public string blockAnimatorTrigger = "Block";
+
+        [Tooltip("Nome do bool no Animator que indica se está em block.")]
+        public string blockBoolName = "IsBlocking";
+
+        // estado interno do block
+        bool _isBlocking = false;
+        float _blockCooldownTimer = 0f;
+        Coroutine _blockRoutine;
+
+        float _maxHealthCached = 0f;
+        float _nextBlockHealthThreshold = 0f;
+
+        // propriedade pública para outros scripts (ex: Bullet)
+        public bool IsBlocking => _isBlocking;
 
         // ----------------- estado interno -----------------
         Vector3 spawnPos, wanderTarget;
@@ -166,7 +197,18 @@ namespace Geneforge.Gameplay.Characters.Enemies.Ranged
             if (player != null && playerHealth == null)
                 playerHealth = player.GetComponent<PlayerHealth>();
 
-            if (enemy != null) enemy.OnDamaged += HandleOnDamaged;
+            if (enemy != null)
+            {
+                enemy.OnDamaged += HandleOnDamaged;
+
+                // assumimos que o inimigo começa com vida cheia
+                _maxHealthCached = enemy.CurrentHealth;
+                if (_maxHealthCached <= 0f)
+                    _maxHealthCached = 1f;
+
+                // primeiro limiar de block: perdeu 30% da vida → fica a 70%
+                _nextBlockHealthThreshold = _maxHealthCached * (1f - blockHealthLossFraction);
+            }
         }
 
         void OnDestroy()
@@ -176,10 +218,34 @@ namespace Geneforge.Gameplay.Characters.Enemies.Ranged
 
         void HandleOnDamaged(float dmg)
         {
-            if (!isDamagePaused)
+            // pausa de dano normal (hit-stun) – mas vamos ignorar se estiver em block
+            if (!_isBlocking)
             {
-                isDamagePaused = true;
-                damagePauseTimer = 0f;
+                if (!isDamagePaused)
+                {
+                    isDamagePaused = true;
+                    damagePauseTimer = 0f;
+                }
+            }
+
+            if (!canBlock || enemy == null) return;
+
+            // se já está a bloquear ou ainda em cooldown, não tenta bloquear
+            if (_isBlocking || _blockCooldownTimer > 0f) return;
+
+            float curHealth = enemy.CurrentHealth;
+            if (_maxHealthCached <= 0f)
+                _maxHealthCached = Mathf.Max(curHealth + dmg, 1f);
+
+            // se a vida atual passou para baixo do limiar → ativa block
+            if (curHealth <= _nextBlockHealthThreshold)
+            {
+                StartBlock();
+
+                // próximo limiar: menos mais 30% da vida máxima
+                _nextBlockHealthThreshold -= _maxHealthCached * blockHealthLossFraction;
+                if (_nextBlockHealthThreshold < 0f)
+                    _nextBlockHealthThreshold = 0f;
             }
         }
 
@@ -195,6 +261,35 @@ namespace Geneforge.Gameplay.Characters.Enemies.Ranged
                 return;
             }
 
+            // --- COOLDOWN DO BLOCK ---
+            if (_blockCooldownTimer > 0f)
+            {
+                _blockCooldownTimer -= Time.deltaTime;
+                if (_blockCooldownTimer < 0f)
+                    _blockCooldownTimer = 0f;
+            }
+
+            // ===========================
+            //    ESTADO DE BLOCK DURO
+            // ===========================
+            if (_isBlocking)
+            {
+                // ficar parado, sem andar / atacar
+                HardStopNow(true);        // zera velocidade, desliga rootmotion, Speed = 0
+
+                // opcional: olhar para o player enquanto bloqueia
+                if (player != null)
+                {
+                    Vector3 face = player.position - transform.position;
+                    face.y = 0f;
+                    if (face.sqrMagnitude > 0.001f)
+                        transform.rotation = Quaternion.LookRotation(face.normalized);
+                }
+
+                // não fazer mais nada de AI, nem ataques, nem wander
+                return;
+            }
+
             bool inAttackAnim = IsInAttackAnim();
             bool inHitAnim = IsInHitAnim();
             bool inBusyAnim = inAttackAnim || inHitAnim;
@@ -203,7 +298,7 @@ namespace Geneforge.Gameplay.Characters.Enemies.Ranged
             if (wantsTranslationLock && !_translationLocked) StartTranslationLock();
             else if (!wantsTranslationLock && _translationLocked) EndTranslationLock();
 
-            // ⚠ Agora só fixamos rotação em animações de HIT, não em ataque
+            // Agora só fixamos rotação em animações de HIT, não em ataque
             bool shouldPinFacing =
                 (inHitAnim && freezeRotationWhileHit);
 
@@ -249,7 +344,7 @@ namespace Geneforge.Gameplay.Characters.Enemies.Ranged
             SpellAttack chosen = ChooseSpell(dist);
 
             if (chosen != null && dist <= chosen.attackRange &&
-                (!requireLineOfSight || HasLineOfSight())) // ← aqui usamos a LOS genérica (global)
+                (!requireLineOfSight || HasLineOfSight()))
                 state = State.Attacking;
             else if (!stayStationary && dist <= detectionRadius)
                 state = State.Chasing;
@@ -288,7 +383,6 @@ namespace Geneforge.Gameplay.Characters.Enemies.Ranged
                     if (!_translationLocked)
                         transform.position += dir.normalized * currentSpeed * Time.deltaTime;
 
-                    // ⚠ já não fixamos rotação em ataque, por isso ele continua a virar para o alvo
                     if (!_attackFacingPinned)
                         transform.rotation = Quaternion.LookRotation(dir.normalized);
                 }
@@ -357,25 +451,20 @@ namespace Geneforge.Gameplay.Characters.Enemies.Ranged
         {
             if (_deadLatched || queuedSpell == null || playerHealth == null) return;
 
-            // Distância atual ao player (ainda precisa estar no range da spell)
             float distToPlayerNow = Vector3.Distance(transform.position, player.position);
             if (distToPlayerNow > queuedSpell.attackRange)
             {
-                // Player saiu do alcance → falha
                 queuedSpell = null;
                 return;
             }
 
-            // Ver se o player se desviou o suficiente da posição que foi mirado
             float distFromSavedAim = Vector3.Distance(player.position, _queuedAimPosition);
             if (distFromSavedAim > hitToleranceRadius)
             {
-                // Player dodgeou → falha
                 queuedSpell = null;
                 return;
             }
 
-            // ✅ LOS específico da spell (Attack usa 1 origin global, AttackB pode usar 2 mãos)
             if (!requireLineOfSight || HasLineOfSight(queuedSpell))
             {
                 playerHealth.ApplyDamage(queuedSpell.damage);
@@ -384,14 +473,12 @@ namespace Geneforge.Gameplay.Characters.Enemies.Ranged
             queuedSpell = null;
         }
 
-        // --------- Calcula a posição de mira no momento do cast ----------
         Vector3 GetAimTargetPosition(SpellAttack spell)
         {
             if (player == null) return transform.position;
 
             Vector3 baseTarget = player.position;
 
-            // aplica offset local se houver origem de lançamento
             Vector3 offsetWorld = spell.aimOffset;
             if (throwOrigin != null)
                 offsetWorld = throwOrigin.TransformVector(spell.aimOffset);
@@ -399,18 +486,14 @@ namespace Geneforge.Gameplay.Characters.Enemies.Ranged
             return baseTarget + offsetWorld;
         }
 
-        // --------- Escolha de magia ----------
         SpellAttack ChooseSpell(float dist)
         {
-            // Perto -> Attack (spellA)
             if (dist <= spellA.attackRange && CanCast(spellA))
                 return spellA;
 
-            // Mais longe, mas ainda dentro do alcance -> AttackB (spellB)
             if (dist > spellA.attackRange && dist <= spellB.attackRange && CanCast(spellB))
                 return spellB;
 
-            // Fora de alcance
             return null;
         }
 
@@ -429,29 +512,22 @@ namespace Geneforge.Gameplay.Characters.Enemies.Ranged
             else if (s == spellB) lastAttackB = t;
         }
 
-        // --------- Throw Origins helpers ----------
         Transform[] GetThrowOrigins(SpellAttack spell)
         {
-            // 1) Se a spell tiver origins próprios definidos, usa esses
             if (spell != null && spell.throwOrigins != null && spell.throwOrigins.Length > 0)
                 return spell.throwOrigins;
 
-            // 2) Caso contrário, usa o throwOrigin global (mão direita)
             if (throwOrigin != null)
                 return new Transform[] { throwOrigin };
 
-            // 3) Fallback: posição do inimigo
             return new Transform[] { transform };
         }
 
-        // --------- LOS genérico (para lógica de estado) ----------
         bool HasLineOfSight()
         {
-            // usa throwOrigin global
             return HasLineOfSight(null);
         }
 
-        // --------- LOS específico por spell ----------
         bool HasLineOfSight(SpellAttack spell)
         {
             if (!requireLineOfSight || player == null) return true;
@@ -475,16 +551,13 @@ namespace Geneforge.Gameplay.Characters.Enemies.Ranged
                 {
                     if (hit.collider && hit.collider.transform != player && !hit.collider.transform.IsChildOf(player))
                     {
-                        // este origin não tem LOS → tenta o próximo
                         continue;
                     }
                 }
 
-                // Se QUALQUER origin tiver LOS, a spell pode acertar
                 return true;
             }
 
-            // Nenhum origin tem LOS
             return false;
         }
 
@@ -504,7 +577,11 @@ namespace Geneforge.Gameplay.Characters.Enemies.Ranged
 
             if (_rb && !_rb.isKinematic)
             {
+#if UNITY_6000_0_OR_NEWER
                 _rb.linearVelocity = new Vector3(0f, _rb.linearVelocity.y, 0f);
+#else
+                _rb.velocity = new Vector3(0f, _rb.velocity.y, 0f);
+#endif
                 _rb.angularVelocity = Vector3.zero;
             }
         }
@@ -542,7 +619,6 @@ namespace Geneforge.Gameplay.Characters.Enemies.Ranged
             if (animator != null) animator.SetFloat("Speed", v);
         }
 
-        // --------- Morte / Lock ----------
         void LatchDeathStop()
         {
             _deadLatched = true;
@@ -551,6 +627,12 @@ namespace Geneforge.Gameplay.Characters.Enemies.Ranged
             {
                 animator.ResetTrigger("Attack");
                 animator.ResetTrigger("AttackB");
+                if (!string.IsNullOrEmpty(blockAnimatorTrigger))
+                    animator.ResetTrigger(blockAnimatorTrigger);
+
+                if (!string.IsNullOrEmpty(blockBoolName))
+                    animator.SetBool(blockBoolName, false);
+
                 animator.SetFloat("Speed", 0f);
                 animator.applyRootMotion = false;
             }
@@ -637,7 +719,11 @@ namespace Geneforge.Gameplay.Characters.Enemies.Ranged
 
             if (hardStopRigidbodyWhenLocked && _rb && !_rb.isKinematic)
             {
+#if UNITY_6000_0_OR_NEWER
                 _rb.linearVelocity = Vector3.zero;
+#else
+                _rb.velocity = Vector3.zero;
+#endif
                 _rb.angularVelocity = Vector3.zero;
 
                 if (alsoFreezeRotationY && hardStopFreezeRotationY)
@@ -655,6 +741,49 @@ namespace Geneforge.Gameplay.Characters.Enemies.Ranged
 
             Gizmos.color = Color.red; Gizmos.DrawWireSphere(transform.position, spellA.attackRange);
             Gizmos.color = new Color(1f, 0.5f, 0f); Gizmos.DrawWireSphere(transform.position, spellB.attackRange);
+        }
+
+        // --------- Block helpers ----------
+        void StartBlock()
+        {
+            if (_blockRoutine != null) return;
+
+            _isBlocking = true;
+            _blockCooldownTimer = blockCooldown;
+
+            // trava o movimento imediatamente
+            StartTranslationLock();
+            HardStopNow(true);
+
+            // avisa o Animator que está em block e dispara trigger
+            if (animator)
+            {
+                if (!string.IsNullOrEmpty(blockBoolName))
+                    animator.SetBool(blockBoolName, true);
+
+                if (!string.IsNullOrEmpty(blockAnimatorTrigger))
+                    animator.SetTrigger(blockAnimatorTrigger);
+            }
+
+            _blockRoutine = StartCoroutine(BlockRoutine());
+        }
+
+        IEnumerator BlockRoutine()
+        {
+            float t = 0f;
+            while (t < blockDuration)
+            {
+                t += Time.deltaTime;
+                yield return null;
+            }
+
+            _isBlocking = false;
+            EndTranslationLock();
+
+            if (animator && !string.IsNullOrEmpty(blockBoolName))
+                animator.SetBool(blockBoolName, false);
+
+            _blockRoutine = null;
         }
     }
 }
