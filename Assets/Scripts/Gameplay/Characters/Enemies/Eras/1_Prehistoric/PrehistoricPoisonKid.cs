@@ -1,0 +1,72 @@
+using UnityEngine;
+
+namespace Geneforge.Gameplay.Characters.Enemies.Eras.Prehistoric
+{
+    [RequireComponent(typeof(Enemy))]
+    public class PrehistoricPoisonKid : PrehistoricEnemyAbilityBase
+    {
+        [Header("Poison Dart")]
+        public GameObject dartPrefab;
+        public Transform shootOrigin;
+        public float dartSpeed = 24f;
+        public float hitDamage = 4f;
+        public float dotDamagePerSecond = 2f;
+        public float dotDuration = 4f;
+
+        public void AnimEvent_ShootDart()
+        {
+            if (!dartPrefab || !shootOrigin || !target) return;
+
+            var obj = Object.Instantiate(dartPrefab, shootOrigin.position, shootOrigin.rotation);
+            var rb = obj.GetComponent<Rigidbody>();
+            if (rb)
+            {
+                Vector3 dir = (target.position - shootOrigin.position).normalized;
+                rb.linearVelocity = dir * dartSpeed;
+            }
+
+            var proj = obj.GetComponent<PrehistoricPoisonDartProjectile>();
+            if (!proj) proj = obj.AddComponent<PrehistoricPoisonDartProjectile>();
+            proj.Init(hitDamage, dotDamagePerSecond, dotDuration);
+        }
+    }
+
+    public class PrehistoricPoisonDartProjectile : MonoBehaviour
+    {
+        float hitDamage;
+        float dotDps;
+        float dotDuration;
+
+        public void Init(float hit, float dps, float duration)
+        {
+            hitDamage = hit;
+            dotDps = dps;
+            dotDuration = duration;
+            Destroy(gameObject, 8f);
+        }
+
+        void OnTriggerEnter(Collider other)
+        {
+            if (!other.CompareTag("Player")) return;
+
+            var hp = other.GetComponent<Geneforge.Gameplay.Characters.Player.PlayerHealth>();
+            if (!hp) { Destroy(gameObject); return; }
+
+            hp.ApplyDamage(hitDamage);
+            hp.StartCoroutine(ApplyDot(hp));
+
+            Destroy(gameObject);
+        }
+
+        System.Collections.IEnumerator ApplyDot(Geneforge.Gameplay.Characters.Player.PlayerHealth hp)
+        {
+            float t = 0f;
+            while (t < dotDuration && hp != null)
+            {
+                hp.ApplyDamage(dotDps * Time.deltaTime);
+                t += Time.deltaTime;
+                yield return null;
+            }
+        }
+    }
+}
