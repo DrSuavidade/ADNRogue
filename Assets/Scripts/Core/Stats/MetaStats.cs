@@ -1,78 +1,92 @@
+using System;
 using UnityEngine;
 
 namespace Geneforge.Core.Stats
 {
-    public class MetaStats : MonoBehaviour
+    public interface IMetaStats
     {
-        public static MetaStats I { get; private set; }
+        int StartingLives { get; }
+        int Essence { get; }
+        int TotalDnaSplices { get; }
 
-        [Header("Progression")]
-        [Tooltip("Lives carried into each new run")]
+        bool SpendEssence(int amount);
+        void OnRunStart(RunStats run);
+        void OnRunEnd(RunStats run, bool survived);
+    }
+
+
+    public class MetaStats : MonoBehaviour, IMetaStats
+    {
+
+        public static MetaStats Instance { get; private set; }
+        [Header("Starting values")]
         [SerializeField] private int startingLives = 3;
-        [Tooltip("Earned between runs")]
-        [SerializeField] private int essence = 0;
-        [Tooltip("Total DNA Fragments banked")]
-        [SerializeField] private int totalDnaSplices = 0;
+        [SerializeField] private int startingEssence = 0;
+        [SerializeField] private int startingTotalDnaSplices = 0;
+
+        int essence;
+        int totalDnaSplices;
 
         public int StartingLives => startingLives;
         public int Essence => essence;
         public int TotalDnaSplices => totalDnaSplices;
+        public event Action<int> OnEssenceChanged;
+        public event Action<int> OnTotalDnaSplicesChanged;
 
         void Awake()
         {
-            if (I != null && I != this)
+            if (Instance != null && Instance != this)
             {
-                Debug.LogError($"Duplicate MetaStats on {name}, destroying this instance.");
+                Debug.LogWarning("[MetaStats] Duplicate instance detected, destroying this one.", this);
                 Destroy(gameObject);
                 return;
             }
 
-            I = this;
+            Instance = this;
             DontDestroyOnLoad(gameObject);
+            essence = Mathf.Max(0, startingEssence);
+            totalDnaSplices = Mathf.Max(0, startingTotalDnaSplices);
+
+            OnEssenceChanged?.Invoke(Essence);
+            OnTotalDnaSplicesChanged?.Invoke(TotalDnaSplices);
         }
 
         public void OnRunStart(RunStats run)
         {
-            if (run == null)
-            {
-                Debug.LogWarning("MetaStats.OnRunStart called with null RunStats.");
-                return;
-            }
-
-            // Ensure at least this many lives; respects any higher base from RunStats.
-            run.Lives = Mathf.Max(run.Lives, startingLives);
+            if (run == null) return;
+            run.Lives = Mathf.Max(run.Lives, StartingLives);
         }
 
         public void OnRunEnd(RunStats run, bool survived)
         {
-            if (run == null)
-            {
-                Debug.LogWarning("MetaStats.OnRunEnd called with null RunStats.");
-                return;
-            }
+            if (run == null) return;
 
             if (survived)
             {
-                essence += run.Currency;        // reward for completing dive
-                totalDnaSplices += run.DnaSplices;  // bank your fragments
-            }
-            else
-            {
-                // maybe penalty: lose some essence?
+                int oldEssence = essence;
+                int oldTotal = totalDnaSplices;
+
+                essence += Mathf.Max(0, run.Currency);
+                totalDnaSplices += Mathf.Max(0, run.DnaSplices);
+
+                if (essence != oldEssence)
+                    OnEssenceChanged?.Invoke(Essence);
+                if (totalDnaSplices != oldTotal)
+                    OnTotalDnaSplicesChanged?.Invoke(TotalDnaSplices);
             }
         }
 
         public bool SpendEssence(int amount)
         {
-            if (amount == 0) return true;
-            if (amount < 0)
-            {
-                Debug.LogError($"MetaStats.SpendEssence called with negative amount {amount}.");
-                return false;
-            }
-            if (essence < amount) return false;
+            if (amount <= 0) return false;
+            if (Essence < amount) return false;
 
+            int oldEssence = essence;
             essence -= amount;
+
+            if (essence != oldEssence)
+                OnEssenceChanged?.Invoke(Essence);
+
             return true;
         }
     }

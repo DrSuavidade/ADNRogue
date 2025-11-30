@@ -12,15 +12,15 @@ public class A_ElephantStampede : EssenceAbility
 
     [Header("Impact AoE")]
     public float aoeRadius = 4.5f;
-    public float aoeDamageFactor = 0.8f;   // x bullet damage to others
+    public float aoeDamageFactor = 0.8f;
     public float knockback = 10f;
 
     [Header("VFX: AoE Ring")]
-    public bool  showAoeRing   = true;
-    public float ringDuration  = 0.35f;
-    public float ringWidth     = 0.08f;
-    public int   ringSegments  = 64;
-    public Color ringColor     = new Color(1f, 0.85f, 0.2f, 0.9f); // warm stomp color
+    public bool showAoeRing = true;
+    public float ringDuration = 0.35f;
+    public float ringWidth = 0.08f;
+    public int ringSegments = 64;
+    public Color ringColor = new Color(1f, 0.85f, 0.2f, 0.9f);
 
     public override void OnBulletSpawn(Bullet bullet, WeaponStats stats)
     {
@@ -31,21 +31,19 @@ public class A_ElephantStampede : EssenceAbility
     {
         Vector3 center = enemy ? enemy.transform.position : bullet.transform.position;
 
-        // VFX ring (parallel to ground, short-lived)
         if (showAoeRing)
         {
             int layer = enemy ? enemy.gameObject.layer : bullet.gameObject.layer;
             SpawnRing(center, aoeRadius, ringDuration, ringWidth, ringSegments, ringColor, layer);
         }
 
-        // Gameplay AoE
         var cols = Physics.OverlapSphere(center, aoeRadius, ~0, QueryTriggerInteraction.Ignore);
         for (int i = 0; i < cols.Length; i++)
         {
             var e = cols[i].GetComponent<Enemy>();
             if (!e || e == enemy) continue;
 
-            e.TakeDamage(stats.damage * aoeDamageFactor, false);
+            e.TakeDamage(stats.Damage * aoeDamageFactor, false);
 
             if (knockback > 0f)
             {
@@ -55,7 +53,6 @@ public class A_ElephantStampede : EssenceAbility
         }
     }
 
-    // ---------- Simple expanding ring ----------
     static void SpawnRing(Vector3 center, float targetRadius, float life, float width, int segments, Color color, int layer)
     {
         var go = new GameObject("Elephant_AoE_Ring");
@@ -68,10 +65,11 @@ public class A_ElephantStampede : EssenceAbility
         lr.widthMultiplier = width;
         lr.material = new Material(Shader.Find("Sprites/Default"));
         lr.startColor = color;
-        lr.endColor   = color;
+        lr.endColor = color;
 
         go.AddComponent<RingExpander>().Init(center, targetRadius, life, lr);
     }
+
 
     class RingExpander : MonoBehaviour
     {
@@ -93,16 +91,14 @@ public class A_ElephantStampede : EssenceAbility
             float k = Mathf.Clamp01(t / life);
             float r = Mathf.Lerp(0f, targetR, k);
 
-            // keep ring parallel to ground at the impact height
             int n = lr.positionCount;
-            float y = center.y + 0.02f; // slight lift to avoid Z-fighting
+            float y = center.y + 0.02f;
             for (int i = 0; i < n; i++)
             {
                 float a = (i / (float)n) * Mathf.PI * 2f;
                 lr.SetPosition(i, new Vector3(center.x + Mathf.Cos(a) * r, y, center.z + Mathf.Sin(a) * r));
             }
 
-            // fade out
             var c0 = lr.startColor;
             var c1 = lr.endColor;
             float alpha = (1f - k) * c0.a;
@@ -140,5 +136,4 @@ public class A_ElephantStampede : EssenceAbility
             }
         }
     }
-
 }

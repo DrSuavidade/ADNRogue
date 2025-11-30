@@ -1,10 +1,11 @@
 using UnityEngine;
 using UnityEngine.SceneManagement;
+
 namespace Game.UI.Settings
 {
-    public class GameManager : MonoBehaviour
+    public class SaveSlotsGameManager : MonoBehaviour
     {
-        public static GameManager I;
+        public static SaveSlotsGameManager I;
 
         public int activeSlot = -1;
         public Transform player;
@@ -39,13 +40,21 @@ namespace Game.UI.Settings
         {
             if (activeSlot < 1) return;
 
-            SaveData data = new SaveData();
-            data.level = 1;
-            data.coins = 0;
-            data.posX = player.position.x;
-            data.posY = player.position.y;
-            data.posZ = player.position.z;
-            data.playTime = playTime;
+            if (player == null)
+            {
+                Debug.LogWarning("SaveSlotsGameManager.SaveNow called but player reference is null.", this);
+                return;
+            }
+
+            var data = new SaveData
+            {
+                level = 1,
+                coins = 0,
+                posX = player.position.x,
+                posY = player.position.y,
+                posZ = player.position.z,
+                playTime = playTime
+            };
 
             SaveSystem.Save(activeSlot, data);
         }

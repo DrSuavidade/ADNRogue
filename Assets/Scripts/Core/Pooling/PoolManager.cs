@@ -11,6 +11,7 @@ namespace Geneforge.Core.Pooling
         public int initialSize;
     }
 
+
     public class PoolManager : MonoBehaviour
     {
         public static PoolManager Instance { get; private set; }
@@ -18,7 +19,6 @@ namespace Geneforge.Core.Pooling
         [Tooltip("Define each prefab and how many to preload.")]
         [SerializeField] private PoolDefinition[] pools;
 
-        // Runtime lookup: prefab → queue of instances
         readonly Dictionary<GameObject, Queue<GameObject>> poolDict =
             new Dictionary<GameObject, Queue<GameObject>>();
 
@@ -34,7 +34,6 @@ namespace Geneforge.Core.Pooling
             Instance = this;
             DontDestroyOnLoad(gameObject);
 
-            // Preload each pool
             foreach (var def in pools)
             {
                 if (def.prefab == null)
@@ -65,9 +64,6 @@ namespace Geneforge.Core.Pooling
             return go;
         }
 
-        /// <summary>
-        /// Spawns a pooled instance of that prefab at position/rotation.
-        /// </summary>
         public GameObject Spawn(GameObject prefab, Vector3 pos, Quaternion rot, Transform parent = null)
         {
             if (prefab == null)
@@ -78,7 +74,6 @@ namespace Geneforge.Core.Pooling
 
             if (!poolDict.TryGetValue(prefab, out var queue))
             {
-                // first-use beyond definitions: create a new queue
                 queue = new Queue<GameObject>();
                 poolDict[prefab] = queue;
             }
@@ -99,9 +94,6 @@ namespace Geneforge.Core.Pooling
             return inst;
         }
 
-        /// <summary>
-        /// Returns an instance back to its pool.
-        /// </summary>
         public void Reclaim(GameObject inst)
         {
             if (inst == null) return;
@@ -118,7 +110,6 @@ namespace Geneforge.Core.Pooling
 
             if (!poolDict.TryGetValue(prefab, out var queue))
             {
-                // create a queue on the fly so we don't leak the object
                 queue = new Queue<GameObject>();
                 poolDict[prefab] = queue;
             }

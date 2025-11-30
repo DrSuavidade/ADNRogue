@@ -1,4 +1,3 @@
-// Assets/Scripts/Abilities/A_Shark.cs
 using UnityEngine;
 using System.Collections;
 using Geneforge.Gameplay.Abilities;
@@ -10,32 +9,30 @@ using Geneforge.Gameplay.Characters.Enemies;
 public class A_SharkFishProc : EssenceAbility
 {
     [Header("Fish Proc")]
-    [Range(0f, 1f)] public float fishChance = 0.02f;   // 2% chance a bullet is a "fish"
+    [Range(0f, 1f)] public float fishChance = 0.02f;
     public float fishScale = 1.2f;
 
     [Header("Shark Bite")]
     public float telegraphDelay = 1.6f;
-    public float biteRadius = 6.0f;        // bigger than Elephant
-    public float biteDamageFactor = 6f;    // x fish bullet damage
-    public float biteKnockback = 14f;      // stronger knockback
+    public float biteRadius = 6.0f;
+    public float biteDamageFactor = 6f;
+    public float biteKnockback = 14f;
 
     [Header("Cooldown")]
-    public float cooldownSeconds = 30f;    // absolute cooldown
+    public float cooldownSeconds = 30f;
 
     [Header("Telegraph VFX")]
     public bool showTelegraph = true;
     public Color telegraphColor = new Color(0.1f, 0.6f, 1f, 0.9f);
     public float telegraphWidth = 0.06f;
-    public int   telegraphSegments = 64;
+    public int telegraphSegments = 64;
 
     [Header("Breach VFX")]
     public Color breachColor = new Color(0.1f, 0.4f, 0.9f, 0.95f);
     public float breachRiseTime = 0.25f;
     public float breachHoldTime = 0.10f;
     public float breachFallTime = 0.20f;
-    public Vector2 breachSize = new Vector2(1.6f, 3.6f); // x = fin width, y = height
-
-    // ---- internal cooldown + runner host ----
+    public Vector2 breachSize = new Vector2(1.6f, 3.6f);
     static float s_nextAllowedTime = 0f;
     static SharkRunnerHost s_host;
 
@@ -51,7 +48,6 @@ public class A_SharkFishProc : EssenceAbility
         }
     }
 
-    // Tag bullets as "fish" at spawn time
     public override void OnBulletSpawn(Bullet bullet, WeaponStats activeStats)
     {
         if (!bullet) return;
@@ -61,7 +57,6 @@ public class A_SharkFishProc : EssenceAbility
         tag.owner = this;
         tag.baseDamage = Mathf.Max(0f, bullet.damage);
 
-        // Small visual cue that this projectile is a fish
         bullet.transform.localScale *= fishScale;
 
         var tr = bullet.GetComponentInChildren<TrailRenderer>();
@@ -72,7 +67,6 @@ public class A_SharkFishProc : EssenceAbility
             mr.material.color = new Color(0.2f, 0.7f, 1f, 1f);
     }
 
-    // When a fish bullet hits an enemy, schedule the shark breach (if cooldown allows)
     public override void OnHitEnemy(Bullet bullet, Enemy enemy, WeaponStats stats)
     {
         if (!bullet || !enemy) return;
@@ -80,13 +74,11 @@ public class A_SharkFishProc : EssenceAbility
         var fish = bullet.GetComponent<FishTag>();
         if (fish == null || fish.triggered) return;
 
-        // Absolute cooldown gate
         if (Time.time < s_nextAllowedTime) return;
         s_nextAllowedTime = Time.time + Mathf.Max(0f, cooldownSeconds);
 
         fish.triggered = true;
 
-        // Lock ground position at the moment of impact
         Vector3 pos = enemy.transform.position;
         Vector3 ground = ProjectToGround(pos);
 
@@ -120,7 +112,6 @@ public class A_SharkFishProc : EssenceAbility
 
     void ApplyBite(Vector3 center, float fishDamage)
     {
-        // Damage scales from the original fish-bullet’s damage
         float dmg = Mathf.Max(0f, fishDamage) * Mathf.Max(0f, biteDamageFactor);
 
         var cols = Physics.OverlapSphere(center, biteRadius, ~0, QueryTriggerInteraction.Ignore);
@@ -187,7 +178,7 @@ public class A_SharkFishProc : EssenceAbility
         root.AddComponent<BreachRunner>().Init(quad.transform, breachSize, breachRiseTime, breachHoldTime, breachFallTime);
     }
 
-    // --- helpers & runner types ---
+
     class FishTag : MonoBehaviour
     {
         public A_SharkFishProc owner;
@@ -203,7 +194,7 @@ public class A_SharkFishProc : EssenceAbility
 
         public void Init(Transform finTf, Vector2 targetSize, float riseT, float holdT, float fallT)
         {
-            fin  = finTf; size = targetSize;
+            fin = finTf; size = targetSize;
             rise = Mathf.Max(0.01f, riseT);
             hold = Mathf.Max(0f, holdT);
             fall = Mathf.Max(0.01f, fallT);
@@ -211,7 +202,6 @@ public class A_SharkFishProc : EssenceAbility
 
         IEnumerator Start()
         {
-            // Rise
             float t = 0f;
             while (t < rise)
             {
@@ -223,7 +213,6 @@ public class A_SharkFishProc : EssenceAbility
 
             if (hold > 0f) yield return new WaitForSeconds(hold);
 
-            // Fall
             float t2 = 0f;
             while (t2 < fall)
             {
@@ -236,6 +225,7 @@ public class A_SharkFishProc : EssenceAbility
             Destroy(gameObject);
         }
     }
+
 
     class SharkRunnerHost : MonoBehaviour
     {

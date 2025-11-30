@@ -3,17 +3,17 @@ using UnityEngine;
 
 namespace Game.UI.Settings
 {
-[System.Serializable]
+    [System.Serializable]
 
-public class SaveData
-{
-    public string playerName = "Player";
-    public int level = 1;
-    public int coins = 0;
-    public float posX, posY, posZ;
-    public float playTime;
-    public long savedAt; 
-}
+    public class SaveData
+    {
+        public string playerName = "Player";
+        public int level = 1;
+        public int coins = 0;
+        public float posX, posY, posZ;
+        public float playTime;
+        public long savedAt;
+    }
 
     public static class SaveSystem
     {
@@ -45,4 +45,4 @@ public class SaveData
                 File.Delete(FilePath(slot));
         }
     }
- }
+}

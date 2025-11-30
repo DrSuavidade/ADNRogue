@@ -8,18 +8,17 @@ using Geneforge.Gameplay.Characters.Enemies;
 public class A_DragonflyVectorLock : EssenceAbility
 {
     [Header("Speed & Steering")]
-    public float        speedMultiplier = 1.35f;         // multiply initial speed
-    [Range(0f, 1f)] public float homingAdd = 0.35f;      // extra steer (0..1) -> 360°/s * value
-    public float        seekRadius      = 14f;           // how far to look for targets
+    public float speedMultiplier = 1.35f;
+    [Range(0f, 1f)] public float homingAdd = 0.35f;
+    public float seekRadius = 14f;
 
     [Header("Trail (optional)")]
-    public bool  addTrail   = true;
-    public float trailTime  = 0.25f;
+    public bool addTrail = true;
+    public float trailTime = 0.25f;
     public float trailWidth = 0.08f;
 
     public override void OnBulletSpawn(Bullet bullet, WeaponStats stats)
     {
-        // Speed up the already-launched rigidbody
         var rb = bullet.GetComponent<Rigidbody>();
         if (rb != null)
         {
@@ -30,22 +29,21 @@ public class A_DragonflyVectorLock : EssenceAbility
 #endif
         }
 
-        // Add extra steering without touching Bullet internals
         if (homingAdd > 0f)
         {
             var steer = bullet.gameObject.AddComponent<ExtraHomingSteer>();
             steer.turnRateDegPerSec = 360f * Mathf.Clamp01(homingAdd);
-            steer.seekRadius        = seekRadius;
+            steer.seekRadius = seekRadius;
         }
 
         if (addTrail) AttachTrail(bullet);
     }
 
-    // Adds extra homing without touching Bullet internals
+
     class ExtraHomingSteer : MonoBehaviour
     {
         public float turnRateDegPerSec = 120f;
-        public float seekRadius        = 12f;
+        public float seekRadius = 12f;
         Rigidbody rb;
 
         void Awake() { rb = GetComponent<Rigidbody>(); }
@@ -60,7 +58,7 @@ public class A_DragonflyVectorLock : EssenceAbility
 
             for (int i = 0; i < cols.Length; i++)
             {
-                var e = cols[i].GetComponent<Geneforge.Gameplay.Characters.Enemies.Enemy>();
+                var e = cols[i].GetComponent<Enemy>();
                 if (!e) continue;
                 float d = (e.transform.position - transform.position).sqrMagnitude;
                 if (d < bestD) { bestD = d; best = e; }
@@ -100,7 +98,6 @@ public class A_DragonflyVectorLock : EssenceAbility
         tr.shadowCastingMode = UnityEngine.Rendering.ShadowCastingMode.Off;
         tr.receiveShadows = false;
 
-        // Simple purple gradient
         var g = new Gradient();
         g.SetKeys(
             new[] {
@@ -115,7 +112,7 @@ public class A_DragonflyVectorLock : EssenceAbility
         tr.colorGradient = g;
 
         if (!tr.material) tr.material = new Material(Shader.Find("Sprites/Default"));
-        tr.sortingLayerID = bullet.gameObject.layer; // keep on same render layer/culling
+        tr.sortingLayerID = bullet.gameObject.layer;
     }
     public override void ApplyUpgrades(AbilityUpgrade[] upgrades)
     {

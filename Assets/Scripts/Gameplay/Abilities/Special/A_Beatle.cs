@@ -8,10 +8,10 @@ public class A_BeetleDungRoller : EssenceAbility
 {
     [Header("Growth")]
     [Tooltip("Size added per meter traveled. 0.15 -> +15% size each meter.")]
-    public float growthPerMeter    = 0.15f;
+    public float growthPerMeter = 0.15f;
 
     [Tooltip("Max size multiplier cap (relative to initial bullet scale).")]
-    public float maxSizeMult       = 2.5f;
+    public float maxSizeMult = 2.5f;
 
     [Header("Damage")]
     [Tooltip("Extra damage per size multiplier above 1. Example: at 2.0x size and 0.6 -> +60% base damage.")]
@@ -20,9 +20,9 @@ public class A_BeetleDungRoller : EssenceAbility
     public override void OnBulletSpawn(Bullet bullet, WeaponStats stats)
     {
         var rt = bullet.gameObject.AddComponent<DungRuntime>();
-        rt.baseDamage     = stats.damage;
+        rt.baseDamage = stats.Damage;
         rt.growthPerMeter = growthPerMeter;
-        rt.maxSizeMult    = maxSizeMult;
+        rt.maxSizeMult = maxSizeMult;
         rt.damagePerSizeMult = damagePerSizeMult;
     }
 
@@ -43,26 +43,22 @@ public class A_BeetleDungRoller : EssenceAbility
         {
             b = GetComponent<Bullet>();
             lastPos = transform.position;
-            initialLocalScale = transform.localScale; // respect projectileSize set at spawn
+            initialLocalScale = transform.localScale;
         }
 
         void Update()
         {
-            // accumulate distance
             Vector3 p = transform.position;
             traveled += (p - lastPos).magnitude;
             lastPos = p;
 
-            // compute desired size multiplier from distance, clamp to cap
             float targetSize = Mathf.Clamp(1f + traveled * Mathf.Max(0f, growthPerMeter), 1f, Mathf.Max(1f, maxSizeMult));
             if (!Mathf.Approximately(targetSize, sizeMult))
             {
                 sizeMult = targetSize;
 
-                // scale visuals relative to the initial local scale
                 transform.localScale = initialLocalScale * sizeMult;
 
-                // scale damage from base damage
                 if (b != null)
                 {
                     float bonus = (sizeMult - 1f) * Mathf.Max(0f, damagePerSizeMult);

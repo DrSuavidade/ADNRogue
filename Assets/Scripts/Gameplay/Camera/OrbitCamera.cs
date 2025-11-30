@@ -1,5 +1,5 @@
 using UnityEngine;
-using UnityEngine.InputSystem; // << novo
+using UnityEngine.InputSystem;
 
 namespace Geneforge.Gameplay.Cameras
 {
@@ -47,24 +47,19 @@ namespace Geneforge.Gameplay.Cameras
         void LateUpdate()
         {
             if (followTarget == null) return;
-            if (Mouse.current == null) return; // sem rato (ex.: build mobile)
+            if (Mouse.current == null) return;
 
-            // posiciona na target
             transform.position = followTarget.position + followOffset;
 
-            // Regras para iniciar órbita
             bool orbiting = true;
             if (requireRightMouse)
                 orbiting = Mouse.current.rightButton.isPressed;
 
             if (orbiting)
             {
-                // Mouse.delta é em píxeis desde o último frame.
-                // Usa unscaledDeltaTime para suavizar em diferentes framerates.
                 Vector2 delta = Mouse.current.delta.ReadValue();
                 float dt = Time.unscaledDeltaTime;
 
-                // Ajuste de sensibilidade: 0.01f dá um feeling próximo do Input antigo
                 float mx = delta.x * mouseXSensitivity * 0.01f * dt;
                 float my = delta.y * mouseYSensitivity * 0.01f * dt;
 

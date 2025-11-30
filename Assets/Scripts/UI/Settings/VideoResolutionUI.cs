@@ -8,23 +8,22 @@ namespace Geneforge.UI
     public class VideoResolutionUI : MonoBehaviour
     {
         [Header("Ligação de UI")]
-        public TMP_Dropdown DD_Resolution;    // Content/Row_Resolution/DD_Resolution
-        public TMP_Dropdown DD_Fullscreen;    // Content/Row_Fullscreen/DD_Fullscreen
+        public TMP_Dropdown DD_Resolution;
+        public TMP_Dropdown DD_Fullscreen;
 
         [Header("V-Sync e FPS")]
-        public TMP_Dropdown DD_VSync;         // Content/Row_VSync/DD_VSync
-        public Slider SL_FPS;                 // Content/Row_FPS/Group_FPS/SL_FPS
-        public TMP_Text TX_FPSVal;            // Content/Row_FPS/Group_FPS/TX_FPSVal
+        public TMP_Dropdown DD_VSync;
+        public Slider SL_FPS;
+        public TMP_Text TX_FPSVal;
 
         private readonly List<(int w, int h)> resList = new();
         private int currentResIndex = 0;
 
-        // PlayerPrefs keys
         const string KEY_RES_W = "vid_res_w";
         const string KEY_RES_H = "vid_res_h";
-        const string KEY_MODE  = "vid_mode";
-        const string KEY_VSYNC = "vid_vsync"; 
-        const string KEY_FPS   = "vid_fps";   
+        const string KEY_MODE = "vid_mode";
+        const string KEY_VSYNC = "vid_vsync";
+        const string KEY_FPS = "vid_fps";
 
         void Awake()
         {
@@ -35,6 +34,7 @@ namespace Geneforge.UI
             RestoreSavedOrCurrent();
             WireEvents();
         }
+
 
         // ---------- Build UI options ----------
         void BuildResolutions()
@@ -73,6 +73,7 @@ namespace Geneforge.UI
                 "Every 2 VBlanks"
             });
         }
+
 
         // ---------- Restore & wire ----------
         void RestoreSavedOrCurrent()
@@ -125,8 +126,9 @@ namespace Geneforge.UI
             DD_Fullscreen.onValueChanged.AddListener(OnModeChanged);
 
             if (DD_VSync) DD_VSync.onValueChanged.AddListener(OnVSyncChanged);
-            if (SL_FPS)   SL_FPS.onValueChanged.AddListener(OnFPSSliderChanged);
+            if (SL_FPS) SL_FPS.onValueChanged.AddListener(OnFPSSliderChanged);
         }
+
 
         // ---------- UI callbacks ----------
         void OnResolutionChanged(int index)
@@ -145,7 +147,7 @@ namespace Geneforge.UI
 
         void OnVSyncChanged(int index)
         {
-            QualitySettings.vSyncCount = index; 
+            QualitySettings.vSyncCount = index;
             ApplyFpsRespectingVSync();
             SavePrefs();
         }
@@ -159,8 +161,8 @@ namespace Geneforge.UI
                 Application.targetFrameRate = fps;
 
             PlayerPrefs.SetInt(KEY_FPS, fps);
-            PlayerPrefs.Save();
         }
+
 
         // ---------- Apply ----------
         void ApplyResolution(int idx, bool log)
@@ -196,6 +198,7 @@ namespace Geneforge.UI
                 Application.targetFrameRate = fps;
             }
         }
+
 
         // ---------- Helpers ----------
         int FindResIndex(int w, int h)
@@ -234,8 +237,13 @@ namespace Geneforge.UI
             PlayerPrefs.SetInt(KEY_MODE, DD_Fullscreen.value);
 
             if (DD_VSync) PlayerPrefs.SetInt(KEY_VSYNC, DD_VSync.value);
-            if (SL_FPS)   PlayerPrefs.SetInt(KEY_FPS, Mathf.RoundToInt(SL_FPS.value));
+            if (SL_FPS) PlayerPrefs.SetInt(KEY_FPS, Mathf.RoundToInt(SL_FPS.value));
 
+            PlayerPrefs.Save();
+        }
+
+        void OnDisable()
+        {
             PlayerPrefs.Save();
         }
     }

@@ -1,109 +1,194 @@
 using System.Collections.Generic;
 using UnityEngine;
+using Geneforge.Gameplay.Abilities;
 
 namespace Geneforge.Gameplay.Weapons.Stats
 {
     public static class WeaponStatApplier
     {
-        public static void ApplyAll(WeaponStats ws, IEnumerable<Geneforge.Gameplay.Abilities.StatModifier> mods)
+        public static void ApplyAll(WeaponStats ws, IEnumerable<StatModifier> mods)
         {
             if (ws == null || mods == null) return;
             foreach (var m in mods) Apply(ws, m);
         }
 
-        public static void Apply(WeaponStats ws, Abilities.StatModifier m)
+        public static void Apply(WeaponStats ws, StatModifier m)
         {
             switch (m.stat)
             {
-                case Abilities.WeaponStatId.FireRate:
-                    if (m.kind == Abilities.ModifierKind.Multiply) ws.fireRate *= m.value;
-                    else ws.fireRate = Mathf.Max(0.05f, ws.fireRate + m.value);
-                    break;
+                case WeaponStatId.FireRate:
+                    {
+                        float cur = ws.FireRate;
+                        float target = (m.kind == ModifierKind.Multiply)
+                            ? cur * m.value
+                            : cur + m.value;
+                        target = Mathf.Max(0.05f, target);
+                        float delta = cur - target;
+                        ws.UpgradeFireRate(delta);
+                        break;
+                    }
 
-                case Abilities.WeaponStatId.ProjectileSpeed:
-                    if (m.kind == Abilities.ModifierKind.Multiply) ws.projectileSpeed *= m.value;
-                    else ws.projectileSpeed = Mathf.Max(0f, ws.projectileSpeed + m.value);
-                    break;
+                case WeaponStatId.ProjectileSpeed:
+                    {
+                        float cur = ws.ProjectileSpeed;
+                        float target = (m.kind == ModifierKind.Multiply)
+                            ? cur * m.value
+                            : cur + m.value;
+                        float delta = target - cur;
+                        ws.UpgradeProjectileSpeed(delta);
+                        break;
+                    }
 
-                case Abilities.WeaponStatId.Damage:
-                    if (m.kind == Abilities.ModifierKind.Multiply) ws.damage *= m.value;
-                    else ws.damage = Mathf.Max(0f, ws.damage + m.value);
-                    break;
+                case WeaponStatId.Damage:
+                    {
+                        float cur = ws.Damage;
+                        float target = (m.kind == ModifierKind.Multiply)
+                            ? cur * m.value
+                            : cur + m.value;
+                        float delta = target - cur;
+                        ws.UpgradeDamage(delta);
+                        break;
+                    }
 
-                case Abilities.WeaponStatId.ProjectileSize:
-                    if (m.kind == Abilities.ModifierKind.Multiply) ws.projectileSize *= m.value;
-                    else ws.projectileSize = Mathf.Max(0.1f, ws.projectileSize + m.value);
-                    break;
+                case WeaponStatId.ProjectileSize:
+                    {
+                        float cur = ws.ProjectileSize;
+                        float target = (m.kind == ModifierKind.Multiply)
+                            ? cur * m.value
+                            : cur + m.value;
+                        float delta = target - cur;
+                        ws.UpgradeProjectileSize(delta);
+                        break;
+                    }
 
-                case Abilities.WeaponStatId.KnockbackForce:
-                    if (m.kind == Abilities.ModifierKind.Multiply) ws.knockbackForce *= m.value;
-                    else ws.knockbackForce = Mathf.Max(0f, ws.knockbackForce + m.value);
-                    break;
+                case WeaponStatId.KnockbackForce:
+                    {
+                        float cur = ws.KnockbackForce;
+                        float target = (m.kind == ModifierKind.Multiply)
+                            ? cur * m.value
+                            : cur + m.value;
+                        float delta = target - cur;
+                        ws.UpgradeKnockback(delta);
+                        break;
+                    }
 
-                case Abilities.WeaponStatId.CritChance:
-                    if (m.kind == Abilities.ModifierKind.Multiply) ws.critChance *= m.value;
-                    else ws.critChance += m.value;
-                    ws.critChance = Mathf.Clamp01(ws.critChance);
-                    break;
+                case WeaponStatId.CritChance:
+                    {
+                        float cur = ws.CritChance;
+                        float target = (m.kind == ModifierKind.Multiply)
+                            ? cur * m.value
+                            : cur + m.value;
+                        float delta = target - cur;
+                        ws.UpgradeCritChance(delta);
+                        break;
+                    }
 
-                case Abilities.WeaponStatId.CritMultiplier:
-                    if (m.kind == Abilities.ModifierKind.Multiply) ws.critMultiplier *= Mathf.Max(0f, m.value);
-                    else ws.critMultiplier = Mathf.Max(1f, ws.critMultiplier + m.value);
-                    break;
+                case WeaponStatId.CritMultiplier:
+                    {
+                        float cur = ws.CritMultiplier;
+                        float target = (m.kind == ModifierKind.Multiply)
+                            ? cur * Mathf.Max(0f, m.value)
+                            : cur + m.value;
+                        float delta = target - cur;
+                        ws.UpgradeCritMultiplier(delta);
+                        break;
+                    }
 
-                case Abilities.WeaponStatId.ProjectilesPerShot:
-                    if (m.kind == Abilities.ModifierKind.Multiply)
-                        ws.projectilesPerShot = Mathf.Max(1, Mathf.RoundToInt(ws.projectilesPerShot * m.value));
-                    else
-                        ws.projectilesPerShot = Mathf.Max(1, ws.projectilesPerShot + Mathf.RoundToInt(m.value));
-                    break;
+                case WeaponStatId.ProjectilesPerShot:
+                    {
+                        int cur = ws.ProjectilesPerShot;
+                        int delta = (m.kind == ModifierKind.Multiply)
+                            ? Mathf.RoundToInt(cur * (m.value - 1f))
+                            : Mathf.RoundToInt(m.value);
+                        ws.UpgradeProjectilesPerShot(delta);
+                        break;
+                    }
 
-                case Abilities.WeaponStatId.SpreadAngle:
-                    ws.spreadAngle = Mathf.Clamp(
-                        ws.spreadAngle + (m.kind == Abilities.ModifierKind.Multiply ? (ws.spreadAngle * (m.value - 1f)) : m.value),
-                        0f, 180f);
-                    break;
+                case WeaponStatId.SpreadAngle:
+                    {
+                        float cur = ws.SpreadAngle;
+                        float target = (m.kind == ModifierKind.Multiply)
+                            ? cur * m.value
+                            : cur + m.value;
+                        float delta = target - cur;
+                        ws.UpgradeSpreadAngle(delta);
+                        break;
+                    }
 
-                case Abilities.WeaponStatId.ProjectileLifetime:
-                    ws.projectileLifetime = Mathf.Clamp(
-                        ws.projectileLifetime + (m.kind == Abilities.ModifierKind.Multiply ? (ws.projectileLifetime * (m.value - 1f)) : m.value),
-                        0.05f, 60f);
-                    break;
+                case WeaponStatId.ProjectileLifetime:
+                    {
+                        float cur = ws.ProjectileLifetime;
+                        float target = (m.kind == ModifierKind.Multiply)
+                            ? cur * m.value
+                            : cur + m.value;
+                        float delta = target - cur;
+                        ws.UpgradeProjectileLifetime(delta);
+                        break;
+                    }
 
-                case Abilities.WeaponStatId.PierceCount:
-                    if (m.kind == Abilities.ModifierKind.Multiply) ws.pierceCount = Mathf.Max(0, Mathf.RoundToInt(ws.pierceCount * m.value));
-                    else ws.pierceCount = Mathf.Max(0, ws.pierceCount + Mathf.RoundToInt(m.value));
-                    break;
+                case WeaponStatId.PierceCount:
+                    {
+                        int cur = ws.PierceCount;
+                        int delta = (m.kind == ModifierKind.Multiply)
+                            ? Mathf.RoundToInt(cur * (m.value - 1f))
+                            : Mathf.RoundToInt(m.value);
+                        ws.UpgradePierce(delta);
+                        break;
+                    }
 
-                case Abilities.WeaponStatId.BounceCount:
-                    if (m.kind == Abilities.ModifierKind.Multiply) ws.bounceCount = Mathf.Max(0, Mathf.RoundToInt(ws.bounceCount * m.value));
-                    else ws.bounceCount = Mathf.Max(0, ws.bounceCount + Mathf.RoundToInt(m.value));
-                    break;
+                case WeaponStatId.BounceCount:
+                    {
+                        int cur = ws.BounceCount;
+                        int delta = (m.kind == ModifierKind.Multiply)
+                            ? Mathf.RoundToInt(cur * (m.value - 1f))
+                            : Mathf.RoundToInt(m.value);
+                        ws.UpgradeBounce(delta);
+                        break;
+                    }
 
-                case Abilities.WeaponStatId.HomingStrength:
-                    ws.homingStrength = Mathf.Clamp01(
-                        ws.homingStrength + (m.kind == Abilities.ModifierKind.Multiply ? (ws.homingStrength * (m.value - 1f)) : m.value));
-                    break;
+                case WeaponStatId.HomingStrength:
+                    {
+                        float cur = ws.HomingStrength;
+                        float target = (m.kind == ModifierKind.Multiply)
+                            ? cur * m.value
+                            : cur + m.value;
+                        float delta = target - cur;
+                        ws.UpgradeHoming(delta);
+                        break;
+                    }
 
-                case Abilities.WeaponStatId.AoeRadius:
-                    ws.aoeRadius = Mathf.Max(0f,
-                        ws.aoeRadius + (m.kind == Abilities.ModifierKind.Multiply ? (ws.aoeRadius * (m.value - 1f)) : m.value));
-                    break;
+                case WeaponStatId.AoeRadius:
+                    {
+                        float cur = ws.AoeRadius;
+                        float target = (m.kind == ModifierKind.Multiply)
+                            ? cur * m.value
+                            : cur + m.value;
+                        float delta = target - cur;
+                        ws.UpgradeAoeRadius(delta);
+                        break;
+                    }
 
-                // NEW: Accuracy knobs
-                case Abilities.WeaponStatId.Accuracy:
-                    if (m.kind == Abilities.ModifierKind.Multiply)
-                        ws.accuracy = Mathf.Clamp01(ws.accuracy * Mathf.Max(0f, m.value));
-                    else
-                        ws.accuracy = Mathf.Clamp01(ws.accuracy + m.value);
-                    break;
+                case WeaponStatId.Accuracy:
+                    {
+                        float cur = ws.Accuracy;
+                        float target = (m.kind == ModifierKind.Multiply)
+                            ? cur * Mathf.Max(0f, m.value)
+                            : cur + m.value;
+                        float delta = target - cur;
+                        ws.UpgradeAccuracy(delta);
+                        break;
+                    }
 
-                case Abilities.WeaponStatId.InaccuracyHalfAngle:
-                    if (m.kind == Abilities.ModifierKind.Multiply)
-                        ws.inaccuracyHalfAngle = Mathf.Clamp(ws.inaccuracyHalfAngle * Mathf.Max(0f, m.value), 0f, 90f);
-                    else
-                        ws.inaccuracyHalfAngle = Mathf.Clamp(ws.inaccuracyHalfAngle + m.value, 0f, 90f);
-                    break;
+                case WeaponStatId.InaccuracyHalfAngle:
+                    {
+                        float cur = ws.InaccuracyHalfAngle;
+                        float target = (m.kind == ModifierKind.Multiply)
+                            ? cur * Mathf.Max(0f, m.value)
+                            : cur + m.value;
+                        float delta = target - cur;
+                        ws.UpgradeInaccuracyHalfAngle(delta);
+                        break;
+                    }
             }
         }
     }

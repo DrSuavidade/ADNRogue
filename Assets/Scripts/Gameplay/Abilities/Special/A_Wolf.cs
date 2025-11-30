@@ -9,20 +9,20 @@ using Geneforge.Gameplay.Characters.Enemies;
 public class A_WolfTwinFangs : EssenceAbility
 {
     [Header("Extra Hits")]
-    [Min(1)] public int extraHitCount = 1;               // 1 = double-tap
+    [Min(1)] public int extraHitCount = 1;
     [Range(0f, 2f)] public float extraHitDamageFactor = 0.7f;
     public float firstExtraDelay = 0.06f;
     public float betweenExtrasDelay = 0.06f;
     public float extraHitKnockback = 0f;
 
     [Header("VFX: Closing Mouth")]
-    public bool  showMouthVFX   = true;
-    public Color mouthColor     = new Color(1f, 1f, 1f, 0.95f);
-    public float mouthDuration  = 0.10f;   // total close+fade time
-    public float mouthWidth     = 0.7f;    // world width of the mouth
-    public float mouthOpenGap   = 0.5f;    // initial gap between jaws
-    public float toothDepth     = 0.18f;   // point length toward the center
-    public float mouthHeightOff = 1.0f;    // height above enemy pivot
+    public bool showMouthVFX = true;
+    public Color mouthColor = new Color(1f, 1f, 1f, 0.95f);
+    public float mouthDuration = 0.10f;
+    public float mouthWidth = 0.7f;
+    public float mouthOpenGap = 0.5f;
+    public float toothDepth = 0.18f;
+    public float mouthHeightOff = 1.0f;
 
     public override void OnHitEnemy(Bullet bullet, Enemy enemy, WeaponStats stats)
     {
@@ -44,7 +44,6 @@ public class A_WolfTwinFangs : EssenceAbility
         {
             if (!target) yield break;
 
-            // Damage
             float dmg = baseAtImpact * extraHitDamageFactor;
             target.TakeDamage(dmg, false);
 
@@ -54,7 +53,6 @@ public class A_WolfTwinFangs : EssenceAbility
                 if (dir.sqrMagnitude > 1e-4f) target.ApplyKnockback(dir.normalized, extraHitKnockback);
             }
 
-            // VFX: closing mouth (two triangles top, two bottom)
             if (showMouthVFX) SpawnMouthVFX(target);
 
             if (i < extraHitCount - 1 && betweenExtrasDelay > 0f)
@@ -70,7 +68,7 @@ public class A_WolfTwinFangs : EssenceAbility
         runner.Init(target.transform, mouthDuration, mouthWidth, mouthOpenGap, toothDepth, mouthHeightOff, mouthColor);
     }
 
-    // --- Runtime VFX: 2 triangles top + 2 triangles bottom, closing & fading ---
+
     class MouthVFXRunner : MonoBehaviour
     {
         Transform follow;
@@ -82,15 +80,14 @@ public class A_WolfTwinFangs : EssenceAbility
 
         public void Init(Transform target, float duration, float mouthWidth, float mouthOpenGap, float toothDepth, float heightOffset, Color color)
         {
-            follow    = target;
-            dur       = Mathf.Max(0.05f, duration);
-            width     = Mathf.Max(0.05f, mouthWidth);
-            openGap   = Mathf.Max(0.01f, mouthOpenGap);
-            depth     = Mathf.Max(0.01f, toothDepth);
+            follow = target;
+            dur = Mathf.Max(0.05f, duration);
+            width = Mathf.Max(0.05f, mouthWidth);
+            openGap = Mathf.Max(0.01f, mouthOpenGap);
+            depth = Mathf.Max(0.01f, toothDepth);
             heightOff = heightOffset;
-            col       = color;
+            col = color;
 
-            // Create top/bottom objects
             var top = new GameObject("TopJaw"); top.transform.SetParent(transform, false);
             var bot = new GameObject("BottomJaw"); bot.transform.SetParent(transform, false);
 
@@ -105,7 +102,6 @@ public class A_WolfTwinFangs : EssenceAbility
             botMR.shadowCastingMode = UnityEngine.Rendering.ShadowCastingMode.Off;
             botMR.receiveShadows = false;
 
-            // First frame build
             UpdatePose(0f);
         }
 
@@ -114,11 +110,10 @@ public class A_WolfTwinFangs : EssenceAbility
             if (!follow) { Destroy(gameObject); return; }
 
             t += Time.deltaTime;
-            float k = Mathf.Clamp01(t / dur); // 0..1
+            float k = Mathf.Clamp01(t / dur);
 
             UpdatePose(k);
 
-            // Fade alpha
             float a = (1f - k) * col.a;
             var cTop = topMR.material.color; cTop.a = a; topMR.material.color = cTop;
             var cBot = botMR.material.color; cBot.a = a; botMR.material.color = cBot;
@@ -128,7 +123,6 @@ public class A_WolfTwinFangs : EssenceAbility
 
         void UpdatePose(float k)
         {
-            // Place at enemy + height, face camera (full billboard)
             var cam = Camera.main;
             Vector3 pos = follow.position + Vector3.up * heightOff;
             transform.position = pos;
@@ -136,41 +130,33 @@ public class A_WolfTwinFangs : EssenceAbility
             if (cam)
                 transform.rotation = Quaternion.LookRotation(-cam.transform.forward, cam.transform.up);
 
-            // Current gap as it closes
             float gap = Mathf.Lerp(openGap, 0f, k);
             float halfW = width * 0.5f;
 
-            // Build top and bottom meshes (two triangles each), on XY plane in local space
             topMF.sharedMesh = BuildJawMesh(halfW, +gap * 0.5f, +1f);
             botMF.sharedMesh = BuildJawMesh(halfW, -gap * 0.5f, -1f);
 
-            // keep color
             topMR.material.color = col;
             botMR.material.color = col;
         }
 
-        // upDir = +1 for top (teeth point downward), -1 for bottom (teeth point upward)
         Mesh BuildJawMesh(float halfWidth, float yBase, float upDir)
         {
-            // Two isosceles triangles side-by-side to suggest "teeth"
-            // Left tooth: base from -halfWidth to 0 at yBase, apex toward center by 'depth'
-            // Right tooth: base from 0 to +halfWidth at yBase, apex toward center by 'depth'
             var m = new Mesh();
 
-            Vector3 L  = new Vector3(-halfWidth, yBase, 0f);
-            Vector3 C  = new Vector3(0f, yBase, 0f);
-            Vector3 R  = new Vector3(+halfWidth, yBase, 0f);
-            Vector3 AL = new Vector3(-halfWidth * 0.5f, yBase - depth * upDir, 0f); // left apex
-            Vector3 AR = new Vector3(+halfWidth * 0.5f, yBase - depth * upDir, 0f); // right apex
+            Vector3 L = new Vector3(-halfWidth, yBase, 0f);
+            Vector3 C = new Vector3(0f, yBase, 0f);
+            Vector3 R = new Vector3(+halfWidth, yBase, 0f);
+            Vector3 AL = new Vector3(-halfWidth * 0.5f, yBase - depth * upDir, 0f);
+            Vector3 AR = new Vector3(+halfWidth * 0.5f, yBase - depth * upDir, 0f);
 
-            // 2 triangles: (L, C, AL) and (C, R, AR)
-            m.vertices  = new[] { L, C, AL,  C, R, AR };
-            m.triangles = new[] { 0,1,2,  3,4,5 };
+            m.vertices = new[] { L, C, AL, C, R, AR };
+            m.triangles = new[] { 0, 1, 2, 3, 4, 5 };
             m.RecalculateNormals();
             return m;
         }
     }
-        public override void ApplyUpgrades(AbilityUpgrade[] upgrades)
+    public override void ApplyUpgrades(AbilityUpgrade[] upgrades)
     {
         if (upgrades == null) return;
 
@@ -205,5 +191,4 @@ public class A_WolfTwinFangs : EssenceAbility
             }
         }
     }
-
 }

@@ -28,8 +28,6 @@ namespace Geneforge.Gameplay.Map
         [Tooltip("Fallback key prefab if TimelineRoomSet.keyPickupPrefab is not set.")]
         public GameObject defaultKeyPickupPrefab;
 
-
-        // Current run state
         private TimelineId currentTimeline;
         private int currentFloorIndex;
         private int floorsInThisTimeline;
@@ -38,20 +36,14 @@ namespace Geneforge.Gameplay.Map
         private readonly Dictionary<RoomDirection, RoomInstance> currentRoomsByDirection =
             new Dictionary<RoomDirection, RoomInstance>();
 
-        // Per-floor pools
         private List<WeightedPrefab> currentFloorRewardPool;
         private List<WeightedPrefab> currentFloorEnemyPool;
         private GameObject currentFloorKeyPrefab;
-
-        // Key/visit state
         private int globalVisitCounter;
         private int diagonalVisitCounter;
-        private int keyWillAppearOnDiagonalVisitIndex; // 2, 3, or 4
+        private int keyWillAppearOnDiagonalVisitIndex;
         private RoomInstance keyRoom;
         private bool playerHasKey;
-
-        // Events
-
         public event Action<bool> KeyStateChanged;
         public bool PlayerHasKey => playerHasKey;
         private void RaiseKeyStateChanged() => KeyStateChanged?.Invoke(playerHasKey);
@@ -70,7 +62,7 @@ namespace Geneforge.Gameplay.Map
         private void Start()
         {
             if (dungeonConfig == null) return;
-            
+
             if (RunState.HasTimelineOverride)
             {
                 currentTimeline = RunState.CurrentTimeline;
@@ -110,8 +102,8 @@ namespace Geneforge.Gameplay.Map
 
             // Per-floor pools
             currentFloorRewardPool = set.floorRewardPrefabs;
-            currentFloorEnemyPool  = set.enemyPrefabs;
-            currentFloorKeyPrefab  = set.keyPickupPrefab != null
+            currentFloorEnemyPool = set.enemyPrefabs;
+            currentFloorKeyPrefab = set.keyPickupPrefab != null
                 ? set.keyPickupPrefab
                 : defaultKeyPickupPrefab;
 
@@ -214,8 +206,8 @@ namespace Geneforge.Gameplay.Map
             currentRoomsByDirection.Clear();
 
             currentFloorRewardPool = null;
-            currentFloorEnemyPool  = null;
-            currentFloorKeyPrefab  = null;
+            currentFloorEnemyPool = null;
+            currentFloorKeyPrefab = null;
         }
 
         #endregion

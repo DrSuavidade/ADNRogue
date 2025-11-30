@@ -6,10 +6,10 @@ namespace Geneforge.Gameplay.Characters.Player
     public class PlayerHealth : MonoBehaviour
     {
         [Header("Revive Settings")]
-        [SerializeField] Transform respawnPoint;          // assign an empty GameObject in-scene
-        [SerializeField] float invulnerableDuration = 2f; // seconds after revive
+        [SerializeField] Transform respawnPoint;
+        [SerializeField] float invulnerableDuration = 2f;
         [SerializeField, Range(0f, 1f)]
-        float postReviveHPPercent = 1f;  // 1 = full HP, 0.5 = half HP
+        float postReviveHPPercent = 1f;
 
         RunStats runStats;
         bool isInvulnerable;
@@ -48,11 +48,9 @@ namespace Geneforge.Gameplay.Characters.Player
             if (isInvulnerable) return;
 
             bool died = runStats.TakeDamage(dmg);
-            // (You’d also update your health‐bar UI here)
 
             if (!died)
             {
-                // Play damaged animation
                 animator?.SetTrigger("Damaged");
             }
         }
@@ -60,24 +58,17 @@ namespace Geneforge.Gameplay.Characters.Player
         void HandleDeath()
         {
             if (runStats == null) return;
-
-            // Consume a life
             runStats.Lives--;
 
             if (runStats.Lives > 0)
             {
-                // Play death‐but‐revive animation
                 animator?.SetTrigger("Death");
-
-                // Immediately revive (you can add a slight delay if desired)
                 RevivePlayer();
             }
             else
             {
-                // Play final death animation
-                animator?.SetTrigger("FinalDeath");
 
-                // Disable further input / run‐over logic
+                animator?.SetTrigger("FinalDeath");
                 GameOver();
             }
         }
@@ -86,21 +77,15 @@ namespace Geneforge.Gameplay.Characters.Player
         {
             if (runStats == null) return;
 
-            // Reset HP (full or partial)
             float targetHP = runStats.MaxHP * Mathf.Clamp01(postReviveHPPercent);
 
-            // CurrentHP is 0 when OnPlayerDeath fired, so Heal() will set it to targetHP
             runStats.Heal(targetHP);
 
-            // Move to respawn point
             if (respawnPoint != null)
                 transform.position = respawnPoint.position;
 
-            // Temporary invulnerability
             isInvulnerable = true;
             invulnEndTime = Time.time + invulnerableDuration;
-
-            // (Trigger UI update for lives and flash effect, etc.)
         }
 
         public void BeginInvulnerability(float duration)

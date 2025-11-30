@@ -13,7 +13,6 @@ namespace Geneforge.Gameplay.Abilities
         KnockbackForce,
         CritChance,
         CritMultiplier,
-        // new stats
         ProjectilesPerShot,
         SpreadAngle,
         ProjectileLifetime,
@@ -55,7 +54,6 @@ namespace Geneforge.Gameplay.Abilities
         [Header("Progression")]
         public EssenceSkillTree skillTree;
 
-
         /// <summary>
         /// Apply this essence's modifiers to a runtime WeaponStats instance.
         /// NOTE: This mutates the given instance. Pass a clone, not your asset.
@@ -65,6 +63,5 @@ namespace Geneforge.Gameplay.Abilities
             if (stats == null || modifiers == null) return;
             Geneforge.Gameplay.Weapons.Stats.WeaponStatApplier.ApplyAll(stats, modifiers);
         }
-
     }
 }

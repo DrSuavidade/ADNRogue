@@ -1,4 +1,3 @@
-// Assets/Scripts/Abilities/A_Axolotl.cs
 using UnityEngine;
 using System.Collections.Generic;
 using Geneforge.Gameplay.Abilities;
@@ -10,8 +9,8 @@ using Geneforge.Core.Stats;
 public class A_AxolotlMitoticSplit : EssenceAbility
 {
     [Header("Layout")]
-    public float cloneRadius = 1.2f;   // orbit radius
-    public float cloneScale  = 1f;     // visual scale of clones
+    public float cloneRadius = 1.2f;
+    public float cloneScale = 1f;
 
     public override void OnPrimaryEquipped(GameObject owner, WeaponStats baseline)
     {
@@ -23,25 +22,24 @@ public class A_AxolotlMitoticSplit : EssenceAbility
     public override void OnPrimaryUnequipped(GameObject owner)
     {
         var rt = owner.GetComponent<SplitRuntime>();
-        if (rt) Object.Destroy(rt);
+        if (rt) Destroy(rt);
     }
 
-    // -------- Runtime on the real player --------
+
     class SplitRuntime : MonoBehaviour
     {
         A_AxolotlMitoticSplit def;
         PlayerController player;
         RunStats run;
-
         Animator ownerAnim;
         Transform ownerFirePoint;
 
         struct Clone
         {
             public GameObject go;
-            public Transform  muzzle;
-            public Animator   anim;
-            public Vector3    localOffset; // ring offset relative to player
+            public Transform muzzle;
+            public Animator anim;
+            public Vector3 localOffset;
         }
 
         readonly List<Clone> clones = new List<Clone>();
@@ -54,12 +52,12 @@ public class A_AxolotlMitoticSplit : EssenceAbility
 
         public void Configure(A_AxolotlMitoticSplit d, GameObject owner)
         {
-            def    = d;
+            def = d;
             player = owner.GetComponent<PlayerController>();
-            run    = owner.GetComponent<RunStats>();
+            run = owner.GetComponent<RunStats>();
             if (!player || !run) { Debug.LogWarning("Axolotl needs PlayerController + RunStats on owner."); return; }
 
-            ownerAnim     = player.GetComponentInChildren<Animator>(true);
+            ownerAnim = player.GetComponentInChildren<Animator>(true);
             ownerFirePoint = player.firePoint;
 
             player.OnFired -= OnOwnerFired;
@@ -82,16 +80,13 @@ public class A_AxolotlMitoticSplit : EssenceAbility
         {
             if (run == null || run.MaxHP <= 0f) return 0;
             float f = run.CurrentHP / run.MaxHP;
-            // >50% -> 0; 20–50% -> 1; ≤20% -> 3 (so total bodies: 1, 2, 4)
             return (f <= 0.2f) ? 3 : (f <= 0.5f ? 1 : 0);
         }
 
         void RebuildClones(int desired)
         {
-            // remove extras
             for (int i = clones.Count - 1; i >= desired; i--) DestroyClone(i);
 
-            // add missing
             while (clones.Count < desired) CreateClone(clones.Count, desired);
         }
 
@@ -105,7 +100,6 @@ public class A_AxolotlMitoticSplit : EssenceAbility
 
         void CreateClone(int idx, int totalAfterCreate)
         {
-            // Duplicate the player so visuals match exactly
             var visualRoot = ownerAnim != null ? ownerAnim.gameObject : player.gameObject;
             var cloneGO = Instantiate(visualRoot);
             cloneGO.name = "AxolotlClone";
@@ -117,26 +111,20 @@ public class A_AxolotlMitoticSplit : EssenceAbility
                 originalLocal.z * mul
             );
 
-            // Parent to player so it moves WITH the player 1:1
             cloneGO.transform.SetParent(player.transform, false);
 
-            // Strip gameplay: colliders, rigidbodies; disable ALL scripts EXCEPT Animator
             foreach (var col in cloneGO.GetComponentsInChildren<Collider>(true)) Destroy(col);
             foreach (var rb in cloneGO.GetComponentsInChildren<Rigidbody>(true)) Destroy(rb);
             foreach (var comp in cloneGO.GetComponentsInChildren<Component>(true))
             {
-                // Keep Animators and Transforms running for visuals
                 if (comp is Animator) continue;
                 if (comp is Transform) continue;
-                // Disable MonoBehaviour scripts (if any)
                 var mb = comp as MonoBehaviour;
                 if (mb != null) mb.enabled = false;
             }
 
-            // Grab the clone animator
             var cloneAnim = cloneGO.GetComponentInChildren<Animator>(true);
 
-            // Add our marker muzzle with the same local pose as owner's firePoint
             var muzzle = new GameObject("Muzzle").transform;
             muzzle.SetParent(cloneGO.transform, false);
             if (ownerFirePoint)
@@ -145,7 +133,6 @@ public class A_AxolotlMitoticSplit : EssenceAbility
                 muzzle.localRotation = ownerFirePoint.localRotation;
             }
 
-            // Precompute ring local offset
             Vector3 localOffset = ComputeRingOffset(idx, totalAfterCreate);
 
             clones.Add(new Clone { go = cloneGO, muzzle = muzzle, anim = cloneAnim, localOffset = localOffset });
@@ -176,19 +163,15 @@ public class A_AxolotlMitoticSplit : EssenceAbility
                 var c = clones[i];
                 if (!c.go) continue;
 
-                // Recompute ring offset based on *current* clone count
                 Vector3 offsetNow = ComputeRingOffset(i, clones.Count);
 
                 c.go.transform.localPosition = offsetNow;
                 c.go.transform.localRotation = Quaternion.identity;
 
-                // Mirror animator params from owner
                 MirrorAnimatorParams(ownerAnim, c.anim);
             }
         }
 
-
-        // Robust animator parameter mirroring (floats, ints, bools, triggers)
         void MirrorAnimatorParams(Animator src, Animator dst)
         {
             if (!src || !dst) return;
@@ -209,25 +192,19 @@ public class A_AxolotlMitoticSplit : EssenceAbility
                         dst.SetBool(p.nameHash, src.GetBool(p.nameHash));
                         break;
                     case AnimatorControllerParameterType.Trigger:
-                        // If the source has a trigger set this frame, re-fire it on the clone
-                        // (simple heuristic: if src is in a state with that tag, or use custom bridging)
-                        // Here we naively forward rising edges: clear+set every frame the source is set.
                         if (src.GetBool(p.nameHash)) { dst.ResetTrigger(p.nameHash); dst.SetTrigger(p.nameHash); }
                         break;
                 }
             }
 
-            // Optionally sync state time to avoid drift:
             var s0 = src.GetCurrentAnimatorStateInfo(0);
             var d0 = dst.GetCurrentAnimatorStateInfo(0);
             if (s0.shortNameHash == d0.shortNameHash)
             {
-                // keep normalized time roughly in step
                 dst.Play(s0.shortNameHash, 0, s0.normalizedTime % 1f);
             }
         }
 
-        // Mirror fire: when the owner fires, spawn volleys from each clone’s muzzle
         void OnOwnerFired(WeaponStats active)
         {
             if (clones.Count == 0 || !player) return;

@@ -9,27 +9,28 @@ using Geneforge.Gameplay.Characters.Enemies;
 public class A_SheepWoolRicochet : EssenceAbility
 {
     [Header("Ricochet")]
-    public int   ricochetCount = 2;        // redirects after first hit (2 -> ends on 3rd enemy)
-    public float seekRadius    = 14f;      // search radius for next enemy
-    [Range(0f,1f)] public float speedRetention = 0.95f;
-    public float ignoreLastTargetSeconds = 0.15f;  // don't bounce back immediately
-    public float forwardNudge = 0.18f;             // step out of collider before redirect
-
+    public int ricochetCount = 2;
+    public float seekRadius = 14f;
+    [Range(0f, 1f)] public float speedRetention = 0.95f;
+    public float ignoreLastTargetSeconds = 0.15f;
+    public float forwardNudge = 0.18f;
     [Header("Steer lock")]
     [Tooltip("Hold redirected heading briefly so homing/bounce can't override it.")]
     public float steerLockDuration = 0.08f;
 
     [Header("Safety")]
-    public bool ensureMinPierce = true; // guarantee bullet survives hits while ricocheting
+    public bool ensureMinPierce = true;
 
     public override void OnAboutToFire(WeaponStats active)
     {
         if (!ensureMinPierce || active == null) return;
 
-        // For N ricochets (redirects), the bullet must pass through N prior enemies.
-        // We END on the final enemy ourselves, so min pierce is N (not N+1).
         int needed = Mathf.Max(0, ricochetCount);
-        if (active.pierceCount < needed) active.pierceCount = needed;
+        if (active.PierceCount < needed)
+        {
+            int delta = needed - active.PierceCount;
+            active.UpgradePierce(delta);
+        }
     }
 
     public override void OnBulletSpawn(Bullet bullet, WeaponStats stats)
@@ -38,13 +39,13 @@ public class A_SheepWoolRicochet : EssenceAbility
         var rt = bullet.GetComponent<RicochetRuntime>();
         if (!rt) rt = bullet.gameObject.AddComponent<RicochetRuntime>();
 
-        rt.remaining       = ricochetCount;
-        rt.seekRadius      = seekRadius;
-        rt.speedRetention  = Mathf.Clamp01(speedRetention);
-        rt.ignoreSecs      = Mathf.Max(0f, ignoreLastTargetSeconds);
-        rt.forwardNudge    = Mathf.Max(0f, forwardNudge);
-        rt.steerLockSecs   = Mathf.Max(0f, steerLockDuration);
-        rt.lastEnemyGO     = null;
+        rt.remaining = ricochetCount;
+        rt.seekRadius = seekRadius;
+        rt.speedRetention = Mathf.Clamp01(speedRetention);
+        rt.ignoreSecs = Mathf.Max(0f, ignoreLastTargetSeconds);
+        rt.forwardNudge = Mathf.Max(0f, forwardNudge);
+        rt.steerLockSecs = Mathf.Max(0f, steerLockDuration);
+        rt.lastEnemyGO = null;
         rt.ignoreUntilTime = -999f;
 
         if (rt.visited == null) rt.visited = new HashSet<Enemy>();
@@ -58,10 +59,8 @@ public class A_SheepWoolRicochet : EssenceAbility
         var rt = bullet.GetComponent<RicochetRuntime>();
         if (rt == null) return;
 
-        // Mark current as visited so we never bounce back here later
         if (rt.visited != null) rt.visited.Add(enemy);
 
-        // If we've used all ricochets, END here (destroy bullet on this enemy)
         if (rt.remaining <= 0)
         {
             Object.Destroy(bullet.gameObject);
@@ -70,16 +69,13 @@ public class A_SheepWoolRicochet : EssenceAbility
 
         Vector3 origin = enemy.transform.position;
 
-        // Find nearest NEW target in radius (exclude visited + recent last)
         Enemy next = FindNextTarget(enemy, origin, rt);
         if (!next)
         {
-            // No valid next target -> end on this enemy
             Object.Destroy(bullet.gameObject);
             return;
         }
 
-        // Current speed (fallback to stats)
         var rb = bullet.GetComponent<Rigidbody>();
         float speed =
 #if UNITY_6000_0_OR_NEWER
@@ -87,9 +83,8 @@ public class A_SheepWoolRicochet : EssenceAbility
 #else
             (rb ? rb.velocity.magnitude : 0f);
 #endif
-        if (speed <= 0.1f) speed = stats.projectileSpeed;
+        if (speed <= 0.1f) speed = stats.ProjectileSpeed;
 
-        // Redirect toward chosen target (planar for readability; remove .y=0 to use full 3D)
         Vector3 to = next.transform.position - origin;
         to.y = 0f;
         if (to.sqrMagnitude < 1e-6f) { Object.Destroy(bullet.gameObject); return; }
@@ -104,7 +99,7 @@ public class A_SheepWoolRicochet : EssenceAbility
             rb.linearVelocity = dir * (speed * rt.speedRetention);
             rb.angularVelocity = Vector3.zero;
 #else
-            rb.velocity = dir * (speed * rt.speedRetention);
+            rb.velocity        = dir * (speed * rt.speedRetention);
             rb.angularVelocity = Vector3.zero;
 #endif
         }
@@ -113,12 +108,10 @@ public class A_SheepWoolRicochet : EssenceAbility
             bullet.Launch(dir, speed * rt.speedRetention);
         }
 
-        // Briefly “pin” the heading so homing/bounce doesn’t immediately undo the redirect
         if (rt.steerLockSecs > 0f) TemporarySteerLock.Begin(bullet.gameObject, dir, rt.steerLockSecs);
 
-        // Ignore the enemy we just hit for a short window & step remaining
         rt.remaining--;
-        rt.lastEnemyGO     = enemy.gameObject;
+        rt.lastEnemyGO = enemy.gameObject;
         rt.ignoreUntilTime = Time.time + rt.ignoreSecs;
         rt.ApplyTemporaryIgnore(bullet, enemy, rt.ignoreSecs);
     }
@@ -144,10 +137,10 @@ public class A_SheepWoolRicochet : EssenceAbility
         return best;
     }
 
-    // Per-bullet runtime + helpers
+
     class RicochetRuntime : MonoBehaviour
     {
-        public int   remaining;
+        public int remaining;
         public float seekRadius;
         public float speedRetention;
         public float ignoreSecs;
@@ -155,7 +148,7 @@ public class A_SheepWoolRicochet : EssenceAbility
         public float steerLockSecs;
 
         public GameObject lastEnemyGO;
-        public float      ignoreUntilTime;
+        public float ignoreUntilTime;
 
         public HashSet<Enemy> visited;
 
@@ -163,7 +156,7 @@ public class A_SheepWoolRicochet : EssenceAbility
         {
             if (!b || !e) return;
             var bulletCols = b.GetComponentsInChildren<Collider>();
-            var enemyCols  = e.GetComponentsInChildren<Collider>();
+            var enemyCols = e.GetComponentsInChildren<Collider>();
             if (bulletCols == null || enemyCols == null) return;
 
             for (int i = 0; i < bulletCols.Length; i++)
@@ -186,7 +179,7 @@ public class A_SheepWoolRicochet : EssenceAbility
         }
     }
 
-    // Holds the redirected heading briefly
+
     class TemporarySteerLock : MonoBehaviour
     {
         Rigidbody rb;
@@ -253,5 +246,4 @@ public class A_SheepWoolRicochet : EssenceAbility
             }
         }
     }
-
 }

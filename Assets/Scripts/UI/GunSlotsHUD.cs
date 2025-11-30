@@ -1,14 +1,14 @@
 using UnityEngine;
 using UnityEngine.UI;
-using Geneforge.Gameplay.Weapons.Slots;     // GunSlots
-using Geneforge.Gameplay.Abilities; // AnimalEssence
+using Geneforge.Gameplay.Weapons.Slots;
+using Geneforge.Gameplay.Abilities;
 
 namespace Geneforge.UI
 {
     public class GunSlotsHUD : MonoBehaviour
     {
         [Header("References")]
-        [SerializeField] private GunSlots gunSlots;     // Drag Player/Gun object with GunSlots
+        [SerializeField] private GunSlots gunSlots;
         [SerializeField] private Image primaryIcon;
         [SerializeField] private Image[] secondaryIcons = new Image[3];
 

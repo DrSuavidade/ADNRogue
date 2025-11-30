@@ -12,9 +12,9 @@ namespace Geneforge.Gameplay.Progression
         public string dungeonSceneName = "Dungeon";
 
         public string prehistoricBossSceneName = "Boss_Prehistoric";
-        public string romanBossSceneName      = "Boss_Roman";
-        public string presentBossSceneName    = "Boss_Present";
-        public string futureBossSceneName     = "Boss_Future";
+        public string romanBossSceneName = "Boss_Roman";
+        public string presentBossSceneName = "Boss_Present";
+        public string futureBossSceneName = "Boss_Future";
 
         private void Awake()
         {
@@ -27,7 +27,6 @@ namespace Geneforge.Gameplay.Progression
             DontDestroyOnLoad(gameObject);
         }
 
-        // Optional: call this from your main menu button.
         public void StartNewRun()
         {
             RunState.CurrentTimeline = TimelineId.Prehistoric;
@@ -35,7 +34,6 @@ namespace Geneforge.Gameplay.Progression
             SafeLoadScene(dungeonSceneName);
         }
 
-        // Hook this to DungeonMapManager.onBossStairsUsed in the dungeon scene.
         public void OnBossStairsUsed()
         {
             var mgr = DungeonMapManager.Instance;
@@ -51,7 +49,6 @@ namespace Geneforge.Gameplay.Progression
             SafeLoadScene(bossScene);
         }
 
-        // Call this from the boss when it dies.
         public void OnBossDefeated()
         {
             GoToNextTimeline();
@@ -77,26 +74,33 @@ namespace Geneforge.Gameplay.Progression
                 return;
             }
 
-            if (!SceneManager.GetSceneByName(sceneName).IsValid() &&
-                !Application.CanStreamedLevelBeLoaded(sceneName))
+            if (!Application.CanStreamedLevelBeLoaded(sceneName))
             {
                 Debug.LogError($"RunFlowController: Scene '{sceneName}' is not in build settings or cannot be loaded.");
                 return;
             }
 
-            SceneManager.LoadScene(sceneName);
+            StartCoroutine(LoadSceneAsync(sceneName));
         }
 
+        System.Collections.IEnumerator LoadSceneAsync(string sceneName)
+        {
+            // TODO: show loading screen UI here if you want
+            var op = SceneManager.LoadSceneAsync(sceneName);
+            while (!op.isDone)
+                yield return null;
+            // TODO: hide loading UI here
+        }
 
         private string GetBossSceneName(TimelineId t)
         {
             switch (t)
             {
                 case TimelineId.Prehistoric: return prehistoricBossSceneName;
-                case TimelineId.Roman:       return romanBossSceneName;
-                case TimelineId.Present:     return presentBossSceneName;
-                case TimelineId.Future:      return futureBossSceneName;
-                default:                     return null;
+                case TimelineId.Roman: return romanBossSceneName;
+                case TimelineId.Present: return presentBossSceneName;
+                case TimelineId.Future: return futureBossSceneName;
+                default: return null;
             }
         }
 
@@ -105,10 +109,10 @@ namespace Geneforge.Gameplay.Progression
             switch (t)
             {
                 case TimelineId.Prehistoric: return TimelineId.Roman;
-                case TimelineId.Roman:       return TimelineId.Present;
-                case TimelineId.Present:     return TimelineId.Future;
-                case TimelineId.Future:      return TimelineId.Future; // or end run / credits
-                default:                     return t;
+                case TimelineId.Roman: return TimelineId.Present;
+                case TimelineId.Present: return TimelineId.Future;
+                case TimelineId.Future: return TimelineId.Future;
+                default: return t;
             }
         }
     }

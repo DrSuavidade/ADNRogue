@@ -1,37 +1,27 @@
 using UnityEngine;
 using System;
-using System.Linq;
 using Geneforge.Gameplay.Weapons.Bullets;
 using Geneforge.Gameplay.Weapons.Stats;
 using Geneforge.Gameplay.Abilities;
 using Geneforge.Gameplay.Progression;
 
-
 namespace Geneforge.Gameplay.Weapons.Slots
 {
     public enum SlotKind { Primary, Secondary }
-
 
     [Serializable]
     public class GunSlot
     {
         [SerializeField] SlotKind kind = SlotKind.Secondary;
         [SerializeField] AnimalEssence essence;
-
-
         public SlotKind Kind => kind;
         public AnimalEssence Essence => essence;
         public bool IsEmpty => essence == null;
-
-
         public GunSlot() { }
         public GunSlot(SlotKind k) { kind = k; }
-
-
         public void Set(AnimalEssence e) => essence = e;
         public void Clear() => essence = null;
     }
-
 
     /// <summary>
     /// Lives on the gun (e.g., same GameObject as PlayerController or a Weapon root).
@@ -43,7 +33,6 @@ namespace Geneforge.Gameplay.Weapons.Slots
         [Header("Slots")]
         [SerializeField] GunSlot primary = new GunSlot(SlotKind.Primary);
 
-
         [SerializeField]
         GunSlot[] secondaries = new GunSlot[]
         {
@@ -54,16 +43,12 @@ namespace Geneforge.Gameplay.Weapons.Slots
 
         [Header("Progression")]
         [SerializeField] EssenceProgression progression;
-
-
         public GunSlot Primary => primary;
         public GunSlot[] Secondaries => secondaries;
-
-
         public event Action<AnimalEssence> OnPrimaryChanged;
         public event Action OnSecondariesChanged;
         WeaponStats _cachedActive;
-        [SerializeField] private GameObject abilityOwnerOverride; // set this in Inspector to the Player root
+        [SerializeField] private GameObject abilityOwnerOverride;
 
         private EssenceAbility _wiredAbility;
         private GameObject AbilityOwner =>
@@ -78,11 +63,24 @@ namespace Geneforge.Gameplay.Weapons.Slots
 
         void Awake()
         {
-            if (progression == null) progression = FindAnyObjectByType<EssenceProgression>();
+#if UNITY_EDITOR
+            if (progression == null)
+                progression = FindAnyObjectByType<EssenceProgression>();
+#endif
+
+            if (progression == null)
+            {
+                Debug.LogError($"GunSlots on {name} requires an EssenceProgression reference.", this);
+                enabled = false;
+                return;
+            }
+
             if (_cachedActive == null && baseStatsAsset != null)
                 _cachedActive = BuildActiveStats(baseStatsAsset);
+
             WirePrimary(primary?.Essence?.specialAbility);
         }
+
 
         // --- Assign/Clear ---
         public bool TrySetPrimary(AnimalEssence e)
@@ -96,7 +94,6 @@ namespace Geneforge.Gameplay.Weapons.Slots
             return true;
         }
 
-
         public bool ClearPrimary()
         {
             if (primary.IsEmpty) return false;
@@ -106,7 +103,6 @@ namespace Geneforge.Gameplay.Weapons.Slots
             OnPrimaryChanged?.Invoke(null);
             return true;
         }
-
 
         public bool TrySetSecondary(int index, AnimalEssence e)
         {
@@ -118,7 +114,6 @@ namespace Geneforge.Gameplay.Weapons.Slots
             return true;
         }
 
-
         public bool ClearSecondary(int index)
         {
             if (!IsValidIndex(index) || secondaries[index].IsEmpty) return false;
@@ -127,7 +122,6 @@ namespace Geneforge.Gameplay.Weapons.Slots
             OnSecondariesChanged?.Invoke();
             return true;
         }
-
 
         public void ClearAll()
         {
@@ -143,37 +137,54 @@ namespace Geneforge.Gameplay.Weapons.Slots
             if (_cachedActive == null && baseStatsAsset != null)
                 _cachedActive = BuildActiveStats(baseStatsAsset);
 
-            var ability = primary?.Essence?.specialAbility;
-            if (ability != null && _cachedActive != null)
-                ability.OnAboutToFire(_cachedActive);
+            _wiredAbility?.OnAboutToFire(_cachedActive);
         }
+
 
         private void WirePrimary(EssenceAbility next)
         {
             if (_wiredAbility != null)
             {
                 _wiredAbility.OnPrimaryUnequipped(AbilityOwner);
+
+                if (Application.isPlaying)
+                    Destroy(_wiredAbility);
+                else
+                    DestroyImmediate(_wiredAbility);
+
                 _wiredAbility = null;
             }
-            if (next != null)
+
+            if (next == null) return;
+
+            _wiredAbility = Instantiate(next);
+
+            if (progression != null && primary?.Essence != null)
             {
-                _wiredAbility = next;
-                _wiredAbility.OnPrimaryEquipped(AbilityOwner, _cachedActive);
+                var ups = progression.GetActiveAbilityUpgrades(primary.Essence).ToArray();
+                if (ups.Length > 0)
+                    _wiredAbility.ApplyUpgrades(ups);
             }
+
+            _wiredAbility.OnPrimaryEquipped(AbilityOwner, _cachedActive);
         }
+
 
         public void OnFireHeldStart()
         {
-            var ability = primary?.Essence?.specialAbility;
-            ability?.OnFireHeldStart();
+            _wiredAbility?.OnFireHeldStart();
         }
 
         public void OnFireHeldStop()
         {
-            var ability = primary?.Essence?.specialAbility;
-            ability?.OnFireHeldStop();
+            _wiredAbility?.OnFireHeldStop();
         }
 
+
+        void OnDisable()
+        {
+            WirePrimary(null);
+        }
 
 
         // --- Utilities ---
@@ -188,7 +199,6 @@ namespace Geneforge.Gameplay.Weapons.Slots
             return true;
         }
 
-
         public (SlotKind kind, int index) Find(AnimalEssence e)
         {
             if (primary.Essence == e) return (SlotKind.Primary, 0);
@@ -197,25 +207,21 @@ namespace Geneforge.Gameplay.Weapons.Slots
             return (SlotKind.Secondary, -1);
         }
 
-
         bool IsValidIndex(int i) => i >= 0 && i < secondaries.Length;
 
         public void ApplyToBullet(Bullet b)
         {
             if (b == null || _cachedActive == null) return;
 
+            // stats for this shot
             b.ApplyRuntimeStats(_cachedActive);
 
-            var ability = primary?.Essence?.specialAbility;
-            if (ability != null)
+            // bind the runtime ability instance (if any)
+            if (_wiredAbility != null)
             {
-                AbilityUpgrade[] ups = null;
-                if (progression != null && primary?.Essence != null)
-                    ups = progression.GetActiveAbilityUpgrades(primary.Essence).ToArray();
-                b.BindAbility(ability, _cachedActive, ups);
+                b.BindAbility(_wiredAbility, _cachedActive);
             }
         }
-
 
 
         public WeaponStats BuildActiveStats(WeaponStats baseStats)
@@ -252,7 +258,9 @@ namespace Geneforge.Gameplay.Weapons.Slots
         {
             if (baseStatsAsset != null)
                 _cachedActive = BuildActiveStats(baseStatsAsset);
-            if (_wiredAbility != null) _wiredAbility.OnPrimaryEquipped(AbilityOwner, _cachedActive);
+
+            if (_wiredAbility != null)
+                _wiredAbility.OnPrimaryEquipped(AbilityOwner, _cachedActive);
         }
     }
 }

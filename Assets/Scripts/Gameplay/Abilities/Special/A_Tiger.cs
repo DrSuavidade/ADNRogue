@@ -31,30 +31,27 @@ public class A_TigerRend : EssenceAbility
     public float hudPipSize = 0.12f;
     public float hudPipSpacing = 0.1f;
     public Color hudFilled = new Color(0.95f, 0.25f, 0.25f, 1f);
-    public Color hudEmpty  = new Color(0.25f, 0.25f, 0.25f, 0.5f);
+    public Color hudEmpty = new Color(0.25f, 0.25f, 0.25f, 0.5f);
 
     public override void OnHitEnemy(Bullet bullet, Enemy enemy, WeaponStats stats)
     {
         if (!enemy) return;
 
-        // --- Shred (as before) ---
         var sh = enemy.GetComponent<RendShredStatus>();
         if (!sh) sh = enemy.gameObject.AddComponent<RendShredStatus>();
         sh.Apply(shredPerStack, maxShredStacks, shredDuration);
 
-        // Optional immediate bonus based on shred stacks
         float bonus = sh.CurrentBonusMultiplier;
         if (bonus > 0f && stats != null)
-            enemy.TakeDamage(stats.damage * bonus, false);
+            enemy.TakeDamage(stats.Damage * bonus, false);
 
-        // --- Rend stacks + HUD ---
         var rs = enemy.GetComponent<RendStacksStatus>();
         if (!rs) rs = enemy.gameObject.AddComponent<RendStacksStatus>();
-        rs.Setup(this, enemy);     // pass config + link HUD
-        rs.AddStack(1);            // +1 per hit
+        rs.Setup(this, enemy);
+        rs.AddStack(1);
     }
 
-    // ====================== REND STACKS + HUD ======================
+
     class RendStacksStatus : MonoBehaviour
     {
         A_TigerRend def;
@@ -80,26 +77,21 @@ public class A_TigerRend : EssenceAbility
         {
             if (!def || !enemy) return;
 
-            // Decay if expired
             if (def.stackExpireSeconds > 0f && Time.time - lastHitTime > def.stackExpireSeconds)
                 stacks = 0;
 
             lastHitTime = Time.time;
 
-            // Increment and cap (we’ll overflow to trigger bleed below)
             stacks += amount;
             if (stacks < 0) stacks = 0;
 
-            // Update HUD
             hud.UpdateHUD(stacks, def.stacksToBleed, enemy);
 
-            // Trigger bleed on threshold, then reset stacks (distinctive vs Poison)
             if (stacks >= def.stacksToBleed)
             {
                 stacks = 0;
-                hud.UpdateHUD(stacks, def.stacksToBleed, enemy); // reset HUD immediately
+                hud.UpdateHUD(stacks, def.stacksToBleed, enemy);
 
-                // Start/refresh bleed
                 var bleed = enemy.GetComponent<RendBleedStatus>();
                 if (!bleed) bleed = enemy.gameObject.AddComponent<RendBleedStatus>();
                 bleed.Begin(def, def.bleedDps, def.bleedDuration);
@@ -110,14 +102,12 @@ public class A_TigerRend : EssenceAbility
         {
             if (!def || !enemy) return;
 
-            // Passive decay toward 0 when idle
             if (def.stackExpireSeconds > 0f && stacks > 0 && Time.time - lastHitTime > def.stackExpireSeconds)
             {
                 stacks = 0;
                 hud.UpdateHUD(stacks, def.stacksToBleed, enemy);
             }
 
-            // Keep HUD anchored above head, facing camera
             hud.TickAnchor(enemy);
         }
 
@@ -127,7 +117,7 @@ public class A_TigerRend : EssenceAbility
         }
     }
 
-    // Simple world-space 5-pip HUD that faces camera
+
     class TigerStackHUD : MonoBehaviour
     {
         A_TigerRend def;
@@ -154,7 +144,6 @@ public class A_TigerRend : EssenceAbility
                 var mr = quad.GetComponent<MeshRenderer>();
                 mr.sharedMaterial = new Material(Shader.Find(ShaderName));
                 SetColor(mr, def.hudEmpty);
-                // Remove collider from primitive
                 var col = quad.GetComponent<Collider>(); if (col) Destroy(col);
                 pips[i] = quad;
             }
@@ -170,11 +159,9 @@ public class A_TigerRend : EssenceAbility
         {
             if (!root || pips == null || pips.Length == 0) return;
 
-            // First call: compute anchor height once
             if (cachedHeight < 0f)
                 cachedHeight = EstimateHeight(enemy);
 
-            // Layout pips centered
             float totalWidth = (pips.Length - 1) * def.hudPipSpacing;
             for (int i = 0; i < pips.Length; i++)
             {
@@ -184,10 +171,8 @@ public class A_TigerRend : EssenceAbility
                 SetColor(mr, i < stacks ? def.hudFilled : def.hudEmpty);
             }
 
-            // Show only if we have stacks > 0
             SetVisible(stacks > 0);
 
-            // Anchor now
             TickAnchor(enemy);
         }
 
@@ -195,7 +180,7 @@ public class A_TigerRend : EssenceAbility
         {
             if (!root || !enemy) return;
             Vector3 pos = enemy.transform.position + Vector3.up * (cachedHeight > 0f ? cachedHeight : EstimateHeight(enemy));
-            pos.y += def.hudHeightOffset; // extra offset
+            pos.y += def.hudHeightOffset;
             root.transform.position = pos;
 
             var cam = Camera.main;
@@ -204,7 +189,6 @@ public class A_TigerRend : EssenceAbility
 
         float EstimateHeight(Enemy enemy)
         {
-            // Try collider bounds
             float h = 1.6f;
             var cc = enemy.GetComponent<CharacterController>();
             if (cc) h = cc.height;
@@ -232,18 +216,18 @@ public class A_TigerRend : EssenceAbility
         }
     }
 
-    // ====================== BLEED STATUS (unchanged + flash) ======================
+
     class RendBleedStatus : MonoBehaviour
     {
         A_TigerRend def;
-        float dps; 
-        float endAt; 
+        float dps;
+        float endAt;
         bool ticking;
 
         public void Begin(A_TigerRend ability, float _dps, float duration)
         {
             def = ability;
-            dps = _dps; 
+            dps = _dps;
             endAt = Time.time + duration;
             if (!ticking) StartCoroutine(Tick());
         }
@@ -257,14 +241,12 @@ public class A_TigerRend : EssenceAbility
                 var e = GetComponent<Enemy>();
                 if (e)
                 {
-                    // Damage tick
                     e.TakeDamage(dps * interval, false);
 
-                    // Blood flash VFX
                     var flash = e.GetComponent<BleedFlash>();
                     if (!flash) flash = e.gameObject.AddComponent<BleedFlash>();
                     flash.Trigger(def != null ? def.bleedFlashDuration : 0.05f,
-                                  def != null ? def.bleedFlashColor    : new Color(0.85f,0f,0f,1f));
+                                  def != null ? def.bleedFlashColor : new Color(0.85f, 0f, 0f, 1f));
                 }
 
                 yield return new WaitForSeconds(interval);
@@ -273,6 +255,7 @@ public class A_TigerRend : EssenceAbility
             Destroy(this);
         }
     }
+
 
     class RendShredStatus : MonoBehaviour
     {
@@ -305,10 +288,10 @@ public class A_TigerRend : EssenceAbility
         void OnDestroy() { active = false; }
     }
 
-    // --- Tiny helper: flash red on bleed tick, then restore ---
+
     class BleedFlash : MonoBehaviour
     {
-        static readonly int _ColorID     = Shader.PropertyToID("_Color");
+        static readonly int _ColorID = Shader.PropertyToID("_Color");
         static readonly int _BaseColorID = Shader.PropertyToID("_BaseColor");
         Coroutine co;
 

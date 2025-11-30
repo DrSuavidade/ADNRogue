@@ -1,44 +1,48 @@
 using UnityEngine;
 using UnityEngine.UI;
 
-
 namespace Geneforge.UI
 {
-public class TabsManager : MonoBehaviour
-{
-    [System.Serializable]   // <- isto é obrigatório para aparecer no Inspector
-    public class Tab
+    public class TabsManager : MonoBehaviour
     {
-        public Button button;        // botão da tab (GAME, VIDEO, etc.)
-        public GameObject content;   // painel correspondente (GameContent, VideoContent, etc.)
-    }
-
-    public Tab[] tabs; // esta lista aparece no Inspector
-    private int current = -1;
-
-    void Start()
-    {
-        // liga cada botão ao método Select
-        for (int i = 0; i < tabs.Length; i++)
+        [System.Serializable]
+        public class Tab
         {
-            int index = i;
-            tabs[i].button.onClick.AddListener(() => Select(index));
+            public Button button;        // botão da tab (GAME, VIDEO, etc.)
+            public GameObject content;   // painel correspondente (GameContent, VideoContent, etc.)
         }
 
-        // ativa a primeira tab por defeito
-        Select(0);
-    }
+        public Tab[] tabs;
+        private int current = -1;
 
-    public void Select(int index)
-    {
-        // ativa só o painel da tab escolhida
-        for (int i = 0; i < tabs.Length; i++)
+        void Start()
         {
-            bool active = (i == index);
-            tabs[i].content.SetActive(active);
+            for (int i = 0; i < tabs.Length; i++)
+            {
+                int index = i;
+                var tab = tabs[i];
+                if (tab == null || tab.button == null || tab.content == null)
+                {
+                    Debug.LogWarning($"TabsManager: Tab {i} is missing button or content.", this);
+                    continue;
+                }
+                tab.button.onClick.AddListener(() => Select(index));
+            }
+
+            if (tabs.Length > 0)
+                Select(0);
         }
 
-        current = index;
+        public void Select(int index)
+        {
+            // ativa só o painel da tab escolhida
+            for (int i = 0; i < tabs.Length; i++)
+            {
+                bool active = (i == index);
+                tabs[i].content.SetActive(active);
+            }
+
+            current = index;
+        }
     }
-}
 }

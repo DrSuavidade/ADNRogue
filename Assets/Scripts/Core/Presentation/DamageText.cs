@@ -1,6 +1,7 @@
 using UnityEngine;
 using System.Collections;
 using TMPro;
+using Geneforge.Core.Pooling;
 
 namespace Geneforge.Core.UI
 {
@@ -65,7 +66,6 @@ namespace Geneforge.Core.UI
             animRunning = false;
         }
 
-        /// <summary>Call right after Instantiate.</summary>
         public void Initialize(float damage, bool wasCrit = false)
         {
             createdAt = Time.time;
@@ -74,7 +74,7 @@ namespace Geneforge.Core.UI
             if (combineTarget != null)
             {
                 combineTarget.Accumulate(damage, wasCrit);
-                Destroy(gameObject);
+                DespawnSelf();
                 return;
             }
 
@@ -133,10 +133,10 @@ namespace Geneforge.Core.UI
         {
             if (fadeDuration <= 0f)
             {
-                Destroy(gameObject);
+                DespawnSelf();
                 yield break;
             }
-            
+
             animRunning = true;
             float t = 0f;
 
@@ -156,7 +156,19 @@ namespace Geneforge.Core.UI
             }
 
             animRunning = false;
-            Destroy(gameObject);
+            DespawnSelf();
+        }
+        void DespawnSelf()
+        {
+            var id = GetComponent<PoolIdentifier>();
+            if (id != null && PoolManager.Instance != null)
+            {
+                PoolManager.Instance.Reclaim(gameObject);
+            }
+            else
+            {
+                Destroy(gameObject);
+            }
         }
     }
 }

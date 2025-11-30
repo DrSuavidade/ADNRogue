@@ -1,15 +1,14 @@
 using UnityEngine;
 using UnityEngine.UI;
-using Geneforge.Gameplay.Characters.Enemies; // Enemy reference
+using Geneforge.Gameplay.Characters.Enemies;
 
-
-namespace Geneforge.UI 
+namespace Geneforge.UI
 {
     [RequireComponent(typeof(Canvas))]
     public class HealthBar : MonoBehaviour
     {
-        public Enemy enemy;       // optional: auto‐found if left null
-        public Image fillImage;   // assign in inspector
+        public Enemy enemy;
+        public Image fillImage;
         public Vector3 offset = Vector3.up * 1.2f;
 
         Camera mainCam;
@@ -25,7 +24,7 @@ namespace Geneforge.UI
                 Debug.LogWarning($"HealthBar on {name} has no fillImage assigned.", this);
         }
 
-        void Start()
+        void OnEnable()
         {
             if (enemy == null)
                 enemy = GetComponentInParent<Enemy>();
@@ -36,7 +35,7 @@ namespace Geneforge.UI
                 Debug.LogError($"HealthBar on {name} couldn’t find an Enemy.", this);
         }
 
-        void OnDestroy()
+        void OnDisable()
         {
             if (enemy != null)
                 enemy.OnFirstHit -= OnEnemyFirstHit;
@@ -60,7 +59,8 @@ namespace Geneforge.UI
             transform.rotation = Quaternion.LookRotation(transform.position - mainCam.transform.position);
 
             // 2) Update fill
-            float pct = enemy.CurrentHealth / enemy.MaxHealth;
+            float maxHp = Mathf.Max(enemy.MaxHealth, 0.0001f);
+            float pct = enemy.CurrentHealth / maxHp;
             fillImage.fillAmount = pct;
 
             // 3) Change color by thresholds

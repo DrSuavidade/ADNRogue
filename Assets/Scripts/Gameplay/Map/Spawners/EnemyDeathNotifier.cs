@@ -23,7 +23,6 @@ namespace Geneforge.Gameplay.Map
 
         private void OnDestroy()
         {
-            // Still supports the simple "Destroy(enemy)" case.
             ReportDeath();
         }
     }

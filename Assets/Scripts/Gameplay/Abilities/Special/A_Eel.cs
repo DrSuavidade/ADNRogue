@@ -9,16 +9,16 @@ using Geneforge.Gameplay.Characters.Enemies;
 public class ChainLightningAbility : EssenceAbility
 {
     [Header("Chain")]
-    public int   maxJumps = 3;
-    public float radius   = 6f;
+    public int maxJumps = 3;
+    public float radius = 6f;
     [Tooltip("Seconds of visible travel between enemies.")]
     public float jumpDelay = 0.5f;
     [Range(0f, 1f)] public float damageFactorPerJump = 0.7f;
 
     [Header("VFX")]
-    public bool  showVFX     = true;
-    public float lineWidth   = 0.06f;
-    public Color lineColor   = new Color(0.7f, 0.9f, 1f, 0.95f);
+    public bool showVFX = true;
+    public float lineWidth = 0.06f;
+    public Color lineColor = new Color(0.7f, 0.9f, 1f, 0.95f);
 
     public override void OnHitEnemy(Bullet bullet, Enemy first, WeaponStats stats)
     {
@@ -31,11 +31,10 @@ public class ChainLightningAbility : EssenceAbility
         var visited = new System.Collections.Generic.HashSet<Enemy>();
         if (start != null) visited.Add(start);
 
-        float baseDamage = stats.damage;
+        float baseDamage = stats.Damage;
 
         for (int i = 0; i < maxJumps; i++)
         {
-            // Find nearest new enemy within radius
             Collider[] hits = Physics.OverlapSphere(current.position, radius, ~0, QueryTriggerInteraction.Ignore);
             Enemy next = null; float best = Mathf.Infinity;
             for (int h = 0; h < hits.Length; h++)
@@ -47,29 +46,26 @@ public class ChainLightningAbility : EssenceAbility
             }
             if (next == null) yield break;
 
-            // VFX: stretch a line from current to next over 'jumpDelay'
             if (showVFX)
                 StretchLine(current, next.transform, jumpDelay, lineWidth, lineColor, current.gameObject.layer);
 
-            // Wait for the travel time, then apply damage to the next enemy
             yield return new WaitForSeconds(jumpDelay);
 
             if (next != null)
             {
                 float dmgThisHop = baseDamage * damageFactorPerJump;
                 next.TakeDamage(dmgThisHop, false);
-                baseDamage = dmgThisHop;   // subsequent hops decay further
+                baseDamage = dmgThisHop;
                 visited.Add(next);
-                current = next.transform;  // chain continues from the new enemy
+                current = next.transform;
             }
             else
             {
-                yield break; // target vanished mid-flight
+                yield break;
             }
         }
     }
 
-    // --- Simple stretch-line VFX (2-point LineRenderer that grows toward the target) ---
     void StretchLine(Transform from, Transform to, float duration, float width, Color color, int layer)
     {
         if (from == null || to == null) return;
@@ -83,9 +79,8 @@ public class ChainLightningAbility : EssenceAbility
         lr.widthMultiplier = width;
         lr.material = new Material(Shader.Find("Sprites/Default"));
         lr.startColor = color;
-        lr.endColor   = color;
+        lr.endColor = color;
 
-        // Runner that animates then self-destroys
         var runner = go.AddComponent<StretchLineRunner>();
         runner.Init(from, to, duration, lr);
     }
@@ -111,13 +106,11 @@ public class ChainLightningAbility : EssenceAbility
             Vector3 a = from.position;
             Vector3 b = to.position;
 
-            // start anchored at 'from'; end grows toward 'to'
             lr.SetPosition(0, a);
             lr.SetPosition(1, Vector3.Lerp(a, b, k));
 
-            // Optional slight fade-in/out (looks nice with short durations)
             var c0 = lr.startColor; var c1 = lr.endColor;
-            float fade = 1f; // keep solid; change to Mathf.Sin(k * Mathf.PI) for a pulse
+            float fade = 1f;
             c0.a = c0.a * fade; c1.a = c1.a * fade;
             lr.startColor = c0; lr.endColor = c1;
 
@@ -135,11 +128,11 @@ public class ChainLightningAbility : EssenceAbility
             switch (u.key)
             {
                 case "Chain/MaxJumps":
-                {
-                    float v = ApplyNumeric(maxJumps, u);
-                    maxJumps = Mathf.Clamp(Mathf.RoundToInt(v), 0, 32);
-                    break;
-                }
+                    {
+                        float v = ApplyNumeric(maxJumps, u);
+                        maxJumps = Mathf.Clamp(Mathf.RoundToInt(v), 0, 32);
+                        break;
+                    }
 
                 case "Chain/Radius":
                     radius = Mathf.Max(0f, ApplyNumeric(radius, u));
@@ -155,5 +148,4 @@ public class ChainLightningAbility : EssenceAbility
             }
         }
     }
-
 }

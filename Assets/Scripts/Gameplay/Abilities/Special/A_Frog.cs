@@ -9,30 +9,29 @@ using Geneforge.Gameplay.Characters.Enemies;
 public class A_FrogToxicity : EssenceAbility
 {
     [Header("Poison")]
-    public float poisonDps = 1.0f;     // DPS applied while poisoned
-    public float poisonDuration = 4f;  // refreshed on each hit
+    public float poisonDps = 1.0f;
+    public float poisonDuration = 4f;
 
     [Header("Death puddle")]
-    [Range(0f,1f)] public float puddleChance = 0.05f;
-    public float puddleRadius   = 3.5f;
+    [Range(0f, 1f)] public float puddleChance = 0.05f;
+    public float puddleRadius = 3.5f;
     public float puddleDuration = 4f;
-    public float puddleDps      = 0.8f;
+    public float puddleDps = 0.8f;
 
     [Header("VFX")]
-    public Color poisonFlashColor    = new Color(0f, 0.85f, 0f, 1f); // green
+    public Color poisonFlashColor = new Color(0f, 0.85f, 0f, 1f);
     public float poisonFlashDuration = 0.05f;
 
     public override void OnHitEnemy(Bullet bullet, Enemy enemy, WeaponStats stats)
     {
         if (!enemy) return;
 
-        // Apply or refresh poison (no stacks)
         var p = enemy.GetComponent<PoisonStatus>();
         if (!p) p = enemy.gameObject.AddComponent<PoisonStatus>();
         p.Apply(this);
     }
 
-    // ---------------- Poison state on enemies (no stacks, refresh on hit) ----------------
+
     public class PoisonStatus : MonoBehaviour
     {
         A_FrogToxicity def;
@@ -57,10 +56,8 @@ public class A_FrogToxicity : EssenceAbility
                 var e = GetComponent<Enemy>();
                 if (e)
                 {
-                    // Damage tick (DPS scaled by tick length)
                     e.TakeDamage(def.poisonDps * tickInterval, false);
 
-                    // Green flash VFX (distinct from Tiger's red)
                     var flash = e.GetComponent<PoisonFlash>();
                     if (!flash) flash = e.gameObject.AddComponent<PoisonFlash>();
                     flash.Trigger(def.poisonFlashDuration, def.poisonFlashColor);
@@ -70,13 +67,13 @@ public class A_FrogToxicity : EssenceAbility
             }
             expiredNaturally = true;
             ticking = false;
-            Destroy(this); // ends poison & restores tint via PoisonFlash lifetime
+            Destroy(this);
         }
 
         void OnDestroy()
         {
-            if (expiredNaturally) return; // ended due to expiry, not death
-            // Enemy object destroyed while poison active -> death occurred
+            if (expiredNaturally) return;
+
             if (Random.value <= def.puddleChance)
             {
                 SpawnPuddle(transform.position);
@@ -88,13 +85,13 @@ public class A_FrogToxicity : EssenceAbility
             var go = new GameObject("ToxicPuddle");
             go.transform.position = at;
             var rt = go.AddComponent<ToxicPuddleRuntime>();
-            rt.radius   = def.puddleRadius;
+            rt.radius = def.puddleRadius;
             rt.duration = def.puddleDuration;
-            rt.dps      = def.puddleDps;
+            rt.dps = def.puddleDps;
         }
     }
 
-    // ---------------- Toxic puddle poisons any enemy inside (flat DPS over time) ----------------
+
     public class ToxicPuddleRuntime : MonoBehaviour
     {
         public float radius = 3f;
@@ -109,7 +106,6 @@ public class A_FrogToxicity : EssenceAbility
             col.isTrigger = true;
             col.radius = radius;
 
-            // Simple green ring visual
             var lr = gameObject.AddComponent<LineRenderer>();
             lr.useWorldSpace = false; lr.loop = true;
             lr.positionCount = 48; lr.widthMultiplier = 0.05f;
@@ -136,10 +132,10 @@ public class A_FrogToxicity : EssenceAbility
         }
     }
 
-    // ---------------- Tiny helper: flashes renderers green briefly, then restores ----------------
+
     class PoisonFlash : MonoBehaviour
     {
-        static readonly int _ColorID     = Shader.PropertyToID("_Color");
+        static readonly int _ColorID = Shader.PropertyToID("_Color");
         static readonly int _BaseColorID = Shader.PropertyToID("_BaseColor");
 
         Coroutine co;
@@ -155,7 +151,6 @@ public class A_FrogToxicity : EssenceAbility
             var rends = GetComponentsInChildren<Renderer>(true);
             if (rends == null || rends.Length == 0) yield break;
 
-            // Snapshot current colors per material, restore after
             var originals = new System.Collections.Generic.List<(Material mat, Color col, int prop)>();
             foreach (var r in rends)
             {
@@ -219,5 +214,4 @@ public class A_FrogToxicity : EssenceAbility
             }
         }
     }
-
 }

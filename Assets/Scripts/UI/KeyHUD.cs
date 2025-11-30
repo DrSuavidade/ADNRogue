@@ -1,3 +1,4 @@
+using System.Collections;
 using UnityEngine;
 using Geneforge.Gameplay.Map;
 
@@ -9,52 +10,73 @@ namespace Geneforge.UI
         [SerializeField] private GameObject keyIconRoot;
 
         private bool _subscribed;
+        Coroutine _waitCo;
 
         private void Awake()
         {
             if (keyIconRoot == null)
                 keyIconRoot = gameObject;
 
-            // Safe default
             if (keyIconRoot != null)
                 keyIconRoot.SetActive(false);
         }
 
         private void OnEnable()
         {
-            TrySubscribe();
-        }
-
-        private void Update()
-        {
-            // Handles the case where DungeonMapManager.Instance appears AFTER this UI is enabled
-            if (!_subscribed)
-                TrySubscribe();
+            TrySubscribeOrWait();
         }
 
         private void OnDisable()
         {
-            if (!_subscribed) return;
+            if (_waitCo != null)
+            {
+                StopCoroutine(_waitCo);
+                _waitCo = null;
+            }
 
-            var mgr = DungeonMapManager.Instance;
-            if (mgr != null)
-                mgr.KeyStateChanged -= OnKeyStateChanged;
+            if (_subscribed)
+            {
+                var mgr = DungeonMapManager.Instance;
+                if (mgr != null)
+                    mgr.KeyStateChanged -= OnKeyStateChanged;
 
-            _subscribed = false;
+                _subscribed = false;
+            }
         }
 
-        private void TrySubscribe()
+        void TrySubscribeOrWait()
         {
             if (_subscribed) return;
 
             var mgr = DungeonMapManager.Instance;
-            if (mgr == null) return;
+            if (mgr != null)
+            {
+                mgr.KeyStateChanged += OnKeyStateChanged;
+                _subscribed = true;
+                OnKeyStateChanged(mgr.PlayerHasKey);
+            }
+            else
+            {
+                if (_waitCo == null)
+                    _waitCo = StartCoroutine(WaitForManager());
+            }
+        }
 
-            mgr.KeyStateChanged += OnKeyStateChanged;
-            _subscribed = true;
-
-            // Sync with current state immediately
-            OnKeyStateChanged(mgr.PlayerHasKey);
+        IEnumerator WaitForManager()
+        {
+            while (!_subscribed)
+            {
+                var mgr = DungeonMapManager.Instance;
+                if (mgr != null)
+                {
+                    mgr.KeyStateChanged += OnKeyStateChanged;
+                    _subscribed = true;
+                    OnKeyStateChanged(mgr.PlayerHasKey);
+                    _waitCo = null;
+                    yield break;
+                }
+                yield return null;
+            }
         }
 
         private void OnKeyStateChanged(bool hasKey)

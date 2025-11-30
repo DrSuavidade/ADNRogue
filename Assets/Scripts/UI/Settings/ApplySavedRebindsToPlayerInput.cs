@@ -7,14 +7,13 @@ namespace Game.UI.Settings
     public class ApplySavedRebindsToPlayerInput : MonoBehaviour
     {
         public PlayerInput playerInput;
-        const string PlayerPrefsKey = "Keybinds";
 
         void Awake()
         {
             if (playerInput == null) playerInput = GetComponent<PlayerInput>();
             if (playerInput == null) return;
 
-            var json = PlayerPrefs.GetString(PlayerPrefsKey, "");
+            var json = PlayerPrefs.GetString(RebindButtonUI.PlayerPrefsKey, "");
             if (!string.IsNullOrEmpty(json))
                 playerInput.actions.LoadBindingOverridesFromJson(json);
         }

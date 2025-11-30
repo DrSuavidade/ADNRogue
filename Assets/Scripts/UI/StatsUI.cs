@@ -2,7 +2,7 @@ using UnityEngine;
 using UnityEngine.UI;
 using TMPro;
 using System.Collections.Generic;
-using Geneforge.Core.Stats; // RunStats, MetaStats
+using Geneforge.Core.Stats;
 
 namespace Geneforge.UI
 {
@@ -13,98 +13,201 @@ namespace Geneforge.UI
         [SerializeField] private MetaStats metaStats;
 
         [Header("Lives Icons")]
-        [SerializeField] private RectTransform livesContainer;   // leave null in scenes without lives
+        [SerializeField] private RectTransform livesContainer;
         [SerializeField] private Sprite lifeFullSprite;
         [SerializeField] private Sprite lifeEmptySprite;
         readonly List<Image> lifeIcons = new List<Image>();
 
         [Header("HP Display")]
-        [SerializeField] private Image hpBarFill;                // leave null if you don’t want an HP bar
-        [SerializeField] private TMP_Text hpText;                // leave null if you don’t want HP text
+        [SerializeField] private Image hpBarFill;
+        [SerializeField] private TMP_Text hpText;
 
         [Header("Other Stats (text)")]
-        [SerializeField] private TMP_Text currencyText;          // leave null if unused
-        [SerializeField] private TMP_Text dnaSplicesText;        // leave null if unused
-        [SerializeField] private TMP_Text rollsText;             // leave null if unused
-        [SerializeField] private TMP_Text essenceText;           // leave null if unused
-        [SerializeField] private TMP_Text totalDnaSplicesText;   // leave null if unused
+        [SerializeField] private TMP_Text currencyText;
+        [SerializeField] private TMP_Text dnaSplicesText;
+        [SerializeField] private TMP_Text rollsText;
+        [SerializeField] private TMP_Text essenceText;
+        [SerializeField] private TMP_Text totalDnaSplicesText;
+
+        bool _subscribed;
 
         void Awake()
         {
+            if (runStats == null) runStats = FindAnyObjectByType<RunStats>();
+            if (metaStats == null) metaStats = FindAnyObjectByType<MetaStats>();
+
             if (runStats == null)
-                runStats = FindFirstObjectByType<RunStats>();
-            if (metaStats == null)
-                metaStats = MetaStats.I;
+                Debug.LogWarning("StatsUI: RunStats not found in scene.", this);
         }
 
         void Start()
         {
-            // Only set up life icons if container and sprites are assigned
-            if (runStats != null
-                && livesContainer != null
-                && lifeFullSprite != null
-                && lifeEmptySprite != null)
-            {
-                // Use the larger of base starting lives or current lives,
-                // in case meta progression increased lives.
-                int maxLives = Mathf.Max(runStats.BaseStartingLives, runStats.Lives);
-
-                for (int i = 0; i < maxLives; i++)
-                {
-                    var go = new GameObject("LifeIcon", typeof(Image));
-                    go.transform.SetParent(livesContainer, false);
-                    var img = go.GetComponent<Image>();
-                    img.sprite = lifeFullSprite;
-                    lifeIcons.Add(img);
-                }
-            }
+            if (runStats != null)
+                EnsureLifeIcons(Mathf.Max(0, runStats.BaseStartingLives));
         }
 
-        void Update()
+        void OnEnable()
         {
+            Subscribe();
+            RefreshAllFromCurrentValues();
+        }
+
+        void OnDisable()
+        {
+            Unsubscribe();
+        }
+
+        void Subscribe()
+        {
+            if (_subscribed) return;
+
             if (runStats != null)
             {
-                // Lives
-                if (lifeIcons.Count > 0)
-                {
-                    int lives = runStats.Lives;
-                    for (int i = 0; i < lifeIcons.Count; i++)
-                    {
-                        lifeIcons[i].sprite = (i < lives)
-                            ? lifeFullSprite
-                            : lifeEmptySprite;
-                    }
-                }
-
-                // HP text
-                if (hpText != null)
-                    hpText.text = $"{runStats.CurrentHP:0}/{runStats.MaxHP:0}";
-
-                // HP bar
-                if (hpBarFill != null && runStats.MaxHP > 0f)
-                    hpBarFill.fillAmount = runStats.CurrentHP / runStats.MaxHP;
-
-                // Currency
-                if (currencyText != null)
-                    currencyText.text = $"Gold: {runStats.Currency}";
-
-                // DNA Splices
-                if (dnaSplicesText != null)
-                    dnaSplicesText.text = $"Splices: {runStats.DnaSplices}";
-
-                // Rolls
-                if (rollsText != null)
-                    rollsText.text = $"Rolls: {runStats.Rolls}";
+                runStats.OnLivesChanged += HandleLivesChanged;
+                runStats.OnHealthChanged += HandleHealthChanged;
+                runStats.OnCurrencyChanged += HandleCurrencyChanged;
+                runStats.OnDnaSplicesChanged += HandleDnaSplicesChanged;
+                runStats.OnRollsChanged += HandleRollsChanged;
             }
 
             if (metaStats != null)
             {
-                if (essenceText != null)
-                    essenceText.text = $"Essence: {metaStats.Essence}";
-
-                if (totalDnaSplicesText != null)
-                    totalDnaSplicesText.text = $"Banked DNA: {metaStats.TotalDnaSplices}";
+                metaStats.OnEssenceChanged += HandleEssenceChanged;
+                metaStats.OnTotalDnaSplicesChanged += HandleTotalDnaChanged;
             }
+
+            _subscribed = true;
+        }
+
+        void Unsubscribe()
+        {
+            if (!_subscribed) return;
+
+            if (runStats != null)
+            {
+                runStats.OnLivesChanged -= HandleLivesChanged;
+                runStats.OnHealthChanged -= HandleHealthChanged;
+                runStats.OnCurrencyChanged -= HandleCurrencyChanged;
+                runStats.OnDnaSplicesChanged -= HandleDnaSplicesChanged;
+                runStats.OnRollsChanged -= HandleRollsChanged;
+            }
+
+            if (metaStats != null)
+            {
+                metaStats.OnEssenceChanged -= HandleEssenceChanged;
+                metaStats.OnTotalDnaSplicesChanged -= HandleTotalDnaChanged;
+            }
+
+            _subscribed = false;
+        }
+
+
+        // --- Initial sync ----------------------------------------------------
+
+        void RefreshAllFromCurrentValues()
+        {
+            if (runStats != null)
+            {
+                HandleLivesChanged(runStats.Lives);
+                HandleHealthChanged(runStats.CurrentHP, runStats.MaxHP);
+                HandleCurrencyChanged(runStats.Currency);
+                HandleDnaSplicesChanged(runStats.DnaSplices);
+                HandleRollsChanged(runStats.Rolls);
+            }
+
+            if (metaStats != null)
+            {
+                HandleEssenceChanged(metaStats.Essence);
+                HandleTotalDnaChanged(metaStats.TotalDnaSplices);
+            }
+        }
+
+
+        // --- Lives -----------------------------------------------------------
+
+        void EnsureLifeIcons(int required)
+        {
+            if (livesContainer == null || lifeFullSprite == null || lifeEmptySprite == null)
+                return;
+
+            while (lifeIcons.Count < required)
+            {
+                int index = lifeIcons.Count;
+                var go = new GameObject($"LifeIcon_{index}", typeof(Image));
+                go.transform.SetParent(livesContainer, false);
+                var img = go.GetComponent<Image>();
+                img.sprite = lifeFullSprite;
+                lifeIcons.Add(img);
+            }
+        }
+
+        void UpdateLivesUI(int lives)
+        {
+            if (lifeIcons.Count == 0 || lifeFullSprite == null || lifeEmptySprite == null)
+                return;
+
+            lives = Mathf.Max(0, lives);
+            for (int i = 0; i < lifeIcons.Count; i++)
+            {
+                var img = lifeIcons[i];
+                if (img == null) continue;
+                img.sprite = (i < lives) ? lifeFullSprite : lifeEmptySprite;
+            }
+        }
+
+        void HandleLivesChanged(int lives)
+        {
+            // If lives ever increases beyond starting value (meta upgrades), expand icons.
+            EnsureLifeIcons(Mathf.Max(lifeIcons.Count, lives));
+            UpdateLivesUI(lives);
+        }
+
+
+        // --- HP --------------------------------------------------------------
+
+        void HandleHealthChanged(float current, float max)
+        {
+            if (hpText != null)
+                hpText.text = $"{current:0}/{max:0}";
+
+            if (hpBarFill != null && max > 0f)
+                hpBarFill.fillAmount = current / max;
+        }
+
+
+        // --- Run-level resources ---------------------------------------------
+
+        void HandleCurrencyChanged(int amount)
+        {
+            if (currencyText != null)
+                currencyText.text = $"Gold: {amount}";
+        }
+
+        void HandleDnaSplicesChanged(int amount)
+        {
+            if (dnaSplicesText != null)
+                dnaSplicesText.text = $"Splices: {amount}";
+        }
+
+        void HandleRollsChanged(int amount)
+        {
+            if (rollsText != null)
+                rollsText.text = $"Rolls: {amount}";
+        }
+
+
+        // --- Meta-level resources --------------------------------------------
+
+        void HandleEssenceChanged(int amount)
+        {
+            if (essenceText != null)
+                essenceText.text = $"Essence: {amount}";
+        }
+
+        void HandleTotalDnaChanged(int amount)
+        {
+            if (totalDnaSplicesText != null)
+                totalDnaSplicesText.text = $"Banked DNA: {amount}";
         }
     }
 }

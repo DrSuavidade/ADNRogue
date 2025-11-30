@@ -9,15 +9,27 @@ namespace Game.UI.Settings
     {
         public InputActionReference actionReference;
         public int bindingIndex = 0;
-
         public TMP_Text bindingLabel;
         public Button rebindButton;
-
         private InputAction action;
-        private const string PlayerPrefsKey = "Keybinds";
+        public const string PlayerPrefsKey = "Keybinds";
 
         private void Awake()
         {
+            if (actionReference == null || actionReference.action == null)
+            {
+                Debug.LogError($"[RebindButtonUI] Missing actionReference on {name}. Disabling.", this);
+                enabled = false;
+                return;
+            }
+
+            if (bindingLabel == null || rebindButton == null)
+            {
+                Debug.LogError($"[RebindButtonUI] Missing UI references (bindingLabel / rebindButton) on {name}. Disabling.", this);
+                enabled = false;
+                return;
+            }
+
             action = actionReference.action;
             LoadRebindsIntoAsset();
             UpdateUI();
@@ -59,6 +71,7 @@ namespace Game.UI.Settings
 
         private void UpdateUI()
         {
+            if (bindingLabel == null || action == null) return;
             bindingLabel.text = action.GetBindingDisplayString(bindingIndex);
         }
 

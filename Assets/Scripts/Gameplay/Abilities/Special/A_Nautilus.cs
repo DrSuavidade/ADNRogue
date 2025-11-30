@@ -2,34 +2,32 @@ using UnityEngine;
 using System.Collections;
 using Geneforge.Gameplay.Abilities;
 using Geneforge.Gameplay.Characters.Enemies;
-using Geneforge.Core.Stats; // RunStats
-
+using Geneforge.Core.Stats;
 
 [CreateAssetMenu(menuName = "Geneforge/Abilities/Nautilus - Shell & Surge")]
 public class A_Nautilus : EssenceAbility
 {
     [Header("Surge")]
     public float surgeInterval = 5f;
-    public float surgeRadius   = 6f;
-    public float surgeDamage   = 8f;
+    public float surgeRadius = 6f;
+    public float surgeDamage = 8f;
 
     [Header("Surge VFX")]
-    public bool  showSurgeVFX     = true;
-    public float ringDuration     = 0.35f;
-    public float ringLineWidth    = 0.06f;
-    public int   ringSegments     = 64;
-    public Color ringColor        = new Color(0.6f, 0.9f, 1f, 0.9f);
+    public bool showSurgeVFX = true;
+    public float ringDuration = 0.35f;
+    public float ringLineWidth = 0.06f;
+    public int ringSegments = 64;
+    public Color ringColor = new Color(0.6f, 0.9f, 1f, 0.9f);
 
     [Header("Shell")]
-    public float shellCooldown    = 30f;
+    public float shellCooldown = 30f;
 
     [Header("Shell VFX")]
-    public bool  showShellSphere  = true;
-    public float shellRadius      = 0.6f; // visual only
-    public Material shellMaterial;        // optional; if null we create a transparent one
-    public Color shellColor       = new Color(0.6f, 0.9f, 1f, 0.25f);
+    public bool showShellSphere = true;
+    public float shellRadius = 0.6f;
+    public Material shellMaterial;
+    public Color shellColor = new Color(0.6f, 0.9f, 1f, 0.25f);
 
-    // --- lifecycle from GunSlots ---
     public override void OnPrimaryEquipped(GameObject owner, Geneforge.Gameplay.Weapons.Stats.WeaponStats snapshot)
     {
         var rt = owner.GetComponent<NautilusRunner>();
@@ -43,13 +41,11 @@ public class A_Nautilus : EssenceAbility
         if (rt) Object.Destroy(rt);
     }
 
-    // ------------------------------------------------------------------------
-    // Runtime component attached to the (resolved) player root
-    // ------------------------------------------------------------------------
+    
     class NautilusRunner : MonoBehaviour
     {
         A_Nautilus def;
-        Transform  root;             // player root (where PlayerHealth lives)
+        Transform root;
         GameObject shellViz;
         bool shellReady = true;
         RunStats run;
@@ -63,11 +59,9 @@ public class A_Nautilus : EssenceAbility
             run = root.GetComponent<RunStats>();
             lastHealth = (run != null) ? run.CurrentHP : -1f;
 
-            // VFX: shell sphere (only when ready)
             EnsureShellSphere();
             SetShellVisible(def.showShellSphere && shellReady);
 
-            // Kick the surge loop (immediate ping, then every interval)
             if (loop != null) StopCoroutine(loop);
             loop = StartCoroutine(SurgeLoop());
         }
@@ -80,7 +74,7 @@ public class A_Nautilus : EssenceAbility
                 if (t.GetComponent("PlayerHealth") != null) return t;
                 t = t.parent;
             }
-            return start; // fallback
+            return start;
         }
 
         void OnDestroy()
@@ -91,30 +85,25 @@ public class A_Nautilus : EssenceAbility
 
         void Update()
         {
-            if (run == null) return;                // no HP source found
-            float h = run.CurrentHP;                // current HP
+            if (run == null) return;
+            float h = run.CurrentHP;
 
             if (shellReady && lastHealth >= 0f && h < lastHealth)
             {
-                // Block this hit: immediately heal back the lost HP
                 float delta = lastHealth - h;
                 if (delta > 0f) run.Heal(delta);
 
-                // Consume shell and start cooldown
                 shellReady = false;
                 SetShellVisible(false);
                 StartCoroutine(RestoreShellAfter(def.shellCooldown));
-                // Debug.Log($"Nautilus shell blocked {delta} damage");
             }
 
-            // track after potential heal
             lastHealth = run.CurrentHP;
         }
 
 
         IEnumerator SurgeLoop()
         {
-            // immediate surge so you see it right away
             DoSurge();
 
             var wait = new WaitForSeconds(Mathf.Max(0.1f, def.surgeInterval));
@@ -129,7 +118,6 @@ public class A_Nautilus : EssenceAbility
         {
             Vector3 p = root.position;
 
-            // Damage everyone in radius
             var cols = Physics.OverlapSphere(p, def.surgeRadius, ~0, QueryTriggerInteraction.Ignore);
             for (int i = 0; i < cols.Length; i++)
             {
@@ -138,7 +126,6 @@ public class A_Nautilus : EssenceAbility
                 e.TakeDamage(def.surgeDamage, false);
             }
 
-            // Ring VFX
             if (def.showSurgeVFX)
                 SpawnRing(p, def.surgeRadius, def.ringDuration, def.ringLineWidth, def.ringSegments, def.ringColor);
         }
@@ -150,6 +137,7 @@ public class A_Nautilus : EssenceAbility
             SetShellVisible(def.showShellSphere);
         }
 
+
         // ------------------------------ VFX -----------------------------------
         void EnsureShellSphere()
         {
@@ -157,11 +145,10 @@ public class A_Nautilus : EssenceAbility
 
             shellViz = GameObject.CreatePrimitive(PrimitiveType.Sphere);
             shellViz.name = "Nautilus_Shell_VFX";
-            Destroy(shellViz.GetComponent<Collider>()); // visual only
+            Destroy(shellViz.GetComponent<Collider>());
             shellViz.transform.SetParent(root, false);
             shellViz.transform.localPosition = Vector3.zero;
 
-            // Keep world radius regardless of parent scale
             float worldD = def.shellRadius * 2f;
             Vector3 pl = root.lossyScale;
             Vector3 local = new Vector3(
@@ -179,11 +166,10 @@ public class A_Nautilus : EssenceAbility
                 if (sh == null) sh = Shader.Find("Standard");
                 mat = new Material(sh != null ? sh : Shader.Find("Sprites/Default"));
             }
-            // set color on common prop
             if (mat.HasProperty("_BaseColor")) mat.SetColor("_BaseColor", def.shellColor);
             else if (mat.HasProperty("_Color")) mat.color = def.shellColor;
 
-            r.material = new Material(mat); // instance
+            r.material = new Material(mat);
         }
 
         void SetShellVisible(bool on)
@@ -205,6 +191,7 @@ public class A_Nautilus : EssenceAbility
 
             go.AddComponent<RingExpander>().Init(center, targetRadius, life, lr);
         }
+
 
         class RingExpander : MonoBehaviour
         {
@@ -264,5 +251,4 @@ public class A_Nautilus : EssenceAbility
             }
         }
     }
-
 }

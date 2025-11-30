@@ -26,7 +26,7 @@ public class PenguinIceSlugAbility : EssenceAbility
     public float trailTime = 0.25f;
     public float trailWidth = 0.08f;
     public Color trailStartColor = new Color(0.8f, 0.95f, 1f, 0.95f);
-    public Color trailEndColor   = new Color(0.6f, 0.85f, 1f,  0.00f);
+    public Color trailEndColor = new Color(0.6f, 0.85f, 1f, 0.00f);
 
     [Header("VFX: Hit Ring")]
     public bool showHitRing = true;
@@ -85,11 +85,9 @@ public class PenguinIceSlugAbility : EssenceAbility
 
         if (showHitRing) SpawnHitRing(enemy.transform, hitRingRadius, hitRingWidth, hitRingColor, hitRingDuration);
 
-        // Optional slow if the enemy uses a NavMeshAgent
         var agent = enemy.GetComponent<NavMeshAgent>();
         if (agent != null) enemy.StartCoroutine(ApplySlow(agent, slowPercent, slowDuration));
 
-        // Freeze (with cooldown + no refresh while active)
         if (Random.value < Mathf.Clamp01(freezeChance))
         {
             var st = enemy.GetComponent<FreezeStatus>();
@@ -107,43 +105,31 @@ public class PenguinIceSlugAbility : EssenceAbility
         if (agent != null) agent.speed = original;
     }
 
-    // --- Runtime freeze status attached to enemies ---
+
     public class FreezeStatus : MonoBehaviour
     {
         PenguinIceSlugAbility def;
         Enemy enemy;
-
-        // State
         bool active;
         float cooldownUntil;
-
-        // Agent freeze
         NavMeshAgent agent;
         bool agentPrevStopped;
-
-        // Rigidbody freeze
         Rigidbody rb;
         RigidbodyConstraints rbPrevConstraints;
         bool rbPrevKinematic;
         Vector3 rbPrevVel, rbPrevAngVel;
-
-        // AI freeze (disable a behaviour named "EnemyAI" if present)
         Behaviour ai;
         bool aiPrevEnabled;
-
-        // Animator optional
         Animator anim;
         float animPrevSpeed;
-
-        // VFX
         GameObject ice;
 
         public void Begin(PenguinIceSlugAbility ability, Enemy e, float duration, float cooldown)
         {
             def = ability; enemy = e;
 
-            if (Time.time < cooldownUntil) return; // still on cooldown
-            if (active) return;                    // already frozen -> ignore
+            if (Time.time < cooldownUntil) return;
+            if (active) return;
 
             StartCoroutine(DoFreeze(duration, cooldown));
         }
@@ -152,25 +138,21 @@ public class PenguinIceSlugAbility : EssenceAbility
         {
             active = true;
 
-            // Components
             agent = GetComponent<NavMeshAgent>();
-            rb    = GetComponent<Rigidbody>();
-            anim  = GetComponentInChildren<Animator>();
-            ai    = GetComponent("EnemyAI") as Behaviour;
+            rb = GetComponent<Rigidbody>();
+            anim = GetComponentInChildren<Animator>();
+            ai = GetComponent("EnemyAI") as Behaviour;
 
-            // AI off
             if (ai != null) { aiPrevEnabled = ai.enabled; ai.enabled = false; }
 
-            // Agent stop
             if (agent != null) { agentPrevStopped = agent.isStopped; agent.isStopped = true; }
 
-            // Rigidbody lock
             if (rb != null)
             {
-                rbPrevKinematic   = rb.isKinematic;
+                rbPrevKinematic = rb.isKinematic;
                 rbPrevConstraints = rb.constraints;
-                rbPrevVel         = rb.linearVelocity;
-                rbPrevAngVel      = rb.angularVelocity;
+                rbPrevVel = rb.linearVelocity;
+                rbPrevAngVel = rb.angularVelocity;
 
                 rb.linearVelocity = Vector3.zero;
                 rb.angularVelocity = Vector3.zero;
@@ -178,22 +160,19 @@ public class PenguinIceSlugAbility : EssenceAbility
                 rb.constraints = RigidbodyConstraints.FreezeAll;
             }
 
-            // Animator pause
             if (anim != null) { animPrevSpeed = anim.speed; anim.speed = 0f; }
 
-            // Ice VFX
             if (def.showIceBlockOnFreeze && enemy != null)
                 ice = CreateIceBlock(def, enemy.transform, def.iceBlockScale, def.iceBlockColor);
 
             yield return new WaitForSeconds(dur);
 
-            // End freeze
             if (agent != null) agent.isStopped = agentPrevStopped;
             if (rb != null)
             {
-                rb.isKinematic  = rbPrevKinematic;
-                rb.constraints  = rbPrevConstraints;
-                rb.linearVelocity     = rbPrevVel;
+                rb.isKinematic = rbPrevKinematic;
+                rb.constraints = rbPrevConstraints;
+                rb.linearVelocity = rbPrevVel;
                 rb.angularVelocity = rbPrevAngVel;
             }
             if (ai != null) ai.enabled = aiPrevEnabled;
@@ -205,12 +184,11 @@ public class PenguinIceSlugAbility : EssenceAbility
         }
     }
 
-    // --- VFX helpers ---
     static void SpawnHitRing(Transform enemy, float radius, float width, Color color, float life)
     {
         var go = new GameObject("Penguin_HitRing_VFX");
         go.transform.SetParent(enemy, false);
-        go.transform.localPosition = Vector3.zero; // at feet
+        go.transform.localPosition = Vector3.zero;
         go.transform.localRotation = Quaternion.identity;
 
         var lr = go.AddComponent<LineRenderer>();
@@ -237,7 +215,7 @@ public class PenguinIceSlugAbility : EssenceAbility
     {
         var go = GameObject.CreatePrimitive(PrimitiveType.Cube);
         go.name = "Penguin_IceBlock_VFX";
-        Object.Destroy(go.GetComponent<Collider>()); // visual only
+        Object.Destroy(go.GetComponent<Collider>());
         go.transform.SetParent(enemy, false);
         go.transform.localPosition = Vector3.zero;
         go.transform.localRotation = Quaternion.identity;
@@ -245,7 +223,6 @@ public class PenguinIceSlugAbility : EssenceAbility
 
         var r = go.GetComponent<Renderer>();
 
-        // Use provided material if set, else try to create a sensible fallback
         Material mat = def.iceMaterial;
         if (mat == null)
         {
@@ -254,7 +231,6 @@ public class PenguinIceSlugAbility : EssenceAbility
             mat = new Material(sh != null ? sh : Shader.Find("Sprites/Default"));
         }
 
-        // Set color on common properties (_BaseColor for URP/Lit, _Color for Standard)
         if (mat.HasProperty("_BaseColor")) mat.SetColor("_BaseColor", color);
         else if (mat.HasProperty("_Color")) mat.color = color;
 
@@ -262,6 +238,7 @@ public class PenguinIceSlugAbility : EssenceAbility
 
         return go;
     }
+
 
     class FadeAndDie : MonoBehaviour
     {
@@ -311,5 +288,4 @@ public class PenguinIceSlugAbility : EssenceAbility
             }
         }
     }
-
 }

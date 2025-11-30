@@ -1,7 +1,7 @@
 using UnityEngine;
 using System.Collections.Generic;
-using Geneforge.Core.Stats;                 // RunStats
-using Geneforge.Gameplay.Abilities;        // AnimalEssence, EssenceSkillTree, StatModifier, AbilityUpgrade
+using Geneforge.Core.Stats;
+using Geneforge.Gameplay.Abilities;
 
 namespace Geneforge.Gameplay.Progression
 {
@@ -26,6 +26,7 @@ namespace Geneforge.Gameplay.Progression
 
         public bool IsUnlocked(AnimalEssence e, string nodeId)
         {
+            if (string.IsNullOrEmpty(nodeId)) return false;
             var r = Rec(e);
             return r != null && r.unlocked.Contains(nodeId);
         }
@@ -46,19 +47,19 @@ namespace Geneforge.Gameplay.Progression
             var r = Rec(e);
             if (r.unlocked.Contains(nodeId)) return false;
 
-            // prerequisites satisfied?
             if (node.prerequisites != null)
             {
                 for (int i = 0; i < node.prerequisites.Length; i++)
                 {
-                    if (!r.unlocked.Contains(node.prerequisites[i])) return false;
+                    string preId = node.prerequisites[i];
+                    if (!r.unlocked.Contains(preId))
+                        return false;
                 }
             }
 
             return true;
         }
 
-        /// Spend DNA from the run and unlock the node
         public bool TryUnlock(AnimalEssence e, string nodeId, RunStats run)
         {
             if (e == null || e.skillTree == null || run == null || string.IsNullOrEmpty(nodeId)) return false;
@@ -73,7 +74,6 @@ namespace Geneforge.Gameplay.Progression
             return true;
         }
 
-        // Aggregate all unlocked StatModifiers
         public List<StatModifier> GetActiveStatMods(AnimalEssence e)
         {
             var list = new List<StatModifier>();
@@ -82,12 +82,16 @@ namespace Geneforge.Gameplay.Progression
             foreach (var id in Unlocked(e))
             {
                 var node = e.skillTree.Get(id);
+                if (node == null)
+                {
+                    Debug.LogWarning($"[EssenceProgression] Node '{id}' missing in '{e.name}' when aggregating stat mods.", this);
+                    continue;
+                }
                 if (node?.statModifiers != null) list.AddRange(node.statModifiers);
             }
             return list;
         }
 
-        // Aggregate all unlocked AbilityUpgrades
         public List<AbilityUpgrade> GetActiveAbilityUpgrades(AnimalEssence e)
         {
             var list = new List<AbilityUpgrade>();
@@ -96,12 +100,16 @@ namespace Geneforge.Gameplay.Progression
             foreach (var id in Unlocked(e))
             {
                 var node = e.skillTree.Get(id);
+                if (node == null)
+                {
+                    Debug.LogWarning($"[EssenceProgression] Node '{id}' missing in '{e.name}' when aggregating ability upgrades.", this);
+                    continue;
+                }
                 if (node?.abilityUpgrades != null) list.AddRange(node.abilityUpgrades);
             }
             return list;
         }
 
-        // Clear everything for a fresh run
         public void ResetAll() => _map.Clear();
     }
 }

@@ -14,15 +14,15 @@ public class ChickenBeakConeAbility : EssenceAbility
     public float coneRange = 6f;
 
     [Header("Damage/FX")]
-    public float damageFactor = 1.0f;          // x bullet damage
-    [Range(0f, 1f)] public float hitFalloff = 0f; // extra falloff across distance (0 = none)
+    public float damageFactor = 1.0f;
+    [Range(0f, 1f)] public float hitFalloff = 0f;
     public float knockback = 0f;
 
     [Header("VFX")]
     public bool showVfx = true;
     public float vfxDuration = 0.15f;
     public float vfxLineWidth = 0.06f;
-    public int   vfxSegments = 32;             // arc smoothness
+    public int vfxSegments = 32;
     public Color vfxColor = new Color(1f, 0.9f, 0.4f, 0.9f);
     public float vfxBaseOffset = 0.05f;
 
@@ -31,7 +31,6 @@ public class ChickenBeakConeAbility : EssenceAbility
         Vector3 origin = bullet.transform.position;
         Vector3 fwd = bullet.transform.forward;
 
-        // 1) Deal damage in a 2D wedge (XZ plane)
         var hits = Physics.OverlapSphere(origin, coneRange, ~0, QueryTriggerInteraction.Ignore);
         var done = new HashSet<Enemy>();
 
@@ -48,7 +47,7 @@ public class ChickenBeakConeAbility : EssenceAbility
             float ang = Vector3.Angle(new Vector3(fwd.x, 0f, fwd.z), to.normalized);
             if (ang <= coneAngle * 0.5f && dist <= coneRange)
             {
-                float dmg = stats.damage * damageFactor;
+                float dmg = stats.Damage * damageFactor;
                 if (hitFalloff > 0f)
                 {
                     float t = Mathf.Clamp01(dist / coneRange);
@@ -67,19 +66,16 @@ public class ChickenBeakConeAbility : EssenceAbility
             }
         }
 
-        // 2) Visual wedge (outline) in the shot direction
         if (showVfx) SpawnBeakTriangleVFX(origin, fwd, coneRange, coneAngle, vfxLineWidth, vfxColor, vfxDuration, vfxBaseOffset);
 
 
-        // 3) Replace the bullet with the cone hit — remove the projectile.
-        Object.Destroy(bullet.gameObject);
+        Destroy(bullet.gameObject);
     }
 
     static void SpawnBeakTriangleVFX(
     Vector3 origin, Vector3 forward, float range, float angleDeg,
     float width, Color color, float life, float baseOffset)
     {
-        // GO aligned to forward on the XZ plane
         var go = new GameObject("ChickenBeak_TriangleVFX");
         Vector3 flatFwd = new Vector3(forward.x, 0f, forward.z).normalized;
         if (flatFwd.sqrMagnitude < 1e-4f) flatFwd = Vector3.forward;
@@ -88,28 +84,25 @@ public class ChickenBeakConeAbility : EssenceAbility
         var lr = go.AddComponent<LineRenderer>();
         lr.useWorldSpace = false;
         lr.loop = true;
-        lr.positionCount = 3;             // triangle
+        lr.positionCount = 3;
         lr.widthMultiplier = width;
         lr.material = new Material(Shader.Find("Sprites/Default"));
         lr.startColor = color;
         lr.endColor = color;
 
-        // Geometry: base at z≈0, apex at z=range
         float halfRad = Mathf.Deg2Rad * (angleDeg * 0.5f);
         float halfBase = Mathf.Tan(halfRad) * range;
 
-        // Slightly push the base forward so it doesn't cover the muzzle exactly
         float zBase = Mathf.Max(0f, baseOffset);
 
-        Vector3 leftBase  = new Vector3(-halfBase, 0f, zBase);
+        Vector3 leftBase = new Vector3(-halfBase, 0f, zBase);
         Vector3 rightBase = new Vector3(+halfBase, 0f, zBase);
-        Vector3 apex      = new Vector3(0f, 0f, range);
+        Vector3 apex = new Vector3(0f, 0f, range);
 
         lr.SetPosition(0, leftBase);
         lr.SetPosition(1, apex);
         lr.SetPosition(2, rightBase);
 
-        // fade & destroy
         go.AddComponent<FadeAndDie>().Init(lr, color, Mathf.Max(0.02f, life));
     }
 
@@ -167,5 +160,4 @@ public class ChickenBeakConeAbility : EssenceAbility
             }
         }
     }
-
 }

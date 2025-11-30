@@ -54,11 +54,11 @@ namespace Game.UI.Settings
             // Se existe save → carregar
             if (SaveSystem.Exists(slot))
             {
-                GameManager.I.LoadSlot(slot);
+                SaveSlotsGameManager.I.LoadSlot(slot);
             }
             else // se não existe → criar novo
             {
-                GameManager.I.activeSlot = slot;
+                SaveSlotsGameManager.I.activeSlot = slot;
             }
 
             // entrar no jogo

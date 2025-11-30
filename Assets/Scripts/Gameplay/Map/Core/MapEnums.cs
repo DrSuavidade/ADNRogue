@@ -39,15 +39,15 @@ namespace Geneforge.Gameplay.Map
         {
             switch (dir)
             {
-                case RoomDirection.North:      return new Vector2Int(0, 1);
-                case RoomDirection.NorthEast:  return new Vector2Int(1, 1);
-                case RoomDirection.East:       return new Vector2Int(1, 0);
-                case RoomDirection.SouthEast:  return new Vector2Int(1, -1);
-                case RoomDirection.South:      return new Vector2Int(0, -1);
-                case RoomDirection.SouthWest:  return new Vector2Int(-1, -1);
-                case RoomDirection.West:       return new Vector2Int(-1, 0);
-                case RoomDirection.NorthWest:  return new Vector2Int(-1, 1);
-                default:                       return Vector2Int.zero;
+                case RoomDirection.North: return new Vector2Int(0, 1);
+                case RoomDirection.NorthEast: return new Vector2Int(1, 1);
+                case RoomDirection.East: return new Vector2Int(1, 0);
+                case RoomDirection.SouthEast: return new Vector2Int(1, -1);
+                case RoomDirection.South: return new Vector2Int(0, -1);
+                case RoomDirection.SouthWest: return new Vector2Int(-1, -1);
+                case RoomDirection.West: return new Vector2Int(-1, 0);
+                case RoomDirection.NorthWest: return new Vector2Int(-1, 1);
+                default: return Vector2Int.zero;
             }
         }
 
@@ -58,15 +58,15 @@ namespace Geneforge.Gameplay.Map
         {
             switch (dir)
             {
-                case RoomDirection.North:      return 0f;
-                case RoomDirection.NorthEast:  return 45f;
-                case RoomDirection.East:       return 90f;
-                case RoomDirection.SouthEast:  return 135f;
-                case RoomDirection.South:      return 180f;
-                case RoomDirection.SouthWest:  return 225f;
-                case RoomDirection.West:       return 270f;
-                case RoomDirection.NorthWest:  return 315f;
-                default:                       return 0f;
+                case RoomDirection.North: return 0f;
+                case RoomDirection.NorthEast: return 45f;
+                case RoomDirection.East: return 90f;
+                case RoomDirection.SouthEast: return 135f;
+                case RoomDirection.South: return 180f;
+                case RoomDirection.SouthWest: return 225f;
+                case RoomDirection.West: return 270f;
+                case RoomDirection.NorthWest: return 315f;
+                default: return 0f;
             }
         }
 

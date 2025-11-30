@@ -7,7 +7,6 @@ using Geneforge.Gameplay.Abilities;
 using Geneforge.Gameplay.Characters.Enemies.Ranged;
 using Geneforge.Core.Pooling;
 
-
 namespace Geneforge.Gameplay.Weapons.Bullets
 {
     public class Bullet : MonoBehaviour
@@ -20,28 +19,26 @@ namespace Geneforge.Gameplay.Weapons.Bullets
 
         public float lifeTime = 3f;
         public GameObject impactEffectPrefab;
-
-        // Runtime behavior from WeaponStats
         int pierceRemaining = 0;
         int bounceRemaining = 0;
         float homingStrength = 0f;
         float aoeRadius = 0f;
 
-        // Debug visual for AoE (testing)
         [Header("Debug")]
         [SerializeField] bool showAoeRingOnHit = true;
+        [SerializeField] LayerMask homingTargetMask = ~0;
+        [SerializeField] float homingScanInterval = 0.1f;
 
+        float _nextHomingScanTime;
+        Enemy _cachedHomingTarget;
         Rigidbody rb;
         Collider myCol;
         Vector3 preStepVel;
         HashSet<Enemy> _hitEnemies =
         new HashSet<Enemy>();
-        EssenceAbility _ability;                             // bound per-bullet
+        EssenceAbility _abilityAsset;
         WeaponStats _ws;
-        AbilityUpgrade[] _upgrades;
         PoolIdentifier poolId;
-
-
 
         void Awake()
         {
@@ -50,47 +47,19 @@ namespace Geneforge.Gameplay.Weapons.Bullets
             poolId = GetComponent<PoolIdentifier>();
         }
 
-        // Minimal homing: uses only homingStrength
         void Update()
         {
             if (homingStrength <= 0f || rb == null) return;
 
-            // find nearest enemy each frame (simple + robust)
-            const float radius = 12f;
-            Geneforge.Gameplay.Characters.Enemies.Enemy best = null;
-            float bestDist = float.PositiveInfinity;
-
-            foreach (var col in Physics.OverlapSphere(transform.position, radius, ~0, QueryTriggerInteraction.Ignore))
+            if (Time.time >= _nextHomingScanTime)
             {
-                var e = col.GetComponent<Geneforge.Gameplay.Characters.Enemies.Enemy>();
-                if (e == null) continue;
-                float d = (e.transform.position - transform.position).sqrMagnitude;
-                if (d < bestDist) { bestDist = d; best = e; }
+                _cachedHomingTarget = FindBestHomingTarget();
+                _nextHomingScanTime = Time.time + homingScanInterval;
             }
-            if (best == null) return;
 
-            // steer current velocity toward target
-            Vector3 desired = (best.transform.position - transform.position).normalized;
-#if UNITY_6000_0_OR_NEWER
-            Vector3 curDir = rb.linearVelocity.sqrMagnitude > 1e-6f ? rb.linearVelocity.normalized : transform.forward;
-            float speed = rb.linearVelocity.magnitude;
-#else
-            Vector3 curDir  = rb.velocity.sqrMagnitude > 1e-6f ? rb.velocity.normalized : transform.forward;
-            float speed     = rb.velocity.magnitude;
-#endif
-
-            // turn rate scales with homingStrength (0..1). 360°/s at strength=1.
-            float turnRad = (360f * Mathf.Deg2Rad) * Mathf.Clamp01(homingStrength) * Time.deltaTime;
-
-            Vector3 newDir = Vector3.RotateTowards(curDir, desired, turnRad, 0f);
-#if UNITY_6000_0_OR_NEWER
-            rb.linearVelocity = newDir * speed;
-#else
-            rb.velocity = newDir * speed;
-#endif
-            transform.forward = newDir;
+            if (_cachedHomingTarget == null) return;
+            SteerTowards(_cachedHomingTarget);
         }
-
 
         void FixedUpdate()
         {
@@ -114,7 +83,6 @@ namespace Geneforge.Gameplay.Weapons.Bullets
             }
             else transform.forward = dir.normalized;
 
-            // lifetime
             StopAllCoroutines();
             StartCoroutine(DieAfter(lifeTime));
         }
@@ -123,15 +91,8 @@ namespace Geneforge.Gameplay.Weapons.Bullets
         {
             StopAllCoroutines();
 
-            // Clean per-bullet state so pooled bullets are safe to reuse
-            if (_ability != null)
-            {
-                Destroy(_ability);
-                _ability = null;
-            }
-
+            _abilityAsset = null;
             _ws = null;
-            _upgrades = null;
             _hitEnemies.Clear();
             lastEnemyHit = null;
             pierceRemaining = 0;
@@ -149,43 +110,33 @@ namespace Geneforge.Gameplay.Weapons.Bullets
             }
         }
 
-
-
-        public void BindAbility(EssenceAbility ability,
-                                Geneforge.Gameplay.Weapons.Stats.WeaponStats stats,
-                                AbilityUpgrade[] upgrades = null)
+        public void BindAbility(EssenceAbility ability, WeaponStats stats)
         {
+            _abilityAsset = ability;
             _ws = stats;
-            _upgrades = upgrades;
 
-            if (ability != null)
-                _ability = Instantiate(ability); // clone per bullet
-
-            if (_ability != null && _upgrades != null && _upgrades.Length > 0)
-                _ability.ApplyUpgrades(_upgrades);
-
-            _ability?.OnBulletSpawn(this, _ws);
+            _abilityAsset?.OnBulletSpawn(this, _ws);
         }
+
 
         IEnumerator DieAfter(float t) { yield return new WaitForSeconds(t); Despawn(); }
 
         public void ApplyRuntimeStats(WeaponStats ws)
         {
             if (ws == null) return;
-            lifeTime = ws.projectileLifetime;
-            pierceRemaining = ws.pierceCount;
-            bounceRemaining = ws.bounceCount;
-            homingStrength = Mathf.Clamp01(ws.homingStrength);
-            aoeRadius = Mathf.Max(0f, ws.aoeRadius);
+            lifeTime = ws.ProjectileLifetime;
+            pierceRemaining = ws.PierceCount;
+            bounceRemaining = ws.BounceCount;
+            homingStrength = Mathf.Clamp01(ws.HomingStrength);
+            aoeRadius = Mathf.Max(0f, ws.AoeRadius);
         }
+
 
         // ---------------- Collisions: support trigger or non-trigger ----------------
         void OnTriggerEnter(Collider other)
         {
-            // If your bullets/enemies use triggers, handle here
             var enemy = other.GetComponent<Enemy>();
             if (enemy != null) { HandleHitEnemy(enemy, other.ClosestPoint(transform.position)); return; }
-            // No bounce on trigger surfaces (no normal) — just destroy unless you want special cases
             Despawn();
         }
 
@@ -200,24 +151,18 @@ namespace Geneforge.Gameplay.Weapons.Bullets
                 return;
             }
 
-            // Environment bounce (specular mirror about the surface normal)
             if (bounceRemaining > 0 && rb != null && collision.contactCount > 0)
             {
-                // Use the first contact's normal (clean mirror off the actual surface)
                 ContactPoint cp = collision.GetContact(0);
                 Vector3 n = cp.normal.normalized;
 
-                // The incoming velocity BEFORE physics resolved this contact (captured in FixedUpdate)
                 Vector3 vIn = preStepVel;
                 float speed = Mathf.Max(vIn.magnitude, 0.1f);
 
-                // Mirror reflection: angle out == angle in relative to the perpendicular (normal)
                 Vector3 dirOut = Vector3.Reflect(vIn.normalized, n);
 
-                // Move the bullet slightly out of the surface so it doesn't immediately re-collide
                 DepenetrateFrom(collision.collider, n, cp.point);
 
-                // Apply reflected motion & orientation
 #if UNITY_6000_0_OR_NEWER
                 rb.linearVelocity = dirOut * speed;
 #else
@@ -226,13 +171,11 @@ namespace Geneforge.Gameplay.Weapons.Bullets
                 rb.angularVelocity = Vector3.zero;
                 transform.forward = dirOut;
 
-                // Avoid an immediate second hit on the same face
                 StartCoroutine(TemporarilyIgnore(collision.collider, 0.06f));
 
                 bounceRemaining--;
                 return;
             }
-
 
             Despawn();
         }
@@ -241,7 +184,6 @@ namespace Geneforge.Gameplay.Weapons.Bullets
         {
             if (myCol == null || other == null) return;
 
-            // Best case: exact minimal translation using ComputePenetration
             Vector3 dir; float dist;
             if (Physics.ComputePenetration(
                     myCol, transform.position, transform.rotation,
@@ -252,11 +194,48 @@ namespace Geneforge.Gameplay.Weapons.Bullets
             }
             else
             {
-                // Fallback: small push along the contact normal from the contact point
                 transform.position = contactPoint + fallbackNormal.normalized * 0.02f;
             }
         }
 
+        Enemy FindBestHomingTarget()
+        {
+            const float radius = 12f;
+            Enemy best = null;
+            float bestDist = float.PositiveInfinity;
+
+            var hits = Physics.OverlapSphere(transform.position, radius, homingTargetMask, QueryTriggerInteraction.Ignore);
+            for (int i = 0; i < hits.Length; i++)
+            {
+                var e = hits[i].GetComponent<Enemy>();
+                if (e == null) continue;
+                float d = (e.transform.position - transform.position).sqrMagnitude;
+                if (d < bestDist) { bestDist = d; best = e; }
+            }
+            return best;
+        }
+
+        void SteerTowards(Enemy best)
+        {
+            Vector3 desired = (best.transform.position - transform.position).normalized;
+#if UNITY_6000_0_OR_NEWER
+            Vector3 curDir = rb.linearVelocity.sqrMagnitude > 1e-6f ? rb.linearVelocity.normalized : transform.forward;
+            float speed = rb.linearVelocity.magnitude;
+#else
+            Vector3 curDir  = rb.velocity.sqrMagnitude > 1e-6f ? rb.velocity.normalized : transform.forward;
+            float speed     = rb.velocity.magnitude;
+#endif
+
+            float turnRad = (360f * Mathf.Deg2Rad) * Mathf.Clamp01(homingStrength) * Time.deltaTime;
+
+            Vector3 newDir = Vector3.RotateTowards(curDir, desired, turnRad, 0f);
+#if UNITY_6000_0_OR_NEWER
+            rb.linearVelocity = newDir * speed;
+#else
+            rb.velocity = newDir * speed;
+#endif
+            transform.forward = newDir;
+        }
 
         void HandleHitEnemy(Enemy enemy, Vector3 hitPoint)
         {
@@ -270,7 +249,6 @@ namespace Geneforge.Gameplay.Weapons.Bullets
             if (_hitEnemies.Contains(enemy)) return;
             _hitEnemies.Add(enemy);
 
-            // Damage & knockback
             enemy.TakeDamage(damage, isCrit);
             lastEnemyHit = enemy;
             if (knockbackForce > 0f)
@@ -279,7 +257,6 @@ namespace Geneforge.Gameplay.Weapons.Bullets
                 enemy.ApplyKnockback(dir.normalized, knockbackForce);
             }
 
-            // AoE splash + simple debug ring
             if (aoeRadius > 0f)
             {
                 var hits = Physics.OverlapSphere(hitPoint, aoeRadius);
@@ -292,20 +269,16 @@ namespace Geneforge.Gameplay.Weapons.Bullets
                 if (showAoeRingOnHit) StartCoroutine(AoeRingFollow(enemy.transform, aoeRadius, 0.5f));
             }
 
-            // Ability hook (extra effects like chain lightning, burn, etc.)
-            _ability?.OnHitEnemy(this, enemy, _ws);
+            _abilityAsset?.OnHitEnemy(this, enemy, _ws);
 
-            // From now on, never collide with this enemy again (all colliders in its hierarchy)
             IgnoreEnemyColliders(enemy, true);
 
-            // --- Pierce path: keep going straight, no spin, outside the enemy ---
             if (pierceRemaining > 0)
             {
                 pierceRemaining--;
 
                 if (rb)
                 {
-                    // restore clean motion from BEFORE impact
                     Vector3 dir = preStepVel.sqrMagnitude > 1e-6f ? preStepVel.normalized : transform.forward;
                     float spd = Mathf.Max(preStepVel.magnitude, 0.01f);
 #if UNITY_6000_0_OR_NEWER
@@ -317,8 +290,6 @@ namespace Geneforge.Gameplay.Weapons.Bullets
                     transform.rotation = Quaternion.LookRotation(dir, Vector3.up);
                 }
 
-                // ensure we’re not overlapping the enemy anymore
-                // try exact depenetration; else nudge forward a bit
                 Vector3 depenDir; float depenDist;
                 var enemyRootCol = enemy.GetComponentInChildren<Collider>();
                 if (myCol != null && enemyRootCol != null &&
@@ -333,7 +304,7 @@ namespace Geneforge.Gameplay.Weapons.Bullets
                     transform.position = hitPoint + transform.forward * 0.05f;
                 }
 
-                return; // continue flying
+                return;
             }
 
             Despawn();
@@ -349,15 +320,13 @@ namespace Geneforge.Gameplay.Weapons.Bullets
             }
         }
 
-
         IEnumerator AoeRingFollow(Transform target, float radius, float seconds)
         {
             if (target == null) yield break;
 
-            // create ring
             var go = new GameObject("AoE_Debug_Ring");
             var lr = go.AddComponent<LineRenderer>();
-            lr.useWorldSpace = false;                  // local circle; we'll move the GO
+            lr.useWorldSpace = false;
             lr.loop = true;
             lr.positionCount = 64;
             lr.widthMultiplier = 0.05f;
@@ -366,7 +335,6 @@ namespace Geneforge.Gameplay.Weapons.Bullets
             lr.material = new Material(Shader.Find("Sprites/Default"));
             lr.startColor = lr.endColor = new Color(1f, 1f, 1f, 0.7f);
 
-            // build local-space circle ON XZ PLANE (parallel to ground)
             Vector3[] pts = new Vector3[lr.positionCount];
             for (int i = 0; i < pts.Length; i++)
             {
@@ -375,16 +343,13 @@ namespace Geneforge.Gameplay.Weapons.Bullets
             }
             lr.SetPositions(pts);
 
-            // ensure orientation parallel to Y=0
             go.transform.rotation = Quaternion.identity;
 
-            // hard-destroy after 'seconds' no matter what (even if this MonoBehaviour dies)
             Destroy(go, seconds);
 
             float tSec = 0f;
             while (tSec < seconds && target != null)
             {
-                // place near the enemy's feet (ground-projected)
                 Vector3 p = target.position;
                 go.transform.position = ProjectToGround(p) + Vector3.up * 0.02f;
 
@@ -392,19 +357,16 @@ namespace Geneforge.Gameplay.Weapons.Bullets
                 yield return null;
             }
 
-            // if the coroutine is still alive, clean material + GO explicitly
             if (lr != null && lr.material != null) Destroy(lr.material);
             if (go) Destroy(go);
         }
 
-        // helper: project to ground under a point
         Vector3 ProjectToGround(Vector3 around)
         {
             if (Physics.Raycast(around + Vector3.up * 2f, Vector3.down, out var hit, 4f, ~0, QueryTriggerInteraction.Ignore))
                 return hit.point;
             return new Vector3(around.x, 0f, around.z);
         }
-
 
         IEnumerator TemporarilyIgnore(Collider other, float seconds)
         {
@@ -414,30 +376,6 @@ namespace Geneforge.Gameplay.Weapons.Bullets
                 yield return new WaitForSeconds(seconds);
                 if (myCol && other) Physics.IgnoreCollision(myCol, other, false);
             }
-        }
-
-        IEnumerator AoeRing(Vector3 center, float radius, float seconds)
-        {
-            // cheap, no-alloc debug ring using a temporary primitive
-            var go = GameObject.CreatePrimitive(PrimitiveType.Sphere);
-            Destroy(go.GetComponent<Collider>());
-            go.transform.position = center;
-            go.transform.localScale = Vector3.one * (radius * 2f);
-            var mr = go.GetComponent<MeshRenderer>();
-            if (mr != null) mr.material.color = new Color(1f, 1f, 1f, 0.1f);
-            yield return new WaitForSeconds(seconds);
-            if (go) Destroy(go);
-        }
-
-        Vector3 GetVelocityDir()
-        {
-            if (!rb) return transform.forward;
-#if UNITY_6000_0_OR_NEWER
-            var v = rb.linearVelocity;
-#else
-            var v = rb.velocity;
-#endif
-            return v.sqrMagnitude > 1e-6f ? v.normalized : transform.forward;
         }
     }
 }
