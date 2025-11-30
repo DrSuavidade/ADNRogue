@@ -12,7 +12,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 6f1abd48729aa824691aa7a5dff2dd2f, type: 3}
   m_Name: T_PH_MountGirl
   m_EditorClassIdentifier: 
-  displayName: 
+  displayName: Mount Girl
   maxHealth: 10
   baseMoveSpeed: 3
   animatorController: {fileID: 0}

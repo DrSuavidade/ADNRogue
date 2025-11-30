@@ -212,16 +212,19 @@ PrefabInstance:
       addedObject: {fileID: 467841597215711562}
     - targetCorrespondingSourceObject: {fileID: 919132149155446097, guid: 68e5a2130f1036f46aecdf3e0c51d4e1, type: 3}
       insertIndex: -1
-      addedObject: {fileID: 2377661274367714789}
-    - targetCorrespondingSourceObject: {fileID: 919132149155446097, guid: 68e5a2130f1036f46aecdf3e0c51d4e1, type: 3}
-      insertIndex: -1
       addedObject: {fileID: 4718083948804866581}
     - targetCorrespondingSourceObject: {fileID: 919132149155446097, guid: 68e5a2130f1036f46aecdf3e0c51d4e1, type: 3}
       insertIndex: -1
-      addedObject: {fileID: 3543217119449024396}
+      addedObject: {fileID: 9029320962104036916}
     - targetCorrespondingSourceObject: {fileID: 919132149155446097, guid: 68e5a2130f1036f46aecdf3e0c51d4e1, type: 3}
       insertIndex: -1
-      addedObject: {fileID: 6841778604616062613}
+      addedObject: {fileID: 6814913109239175734}
+    - targetCorrespondingSourceObject: {fileID: 919132149155446097, guid: 68e5a2130f1036f46aecdf3e0c51d4e1, type: 3}
+      insertIndex: -1
+      addedObject: {fileID: 4314128918166837757}
+    - targetCorrespondingSourceObject: {fileID: 919132149155446097, guid: 68e5a2130f1036f46aecdf3e0c51d4e1, type: 3}
+      insertIndex: -1
+      addedObject: {fileID: 1974228886254981715}
   m_SourcePrefab: {fileID: 100100000, guid: 68e5a2130f1036f46aecdf3e0c51d4e1, type: 3}
 --- !u!4 &6321613756095263466 stripped
 Transform:
@@ -260,25 +263,6 @@ Animator:
   m_AllowConstantClipSamplingOptimization: 1
   m_KeepAnimatorStateOnDisable: 0
   m_WriteDefaultValuesOnDisable: 0
---- !u!114 &2377661274367714789
-MonoBehaviour:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 8791655520125649811}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: e4a43c4621d7d934c958167a5153415f, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: 
-  maxHealth: 5
-  animator: {fileID: 467841597215711562}
-  damagedTrigger: Damaged
-  deathTrigger: Death
-  deathAnimDuration: 5
-  damageTextPrefab: {fileID: 8104875995613135839, guid: 51bfa69456bef62438805f10c2608f9f, type: 3}
-  damageTextOffset: {x: 0, y: 2.5, z: 0}
 --- !u!65 &4718083948804866581
 BoxCollider:
   m_ObjectHideFlags: 0
@@ -300,7 +284,7 @@ BoxCollider:
   serializedVersion: 3
   m_Size: {x: 0.61120605, y: 1.8748558, z: 0.428154}
   m_Center: {x: 0.0211277, y: 1.3675216, z: -0.01503706}
---- !u!114 &3543217119449024396
+--- !u!114 &9029320962104036916
 MonoBehaviour:
   m_ObjectHideFlags: 0
   m_CorrespondingSourceObject: {fileID: 0}
@@ -309,49 +293,53 @@ MonoBehaviour:
   m_GameObject: {fileID: 8791655520125649811}
   m_Enabled: 1
   m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: 76e177d325cfdb2429b10afcf4a5c216, type: 3}
+  m_Script: {fileID: 11500000, guid: 04262b82bdec8064fb09624bede68c08, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
+  maxHealth: 5
+  animator: {fileID: 0}
+  damagedTrigger: Damaged
+  deathTrigger: Death
+  deathAnimDuration: 1
+  damageTextPrefab: {fileID: 0}
+  damageTextOffset: {x: 0, y: 2.5, z: 0}
+  hitHealthThresholds:
+  - 0.7
+  - 0.4
+  - 0.15
+--- !u!114 &6814913109239175734
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 8791655520125649811}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: efc138260381d8f48a98f9f4496f92e0, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  enemy: {fileID: 9029320962104036916}
   animator: {fileID: 467841597215711562}
-  stayStationary: 0
-  rotateInPlace: 1
-  wanderRadius: 5
-  wanderInterval: 3
-  wanderSpeed: 2
-  idleWaitDuration: 1
-  detectionRadius: 20
-  chaseSpeed: 4
-  attackRange: 12
-  attackRate: 1.25
-  requireLineOfSight: 1
+  target: {fileID: 0}
+  defaultMoveSpeed: 3
+  rotationSpeedDegPerSec: 540
+  faceTargetWhileMoving: 1
+  useLineOfSight: 0
   lineOfSightMask:
     serializedVersion: 2
-    m_Bits: 8
+    m_Bits: 4294967295
   lineOfSightPadding: 0.1
-  poisonBallPrefab: {fileID: 0}
-  throwOrigin: {fileID: 3525865398181097061}
-  throwForce: 30
-  aimOffset: {x: 0, y: 0, z: 0}
-  soundwaveAttack: {fileID: 0}
-  useSoundwaveIfNoPoisonBall: 1
-  soundwaveCenterOffset: {x: 0, y: 0, z: 0}
-  damagePauseDuration: 0.5
-  disableRootMotionWhenLocked: 1
-  hardStopRigidbodyWhenLocked: 1
-  hardStopFreezeRotationY: 1
-  freezeRotationWhileAttacking: 1
-  attackStateNames:
-  - Attack
-  attackStateTags:
-  - Attack
-  freezeRotationWhileHit: 1
-  hitStateNames:
-  - Hit
-  - Hurt
-  hitStateTags:
-  - Hurt
-  deathStateName: Death
---- !u!114 &6841778604616062613
+  wanderRadius: 6
+  wanderInterval: 4
+  wanderSpeed: 2
+  detectionRadius: 25
+  preferredRange: 12
+  minRange: 6
+  strafeSpeed: 3
+  attackRate: 1.25
+  attackTrigger: Attack
+--- !u!114 &4314128918166837757
 MonoBehaviour:
   m_ObjectHideFlags: 0
   m_CorrespondingSourceObject: {fileID: 0}
@@ -360,15 +348,24 @@ MonoBehaviour:
   m_GameObject: {fileID: 8791655520125649811}
   m_Enabled: 1
   m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: 0fddaab517159ba498709d1253e3c94b, type: 3}
+  m_Script: {fileID: 11500000, guid: 01916a18610060d4db0b847d5f085776, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  waveCount: 3
-  waveInterval: 0.3
-  waveDuration: 0.6
-  maxRadius: 10
-  lineWidth: 0.12
-  segments: 80
-  ringColor: {r: 0.5, g: 0.9, b: 1, a: 0.9}
-  yOffset: 0.05
-  damage: 10
+  waveRadius: 10
+  damage: 4
+  hitMask:
+    serializedVersion: 2
+    m_Bits: 4294967295
+--- !u!114 &1974228886254981715
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 8791655520125649811}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 9aebafe7010ecf54e8eae55b15a6233d, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  archetype: {fileID: 11400000, guid: 6fe620f1cb81ef74f98e9f7714350e9e, type: 2}

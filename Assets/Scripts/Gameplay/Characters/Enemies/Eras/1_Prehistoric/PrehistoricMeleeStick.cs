@@ -2,7 +2,7 @@ using UnityEngine;
 
 namespace Geneforge.Gameplay.Characters.Enemies.Eras.Prehistoric
 {
-    [RequireComponent(typeof(Enemy))]
+    [RequireComponent(typeof(EnemyCore))]
     public class PrehistoricMeleeStick : PrehistoricEnemyAbilityBase
     {
         [Header("Melee")]

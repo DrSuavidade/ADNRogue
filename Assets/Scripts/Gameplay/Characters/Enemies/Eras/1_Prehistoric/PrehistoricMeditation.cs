@@ -3,7 +3,7 @@ using Geneforge.Gameplay.Characters.Enemies;
 
 namespace Geneforge.Gameplay.Characters.Enemies.Eras.Prehistoric
 {
-    [RequireComponent(typeof(Enemy))]
+    [RequireComponent(typeof(EnemyCore))]
     public class PrehistoricMeditation : PrehistoricEnemyAbilityBase
     {
         [Header("Meditation Aura")]
