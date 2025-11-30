@@ -3,7 +3,7 @@ using UnityEngine;
 namespace Geneforge.Gameplay.Characters.Enemies.Eras.Prehistoric
 {
     [RequireComponent(typeof(Enemy))]
-    public class PrehistoricMount : PrehistoricEnemyAbilityBase
+    public class PrehistoricMountGirl : PrehistoricEnemyAbilityBase
     {
         [Header("Spear Thrust")]
         public float spearDamage = 10f;

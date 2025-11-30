@@ -3,7 +3,7 @@ using UnityEngine;
 namespace Geneforge.Gameplay.Characters.Enemies.Eras.Prehistoric
 {
     [RequireComponent(typeof(Enemy))]
-    public class PrehistoricCavemanMelee : PrehistoricEnemyAbilityBase
+    public class PrehistoricMeleeStick : PrehistoricEnemyAbilityBase
     {
         [Header("Melee")]
         public float damage = 8f;

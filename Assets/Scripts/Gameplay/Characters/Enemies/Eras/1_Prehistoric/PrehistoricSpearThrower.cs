@@ -3,7 +3,7 @@ using UnityEngine;
 namespace Geneforge.Gameplay.Characters.Enemies.Eras.Prehistoric
 {
     [RequireComponent(typeof(Enemy))]
-    public class PrehistoricRangedSpear : PrehistoricEnemyAbilityBase
+    public class PrehistoricSpearThrower : PrehistoricEnemyAbilityBase
     {
         [Header("Spear")]
         public GameObject spearPrefab;

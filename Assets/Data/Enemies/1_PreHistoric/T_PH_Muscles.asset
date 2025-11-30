@@ -1,0 +1,62 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 6f1abd48729aa824691aa7a5dff2dd2f, type: 3}
+  m_Name: T_PH_Muscles
+  m_EditorClassIdentifier: 
+  displayName: 
+  maxHealth: 10
+  baseMoveSpeed: 3
+  animatorController: {fileID: 0}
+  melee:
+    detectionRadius: 0
+    chaseSpeed: 0
+    wanderRadius: 0
+    wanderInterval: 0
+    wanderSpeed: 0
+    attackRange: 0
+    attackRate: 0
+    damagePerHit: 0
+    attackVariants: 1
+  ranged:
+    detectionRadius: 0
+    wanderRadius: 0
+    wanderInterval: 0
+    wanderSpeed: 0
+    preferredRange: 0
+    minRange: 0
+    strafeSpeed: 0
+    attackRate: 0
+  support:
+    followRadiusFromSpawn: 0
+    repositionSpeed: 0
+    detectionRadius: 0
+    supportInterval: 0
+  animal:
+    roamRadius: 0
+    roamInterval: 0
+    roamSpeed: 0
+    detectionRadius: 0
+    pounceRange: 0
+    chaseSpeed: 0
+  flying:
+    hoverHeight: 0
+    hoverLerpSpeed: 0
+    orbitRadius: 0
+    orbitAngularSpeedDeg: 0
+    attackRate: 0
+    preferredRange: 0
+  boss:
+    phase2Threshold: 0
+    phase3Threshold: 0
+    phase1AttackRate: 0
+    phase2AttackRate: 0
+    phase3AttackRate: 0
