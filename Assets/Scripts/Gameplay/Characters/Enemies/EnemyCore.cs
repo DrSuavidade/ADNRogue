@@ -4,6 +4,7 @@ using System.Collections;
 using Geneforge.Core.UI;
 using Geneforge.Core.Pooling;
 using Geneforge.Gameplay.Characters.Enemies.AI;
+using Geneforge.Gameplay.Characters.UI;
 
 namespace Geneforge.Gameplay.Characters.Enemies
 {
@@ -25,6 +26,10 @@ namespace Geneforge.Gameplay.Characters.Enemies
 
         [Header("Hit thresholds")]
         [SerializeField] private float[] hitHealthThresholds = { 0.7f, 0.4f, 0.15f };
+
+        [Header("UI")]
+        [Tooltip("Pooled world-space health bar prefab (must have HealthBar + PoolIdentifier).")]
+        [SerializeField] private GameObject healthBarPrefab;
 
         // Expose fields
         public float CurrentHealth => currentHealth;
@@ -55,10 +60,43 @@ namespace Geneforge.Gameplay.Characters.Enemies
         // Coroutines
         private Coroutine _despawnCo;
         private Coroutine _knockbackCo;
+        HealthBar _healthBarInstance;
 
         void Awake()
         {
             currentHealth = maxHealth;
+            SpawnHealthBarIfNeeded();
+        }
+
+        void OnEnable()
+        {
+            // If enemies are reused or enabled/disabled, ensure health and bar are valid
+            currentHealth = Mathf.Clamp(currentHealth, 0f, maxHealth);
+            isDead = false;
+            hasBeenHit = false;
+            _hitReactionIndex = 0;
+
+            SpawnHealthBarIfNeeded();
+        }
+
+        void OnDisable()
+        {
+            // Clean up our health bar (return to pool if applicable)
+            if (_healthBarInstance != null)
+            {
+                var hbGO = _healthBarInstance.gameObject;
+                _healthBarInstance = null;
+
+                var poolId = hbGO.GetComponent<PoolIdentifier>();
+                if (poolId != null && PoolManager.Instance != null)
+                {
+                    PoolManager.Instance.Reclaim(hbGO);
+                }
+                else
+                {
+                    Destroy(hbGO);
+                }
+            }
         }
 
         public void TakeDamage(float dmg, bool wasCrit = false)
@@ -190,6 +228,42 @@ namespace Geneforge.Gameplay.Characters.Enemies
             var dt = dtObj.GetComponent<DamageText>();
             if (dt != null) dt.Initialize(dmg, wasCrit);
         }
+
+        void SpawnHealthBarIfNeeded()
+        {
+            if (healthBarPrefab == null) return;
+            if (_healthBarInstance != null) return;
+
+            GameObject barGO;
+
+            if (PoolManager.Instance != null)
+            {
+                barGO = PoolManager.Instance.Spawn(
+                    healthBarPrefab,
+                    transform.position,
+                    Quaternion.identity
+                );
+            }
+            else
+            {
+                barGO = Instantiate(
+                    healthBarPrefab,
+                    transform.position,
+                    Quaternion.identity
+                );
+            }
+
+            _healthBarInstance = barGO.GetComponent<HealthBar>();
+            if (_healthBarInstance == null)
+            {
+                Debug.LogWarning($"EnemyCore on {name} spawned a healthBarPrefab with no HealthBar component.", barGO);
+                return;
+            }
+
+            // Bind this bar to this enemy
+            _healthBarInstance.Initialize(this);
+        }
+
 
         // Smooth knockback slide — sem StopAllCoroutines()
         public void ApplyKnockback(Vector3 direction, float force, float duration = 0.1f)

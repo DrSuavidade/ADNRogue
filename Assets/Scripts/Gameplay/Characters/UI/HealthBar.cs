@@ -2,7 +2,7 @@ using UnityEngine;
 using UnityEngine.UI;
 using Geneforge.Gameplay.Characters.Enemies;
 
-namespace Geneforge.UI
+namespace Geneforge.Gameplay.Characters.UI
 {
     [RequireComponent(typeof(Canvas))]
     public class HealthBar : MonoBehaviour
@@ -14,12 +14,35 @@ namespace Geneforge.UI
         public EnemyCore Enemy
         {
             get => enemy;
-            set => enemy = value;
-        }
+            set
+            {
+                if (enemy == value) return;
 
+                // Unsubscribe from old enemy
+                if (_subscribed && enemy != null)
+                {
+                    enemy.OnFirstHit -= OnEnemyFirstHit;
+                    _subscribed = false;
+                }
+
+                enemy = value;
+
+                // Subscribe to new enemy if we’re active
+                if (isActiveAndEnabled && enemy != null)
+                {
+                    enemy.OnFirstHit += OnEnemyFirstHit;
+                    _subscribed = true;
+
+                    // If enemy was already hit before we attached, show bar immediately
+                    if (enemy.HasBeenHit)
+                        canvas.enabled = true;
+                }
+            }
+        }
 
         Camera mainCam;
         Canvas canvas;
+        bool _subscribed;
 
         void Awake()
         {
@@ -30,23 +53,54 @@ namespace Geneforge.UI
             if (fillImage == null)
                 Debug.LogWarning($"HealthBar on {name} has no fillImage assigned.", this);
         }
+        public void Initialize(EnemyCore owner)
+        {
+            if (enemy == owner) return;
+
+            // Unsubscribe from previous enemy if any
+            if (_subscribed && enemy != null)
+            {
+                enemy.OnFirstHit -= OnEnemyFirstHit;
+                _subscribed = false;
+            }
+
+            enemy = owner;
+
+            // If we're already enabled, hook the event immediately
+            if (isActiveAndEnabled && enemy != null && !_subscribed)
+            {
+                enemy.OnFirstHit += OnEnemyFirstHit;
+                _subscribed = true;
+            }
+        }
 
         void OnEnable()
         {
             if (enemy == null)
                 enemy = GetComponentInParent<EnemyCore>();
 
-            if (enemy != null)
+            if (enemy != null && !_subscribed)
+            {
                 enemy.OnFirstHit += OnEnemyFirstHit;
-            else
-                Debug.LogError($"HealthBar on {name} couldn’t find an Enemy.", this);
+                _subscribed = true;
+
+                if (enemy.HasBeenHit)
+                    canvas.enabled = true;
+            }
         }
 
         void OnDisable()
         {
-            if (enemy != null)
+            if (_subscribed && enemy != null)
+            {
                 enemy.OnFirstHit -= OnEnemyFirstHit;
+                _subscribed = false;
+            }
+
+            if (canvas != null)
+                canvas.enabled = false;
         }
+
 
         void OnEnemyFirstHit()
         {

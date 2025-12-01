@@ -68,13 +68,6 @@ namespace Geneforge.Gameplay.Weapons.Slots
                 progression = FindAnyObjectByType<EssenceProgression>();
 #endif
 
-            if (progression == null)
-            {
-                Debug.LogError($"GunSlots on {name} requires an EssenceProgression reference.", this);
-                enabled = false;
-                return;
-            }
-
             if (_cachedActive == null && baseStatsAsset != null)
                 _cachedActive = BuildActiveStats(baseStatsAsset);
 
