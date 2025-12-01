@@ -1,253 +1,255 @@
 using UnityEngine;
 using System.Collections;
-using Geneforge.Gameplay.Abilities;
 using Geneforge.Gameplay.Characters.Enemies;
 using Geneforge.Core.Stats;
 
-[CreateAssetMenu(menuName = "Geneforge/Abilities/Nautilus - Shell & Surge")]
-public class A_Nautilus : EssenceAbility
+namespace Geneforge.Gameplay.Abilities.Special
 {
-    [Header("Surge")]
-    public float surgeInterval = 5f;
-    public float surgeRadius = 6f;
-    public float surgeDamage = 8f;
-
-    [Header("Surge VFX")]
-    public bool showSurgeVFX = true;
-    public float ringDuration = 0.35f;
-    public float ringLineWidth = 0.06f;
-    public int ringSegments = 64;
-    public Color ringColor = new Color(0.6f, 0.9f, 1f, 0.9f);
-
-    [Header("Shell")]
-    public float shellCooldown = 30f;
-
-    [Header("Shell VFX")]
-    public bool showShellSphere = true;
-    public float shellRadius = 0.6f;
-    public Material shellMaterial;
-    public Color shellColor = new Color(0.6f, 0.9f, 1f, 0.25f);
-
-    public override void OnPrimaryEquipped(GameObject owner, Geneforge.Gameplay.Weapons.Stats.WeaponStats snapshot)
+    [CreateAssetMenu(menuName = "Geneforge/Abilities/Nautilus - Shell & Surge")]
+    public class A_Nautilus : EssenceAbility
     {
-        var rt = owner.GetComponent<NautilusRunner>();
-        if (!rt) rt = owner.AddComponent<NautilusRunner>();
-        rt.Boot(this, owner);
-    }
+        [Header("Surge")]
+        public float surgeInterval = 5f;
+        public float surgeRadius = 6f;
+        public float surgeDamage = 8f;
 
-    public override void OnPrimaryUnequipped(GameObject owner)
-    {
-        var rt = owner.GetComponent<NautilusRunner>();
-        if (rt) Object.Destroy(rt);
-    }
+        [Header("Surge VFX")]
+        public bool showSurgeVFX = true;
+        public float ringDuration = 0.35f;
+        public float ringLineWidth = 0.06f;
+        public int ringSegments = 64;
+        public Color ringColor = new Color(0.6f, 0.9f, 1f, 0.9f);
 
-    
-    class NautilusRunner : MonoBehaviour
-    {
-        A_Nautilus def;
-        Transform root;
-        GameObject shellViz;
-        bool shellReady = true;
-        RunStats run;
-        float lastHealth = -1f;
-        Coroutine loop;
+        [Header("Shell")]
+        public float shellCooldown = 30f;
 
-        public void Boot(A_Nautilus d, GameObject ownerGO)
+        [Header("Shell VFX")]
+        public bool showShellSphere = true;
+        public float shellRadius = 0.6f;
+        public Material shellMaterial;
+        public Color shellColor = new Color(0.6f, 0.9f, 1f, 0.25f);
+
+        public override void OnPrimaryEquipped(GameObject owner, Geneforge.Gameplay.Weapons.Stats.WeaponStats snapshot)
         {
-            def = d;
-            root = ResolvePlayerRoot(ownerGO.transform);
-            run = root.GetComponent<RunStats>();
-            lastHealth = (run != null) ? run.CurrentHP : -1f;
-
-            EnsureShellSphere();
-            SetShellVisible(def.showShellSphere && shellReady);
-
-            if (loop != null) StopCoroutine(loop);
-            loop = StartCoroutine(SurgeLoop());
+            var rt = owner.GetComponent<NautilusRunner>();
+            if (!rt) rt = owner.AddComponent<NautilusRunner>();
+            rt.Boot(this, owner);
         }
 
-        Transform ResolvePlayerRoot(Transform start)
+        public override void OnPrimaryUnequipped(GameObject owner)
         {
-            var t = start;
-            while (t != null)
+            var rt = owner.GetComponent<NautilusRunner>();
+            if (rt) Object.Destroy(rt);
+        }
+
+
+        class NautilusRunner : MonoBehaviour
+        {
+            A_Nautilus def;
+            Transform root;
+            GameObject shellViz;
+            bool shellReady = true;
+            RunStats run;
+            float lastHealth = -1f;
+            Coroutine loop;
+
+            public void Boot(A_Nautilus d, GameObject ownerGO)
             {
-                if (t.GetComponent("PlayerHealth") != null) return t;
-                t = t.parent;
-            }
-            return start;
-        }
+                def = d;
+                root = ResolvePlayerRoot(ownerGO.transform);
+                run = root.GetComponent<RunStats>();
+                lastHealth = (run != null) ? run.CurrentHP : -1f;
 
-        void OnDestroy()
-        {
-            if (loop != null) StopCoroutine(loop);
-            if (shellViz) Destroy(shellViz);
-        }
+                EnsureShellSphere();
+                SetShellVisible(def.showShellSphere && shellReady);
 
-        void Update()
-        {
-            if (run == null) return;
-            float h = run.CurrentHP;
-
-            if (shellReady && lastHealth >= 0f && h < lastHealth)
-            {
-                float delta = lastHealth - h;
-                if (delta > 0f) run.Heal(delta);
-
-                shellReady = false;
-                SetShellVisible(false);
-                StartCoroutine(RestoreShellAfter(def.shellCooldown));
+                if (loop != null) StopCoroutine(loop);
+                loop = StartCoroutine(SurgeLoop());
             }
 
-            lastHealth = run.CurrentHP;
-        }
-
-
-        IEnumerator SurgeLoop()
-        {
-            DoSurge();
-
-            var wait = new WaitForSeconds(Mathf.Max(0.1f, def.surgeInterval));
-            while (true)
+            Transform ResolvePlayerRoot(Transform start)
             {
-                yield return wait;
-                DoSurge();
-            }
-        }
-
-        void DoSurge()
-        {
-            Vector3 p = root.position;
-
-            var cols = Physics.OverlapSphere(p, def.surgeRadius, ~0, QueryTriggerInteraction.Ignore);
-            for (int i = 0; i < cols.Length; i++)
-            {
-                var e = cols[i].GetComponent<Enemy>();
-                if (!e) continue;
-                e.TakeDamage(def.surgeDamage, false);
+                var t = start;
+                while (t != null)
+                {
+                    if (t.GetComponent("PlayerHealth") != null) return t;
+                    t = t.parent;
+                }
+                return start;
             }
 
-            if (def.showSurgeVFX)
-                SpawnRing(p, def.surgeRadius, def.ringDuration, def.ringLineWidth, def.ringSegments, def.ringColor);
-        }
-
-        IEnumerator RestoreShellAfter(float seconds)
-        {
-            yield return new WaitForSeconds(Mathf.Max(0f, seconds));
-            shellReady = true;
-            SetShellVisible(def.showShellSphere);
-        }
-
-
-        // ------------------------------ VFX -----------------------------------
-        void EnsureShellSphere()
-        {
-            if (!def.showShellSphere || shellViz) return;
-
-            shellViz = GameObject.CreatePrimitive(PrimitiveType.Sphere);
-            shellViz.name = "Nautilus_Shell_VFX";
-            Destroy(shellViz.GetComponent<Collider>());
-            shellViz.transform.SetParent(root, false);
-            shellViz.transform.localPosition = Vector3.zero;
-
-            float worldD = def.shellRadius * 2f;
-            Vector3 pl = root.lossyScale;
-            Vector3 local = new Vector3(
-                pl.x > 1e-5f ? worldD / pl.x : worldD,
-                pl.y > 1e-5f ? worldD / pl.y : worldD,
-                pl.z > 1e-5f ? worldD / pl.z : worldD
-            );
-            shellViz.transform.localScale = local;
-
-            var r = shellViz.GetComponent<Renderer>();
-            Material mat = def.shellMaterial;
-            if (mat == null)
+            void OnDestroy()
             {
-                Shader sh = Shader.Find("Universal Render Pipeline/Lit");
-                if (sh == null) sh = Shader.Find("Standard");
-                mat = new Material(sh != null ? sh : Shader.Find("Sprites/Default"));
-            }
-            if (mat.HasProperty("_BaseColor")) mat.SetColor("_BaseColor", def.shellColor);
-            else if (mat.HasProperty("_Color")) mat.color = def.shellColor;
-
-            r.material = new Material(mat);
-        }
-
-        void SetShellVisible(bool on)
-        {
-            if (!shellViz) EnsureShellSphere();
-            if (shellViz) shellViz.SetActive(on);
-        }
-
-        static void SpawnRing(Vector3 center, float targetRadius, float life, float width, int segments, Color color)
-        {
-            var go = new GameObject("Nautilus_SurgeRing_VFX");
-            var lr = go.AddComponent<LineRenderer>();
-            lr.useWorldSpace = true;
-            lr.loop = true;
-            lr.positionCount = Mathf.Max(16, segments);
-            lr.widthMultiplier = width;
-            lr.material = new Material(Shader.Find("Sprites/Default"));
-            lr.startColor = color; lr.endColor = color;
-
-            go.AddComponent<RingExpander>().Init(center, targetRadius, life, lr);
-        }
-
-
-        class RingExpander : MonoBehaviour
-        {
-            Vector3 center;
-            float targetR, life, t;
-            LineRenderer lr;
-
-            public void Init(Vector3 c, float r, float l, LineRenderer line)
-            {
-                center = c; targetR = Mathf.Max(0.01f, r); life = Mathf.Max(0.05f, l); lr = line;
+                if (loop != null) StopCoroutine(loop);
+                if (shellViz) Destroy(shellViz);
             }
 
             void Update()
             {
-                t += Time.deltaTime;
-                float k = Mathf.Clamp01(t / life);
-                float r = Mathf.Lerp(0f, targetR, k);
+                if (run == null) return;
+                float h = run.CurrentHP;
 
-                int n = lr.positionCount;
-                for (int i = 0; i < n; i++)
+                if (shellReady && lastHealth >= 0f && h < lastHealth)
                 {
-                    float a = (i / (float)n) * Mathf.PI * 2f;
-                    lr.SetPosition(i, center + new Vector3(Mathf.Cos(a) * r, 0f, Mathf.Sin(a) * r));
+                    float delta = lastHealth - h;
+                    if (delta > 0f) run.Heal(delta);
+
+                    shellReady = false;
+                    SetShellVisible(false);
+                    StartCoroutine(RestoreShellAfter(def.shellCooldown));
                 }
 
-                var c = lr.startColor; c.a = (1f - k) * c.a;
-                lr.startColor = c; lr.endColor = c;
+                lastHealth = run.CurrentHP;
+            }
 
-                if (k >= 1f) Destroy(gameObject);
+
+            IEnumerator SurgeLoop()
+            {
+                DoSurge();
+
+                var wait = new WaitForSeconds(Mathf.Max(0.1f, def.surgeInterval));
+                while (true)
+                {
+                    yield return wait;
+                    DoSurge();
+                }
+            }
+
+            void DoSurge()
+            {
+                Vector3 p = root.position;
+
+                var cols = Physics.OverlapSphere(p, def.surgeRadius, ~0, QueryTriggerInteraction.Ignore);
+                for (int i = 0; i < cols.Length; i++)
+                {
+                    var e = cols[i].GetComponent<EnemyCore>();
+                    if (!e) continue;
+                    e.TakeDamage(def.surgeDamage, false);
+                }
+
+                if (def.showSurgeVFX)
+                    SpawnRing(p, def.surgeRadius, def.ringDuration, def.ringLineWidth, def.ringSegments, def.ringColor);
+            }
+
+            IEnumerator RestoreShellAfter(float seconds)
+            {
+                yield return new WaitForSeconds(Mathf.Max(0f, seconds));
+                shellReady = true;
+                SetShellVisible(def.showShellSphere);
+            }
+
+
+            // ------------------------------ VFX -----------------------------------
+            void EnsureShellSphere()
+            {
+                if (!def.showShellSphere || shellViz) return;
+
+                shellViz = GameObject.CreatePrimitive(PrimitiveType.Sphere);
+                shellViz.name = "Nautilus_Shell_VFX";
+                Destroy(shellViz.GetComponent<Collider>());
+                shellViz.transform.SetParent(root, false);
+                shellViz.transform.localPosition = Vector3.zero;
+
+                float worldD = def.shellRadius * 2f;
+                Vector3 pl = root.lossyScale;
+                Vector3 local = new Vector3(
+                    pl.x > 1e-5f ? worldD / pl.x : worldD,
+                    pl.y > 1e-5f ? worldD / pl.y : worldD,
+                    pl.z > 1e-5f ? worldD / pl.z : worldD
+                );
+                shellViz.transform.localScale = local;
+
+                var r = shellViz.GetComponent<Renderer>();
+                Material mat = def.shellMaterial;
+                if (mat == null)
+                {
+                    Shader sh = Shader.Find("Universal Render Pipeline/Lit");
+                    if (sh == null) sh = Shader.Find("Standard");
+                    mat = new Material(sh != null ? sh : Shader.Find("Sprites/Default"));
+                }
+                if (mat.HasProperty("_BaseColor")) mat.SetColor("_BaseColor", def.shellColor);
+                else if (mat.HasProperty("_Color")) mat.color = def.shellColor;
+
+                r.material = new Material(mat);
+            }
+
+            void SetShellVisible(bool on)
+            {
+                if (!shellViz) EnsureShellSphere();
+                if (shellViz) shellViz.SetActive(on);
+            }
+
+            static void SpawnRing(Vector3 center, float targetRadius, float life, float width, int segments, Color color)
+            {
+                var go = new GameObject("Nautilus_SurgeRing_VFX");
+                var lr = go.AddComponent<LineRenderer>();
+                lr.useWorldSpace = true;
+                lr.loop = true;
+                lr.positionCount = Mathf.Max(16, segments);
+                lr.widthMultiplier = width;
+                lr.material = new Material(Shader.Find("Sprites/Default"));
+                lr.startColor = color; lr.endColor = color;
+
+                go.AddComponent<RingExpander>().Init(center, targetRadius, life, lr);
+            }
+
+
+            class RingExpander : MonoBehaviour
+            {
+                Vector3 center;
+                float targetR, life, t;
+                LineRenderer lr;
+
+                public void Init(Vector3 c, float r, float l, LineRenderer line)
+                {
+                    center = c; targetR = Mathf.Max(0.01f, r); life = Mathf.Max(0.05f, l); lr = line;
+                }
+
+                void Update()
+                {
+                    t += Time.deltaTime;
+                    float k = Mathf.Clamp01(t / life);
+                    float r = Mathf.Lerp(0f, targetR, k);
+
+                    int n = lr.positionCount;
+                    for (int i = 0; i < n; i++)
+                    {
+                        float a = (i / (float)n) * Mathf.PI * 2f;
+                        lr.SetPosition(i, center + new Vector3(Mathf.Cos(a) * r, 0f, Mathf.Sin(a) * r));
+                    }
+
+                    var c = lr.startColor; c.a = (1f - k) * c.a;
+                    lr.startColor = c; lr.endColor = c;
+
+                    if (k >= 1f) Destroy(gameObject);
+                }
             }
         }
-    }
-    public override void ApplyUpgrades(AbilityUpgrade[] upgrades)
-    {
-        if (upgrades == null) return;
-
-        for (int i = 0; i < upgrades.Length; i++)
+        public override void ApplyUpgrades(AbilityUpgrade[] upgrades)
         {
-            var u = upgrades[i];
-            switch (u.key)
+            if (upgrades == null) return;
+
+            for (int i = 0; i < upgrades.Length; i++)
             {
-                case "Nautilus/SurgeInterval":
-                    surgeInterval = Mathf.Max(0.1f, ApplyNumeric(surgeInterval, u));
-                    break;
+                var u = upgrades[i];
+                switch (u.key)
+                {
+                    case "Nautilus/SurgeInterval":
+                        surgeInterval = Mathf.Max(0.1f, ApplyNumeric(surgeInterval, u));
+                        break;
 
-                case "Nautilus/SurgeRadius":
-                    surgeRadius = Mathf.Max(0.1f, ApplyNumeric(surgeRadius, u));
-                    break;
+                    case "Nautilus/SurgeRadius":
+                        surgeRadius = Mathf.Max(0.1f, ApplyNumeric(surgeRadius, u));
+                        break;
 
-                case "Nautilus/SurgeDamage":
-                    surgeDamage = Mathf.Max(0f, ApplyNumeric(surgeDamage, u));
-                    break;
+                    case "Nautilus/SurgeDamage":
+                        surgeDamage = Mathf.Max(0f, ApplyNumeric(surgeDamage, u));
+                        break;
 
-                case "Nautilus/ShellCooldown":
-                    shellCooldown = Mathf.Max(0f, ApplyNumeric(shellCooldown, u));
-                    break;
+                    case "Nautilus/ShellCooldown":
+                        shellCooldown = Mathf.Max(0f, ApplyNumeric(shellCooldown, u));
+                        break;
+                }
             }
         }
     }

@@ -33,11 +33,11 @@ namespace Geneforge.Gameplay.Characters.Enemies.AI
             FaceTarget();
 
             float attackRate = GetCurrentAttackRate();
-            if (Time.time >= lastAttackTime + 1f / Mathf.Max(0.001f, attackRate))
+            if (IsAttackReady(ref lastAttackTime, attackRate))
             {
                 PerformPhaseAttack();
-                lastAttackTime = Time.time;
             }
+
         }
 
         void UpdatePhase()

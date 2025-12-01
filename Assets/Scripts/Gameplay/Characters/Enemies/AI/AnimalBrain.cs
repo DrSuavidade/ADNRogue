@@ -18,14 +18,12 @@ namespace Geneforge.Gameplay.Characters.Enemies.AI
         [Header("Animation")]
         public string pounceTrigger = "Pounce";
 
-        Vector3 spawnPos;
         Vector3 roamTarget;
         float roamTimer;
 
         protected override void Awake()
         {
             base.Awake();
-            spawnPos = transform.position;
             PickRoamTarget();
         }
 
@@ -67,9 +65,9 @@ namespace Geneforge.Gameplay.Characters.Enemies.AI
         void PickRoamTarget()
         {
             roamTimer = roamInterval;
-            Vector2 rnd = UnityEngine.Random.insideUnitCircle * roamRadius;
-            roamTarget = spawnPos + new Vector3(rnd.x, 0f, rnd.y);
+            roamTarget = GetRandomPointAroundSpawn(roamRadius);
         }
+
 
         void TryPounce()
         {

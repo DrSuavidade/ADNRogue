@@ -11,14 +11,15 @@ namespace Geneforge.Gameplay.Weapons.Bullets
 {
     public class Bullet : MonoBehaviour
     {
-        Enemy lastEnemyHit;
+        EnemyCore lastEnemyHit;
 
-        [HideInInspector] public float damage = 1f;
-        [HideInInspector] public float knockbackForce = 0f;
-        [HideInInspector] public bool isCrit = false;
+        [HideInInspector, SerializeField] private float damage = 1f;
+        [HideInInspector, SerializeField] private float knockbackForce = 0f;
+        [HideInInspector, SerializeField] private bool isCrit = false;
 
-        public float lifeTime = 3f;
-        public GameObject impactEffectPrefab;
+        [SerializeField] private float lifeTime = 3f;
+        [SerializeField] private GameObject impactEffectPrefab;
+
         int pierceRemaining = 0;
         int bounceRemaining = 0;
         float homingStrength = 0f;
@@ -30,15 +31,46 @@ namespace Geneforge.Gameplay.Weapons.Bullets
         [SerializeField] float homingScanInterval = 0.1f;
 
         float _nextHomingScanTime;
-        Enemy _cachedHomingTarget;
+        EnemyCore _cachedHomingTarget;
         Rigidbody rb;
         Collider myCol;
         Vector3 preStepVel;
-        HashSet<Enemy> _hitEnemies =
-        new HashSet<Enemy>();
+        HashSet<EnemyCore> _hitEnemies =
+        new HashSet<EnemyCore>();
         EssenceAbility _abilityAsset;
         WeaponStats _ws;
         PoolIdentifier poolId;
+
+        public float Damage
+        {
+            get => damage;
+            set => damage = value;
+        }
+
+        public float KnockbackForce
+        {
+            get => knockbackForce;
+            set => knockbackForce = value;
+        }
+
+        public bool IsCrit
+        {
+            get => isCrit;
+            set => isCrit = value;
+        }
+
+        public float LifeTime
+        {
+            get => lifeTime;
+            set => lifeTime = value;
+        }
+
+        public GameObject ImpactEffectPrefab
+        {
+            get => impactEffectPrefab;
+            set => impactEffectPrefab = value;
+        }
+
 
         void Awake()
         {
@@ -135,14 +167,14 @@ namespace Geneforge.Gameplay.Weapons.Bullets
         // ---------------- Collisions: support trigger or non-trigger ----------------
         void OnTriggerEnter(Collider other)
         {
-            var enemy = other.GetComponent<Enemy>();
+            var enemy = other.GetComponent<EnemyCore>();
             if (enemy != null) { HandleHitEnemy(enemy, other.ClosestPoint(transform.position)); return; }
             Despawn();
         }
 
         void OnCollisionEnter(Collision collision)
         {
-            var enemy = collision.collider.GetComponent<Enemy>();
+            var enemy = collision.collider.GetComponent<EnemyCore>();
             var point = (collision.contacts.Length > 0) ? collision.contacts[0].point : transform.position;
 
             if (enemy != null)
@@ -198,16 +230,16 @@ namespace Geneforge.Gameplay.Weapons.Bullets
             }
         }
 
-        Enemy FindBestHomingTarget()
+        EnemyCore FindBestHomingTarget()
         {
             const float radius = 12f;
-            Enemy best = null;
+            EnemyCore best = null;
             float bestDist = float.PositiveInfinity;
 
             var hits = Physics.OverlapSphere(transform.position, radius, homingTargetMask, QueryTriggerInteraction.Ignore);
             for (int i = 0; i < hits.Length; i++)
             {
-                var e = hits[i].GetComponent<Enemy>();
+                var e = hits[i].GetComponent<EnemyCore>();
                 if (e == null) continue;
                 float d = (e.transform.position - transform.position).sqrMagnitude;
                 if (d < bestDist) { bestDist = d; best = e; }
@@ -215,7 +247,7 @@ namespace Geneforge.Gameplay.Weapons.Bullets
             return best;
         }
 
-        void SteerTowards(Enemy best)
+        void SteerTowards(EnemyCore best)
         {
             Vector3 desired = (best.transform.position - transform.position).normalized;
 #if UNITY_6000_0_OR_NEWER
@@ -237,7 +269,7 @@ namespace Geneforge.Gameplay.Weapons.Bullets
             transform.forward = newDir;
         }
 
-        void HandleHitEnemy(Enemy enemy, Vector3 hitPoint)
+        void HandleHitEnemy(EnemyCore enemy, Vector3 hitPoint)
         {
             var rangedMagic = enemy.GetComponent<RangedMagic>();
             if (rangedMagic != null && rangedMagic.IsBlocking)
@@ -262,7 +294,7 @@ namespace Geneforge.Gameplay.Weapons.Bullets
                 var hits = Physics.OverlapSphere(hitPoint, aoeRadius);
                 for (int i = 0; i < hits.Length; i++)
                 {
-                    var other = hits[i].GetComponent<Enemy>();
+                    var other = hits[i].GetComponent<EnemyCore>();
                     if (other != null && other != enemy) other.TakeDamage(damage, false);
                 }
 
@@ -310,7 +342,7 @@ namespace Geneforge.Gameplay.Weapons.Bullets
             Despawn();
         }
 
-        void IgnoreEnemyColliders(Geneforge.Gameplay.Characters.Enemies.Enemy enemy, bool ignore)
+        void IgnoreEnemyColliders(EnemyCore enemy, bool ignore)
         {
             if (myCol == null || enemy == null) return;
             var cols = enemy.GetComponentsInChildren<Collider>(includeInactive: true);

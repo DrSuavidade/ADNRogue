@@ -260,9 +260,9 @@ namespace Geneforge.Gameplay.Characters.Player
                     bool crit = (active != null && Random.value <= active.CritChance);
                     if (crit && active != null) dmg *= active.CritMultiplier;
 
-                    b.damage = dmg;
-                    b.knockbackForce = (active != null) ? active.KnockbackForce : 0f;
-                    b.isCrit = crit;
+                    b.Damage = dmg;
+                    b.KnockbackForce = (active != null) ? active.KnockbackForce : 0f;
+                    b.IsCrit = crit;
 
                     if (gunSlots != null)
                     {
@@ -555,7 +555,7 @@ namespace Geneforge.Gameplay.Characters.Player
                     float dmg = active.Damage;
                     bool crit = false;
                     if (Random.value <= active.CritChance) { dmg *= active.CritMultiplier; crit = true; }
-                    b.damage = dmg; b.isCrit = crit; b.knockbackForce = active.KnockbackForce;
+                    b.Damage = dmg; b.IsCrit = crit; b.KnockbackForce = active.KnockbackForce;
                     if (gunSlots != null)
                     {
                         gunSlots.ApplyToBullet(b);

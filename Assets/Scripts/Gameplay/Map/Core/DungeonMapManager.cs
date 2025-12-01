@@ -11,22 +11,23 @@ namespace Geneforge.Gameplay.Map
         public static DungeonMapManager Instance { get; private set; }
 
         [Header("Config")]
-        public DungeonConfig dungeonConfig;
-        public TimelineId startingTimeline = TimelineId.Prehistoric;
+        [SerializeField] private DungeonConfig dungeonConfig;
+        [SerializeField] private TimelineId startingTimeline = TimelineId.Prehistoric;
         [Tooltip("Optional override, leave -1 to use config.floors for this timeline.")]
-        public int overrideFloors = -1;
+        [SerializeField] private int overrideFloors = -1;
 
         [Header("Runtime references")]
-        public Transform player;
-        public UnityEvent onBossStairsUsed;
+        [SerializeField] private Transform player;
+        [SerializeField] private UnityEvent onBossStairsUsed;
 
         [Header("Layout")]
         [Tooltip("World-space distance between hub center and each adjacent room.")]
-        public float roomSpacing = 50f;
+        [SerializeField] private float roomSpacing = 50f;
 
         [Header("Rewards")]
         [Tooltip("Fallback key prefab if TimelineRoomSet.keyPickupPrefab is not set.")]
-        public GameObject defaultKeyPickupPrefab;
+        [SerializeField] private GameObject defaultKeyPickupPrefab;
+
 
         private TimelineId currentTimeline;
         private int currentFloorIndex;
@@ -47,6 +48,24 @@ namespace Geneforge.Gameplay.Map
         public event Action<bool> KeyStateChanged;
         public bool PlayerHasKey => playerHasKey;
         private void RaiseKeyStateChanged() => KeyStateChanged?.Invoke(playerHasKey);
+
+        #region Query API
+
+        public IReadOnlyDictionary<RoomDirection, RoomInstance> RoomsByDirection => currentRoomsByDirection;
+        public HubRoom CurrentHub => currentHub;
+        public int CurrentFloorIndex => currentFloorIndex;
+        public int FloorsInThisTimeline => floorsInThisTimeline;
+        public TimelineId CurrentTimeline => currentTimeline;
+        public RoomInstance KeyRoom => keyRoom;
+        public DungeonConfig DungeonConfig => dungeonConfig;
+        public TimelineId StartingTimeline => startingTimeline;
+        public int OverrideFloors => overrideFloors;
+        public Transform Player => player;
+        public UnityEvent OnBossStairsUsed => onBossStairsUsed;
+        public float RoomSpacing => roomSpacing;
+        public GameObject DefaultKeyPickupPrefab => defaultKeyPickupPrefab;
+
+        #endregion
 
 
         private void Awake()
@@ -77,7 +96,6 @@ namespace Geneforge.Gameplay.Map
             TimelineRoomSet set = dungeonConfig != null ? dungeonConfig.GetTimeline(currentTimeline) : null;
             if (set == null)
             {
-                Debug.LogError("DungeonMapManager: No DungeonConfig / TimelineRoomSet assigned.");
                 return;
             }
 
@@ -96,7 +114,6 @@ namespace Geneforge.Gameplay.Map
             TimelineRoomSet set = dungeonConfig.GetTimeline(currentTimeline);
             if (set == null || set.hubPrefab == null)
             {
-                Debug.LogError("DungeonMapManager: TimelineRoomSet or hubPrefab missing.");
                 return;
             }
 
@@ -125,15 +142,14 @@ namespace Geneforge.Gameplay.Map
             currentHub = hubGO.GetComponent<HubRoom>();
             if (currentHub == null)
             {
-                Debug.LogError("DungeonMapManager: Hub prefab must have a HubRoom component.");
                 return;
             }
             currentHub.Initialize(currentTimeline, currentFloorIndex, RoomDirection.South, RoomType.Hub);
 
-            if (player != null && currentHub.southEntrySpawn != null)
+            if (player != null && currentHub.SouthEntrySpawn != null)
             {
-                player.position = currentHub.southEntrySpawn.position;
-                player.rotation = currentHub.southEntrySpawn.rotation;
+                player.position = currentHub.SouthEntrySpawn.position;
+                player.rotation = currentHub.SouthEntrySpawn.rotation;
             }
 
             // Diagonal combat rooms
@@ -159,7 +175,6 @@ namespace Geneforge.Gameplay.Map
             GameObject prefab = ChooseWeightedPrefab(set.combatRoomsSE);
             if (prefab == null)
             {
-                Debug.LogWarning("[DungeonMapManager] combatRoomsSE weights produced no prefab.");
                 return;
             }
 
@@ -171,7 +186,6 @@ namespace Geneforge.Gameplay.Map
             RoomInstance room = roomGO.GetComponent<RoomInstance>();
             if (room == null)
             {
-                Debug.LogError("DungeonMapManager: Combat room prefab must have a RoomInstance component.");
                 return;
             }
 
@@ -218,24 +232,24 @@ namespace Geneforge.Gameplay.Map
         {
             if (room == null) return;
 
-            if (room.visitOrderGlobal < 0)
+            if (room.VisitOrderGlobal < 0)
             {
                 globalVisitCounter++;
-                room.visitOrderGlobal = globalVisitCounter;
+                room.VisitOrderGlobal = globalVisitCounter;
             }
 
-            if (room.roomType == RoomType.Combat && room.directionFromHub.IsDiagonal())
+            if (room.RoomType == RoomType.Combat && room.DirectionFromHub.IsDiagonal())
             {
-                if (room.visitOrderAmongDiagonals < 0)
+                if (room.VisitOrderAmongDiagonals < 0)
                 {
                     diagonalVisitCounter++;
-                    room.visitOrderAmongDiagonals = diagonalVisitCounter;
+                    room.VisitOrderAmongDiagonals = diagonalVisitCounter;
 
                     if (diagonalVisitCounter == keyWillAppearOnDiagonalVisitIndex && keyRoom == null)
                     {
                         keyRoom = room;
                         room.MarkAsKeyRoom();
-                        Debug.Log($"[DungeonMapManager] Key assigned to room {room.directionFromHub} (diagonal visit #{diagonalVisitCounter}).");
+                        Debug.Log($"[DungeonMapManager] Key assigned to room {room.DirectionFromHub} (diagonal visit #{diagonalVisitCounter}).");
                     }
                 }
             }
@@ -245,7 +259,6 @@ namespace Geneforge.Gameplay.Map
         {
             playerHasKey = true;
             RaiseKeyStateChanged();
-            Debug.Log("[DungeonMapManager] Player picked up floor key.");
         }
 
         #endregion
@@ -258,7 +271,6 @@ namespace Geneforge.Gameplay.Map
 
             if (currentFloorKeyPrefab == null)
             {
-                Debug.LogWarning("[DungeonMapManager] No key prefab configured for this floor; cannot spawn key.");
                 return;
             }
 
@@ -272,7 +284,6 @@ namespace Geneforge.Gameplay.Map
             GameObject prefab = ChooseWeightedPrefab(currentFloorRewardPool);
             if (prefab == null)
             {
-                Debug.LogWarning("[DungeonMapManager] No regular reward prefab available in current floor pool.");
                 return;
             }
 
@@ -324,7 +335,6 @@ namespace Geneforge.Gameplay.Map
         {
             if (!playerHasKey)
             {
-                Debug.Log("[DungeonMapManager] North exit is locked. Player has no key.");
                 gate?.OnUseDenied();
                 return;
             }
@@ -335,29 +345,16 @@ namespace Geneforge.Gameplay.Map
             bool lastFloor = (currentFloorIndex >= floorsInThisTimeline - 1);
             if (lastFloor)
             {
-                Debug.Log("[DungeonMapManager] Using north exit: this is the boss stairs.");
                 gate?.OnUseAcceptedBoss();
                 onBossStairsUsed?.Invoke();
             }
             else
             {
-                Debug.Log("[DungeonMapManager] Using north exit: going to next floor.");
                 gate?.OnUseAcceptedNextFloor();
                 currentFloorIndex++;
                 GenerateFloor();
             }
         }
-
-        #endregion
-
-        #region Query API
-
-        public IReadOnlyDictionary<RoomDirection, RoomInstance> RoomsByDirection => currentRoomsByDirection;
-        public HubRoom CurrentHub => currentHub;
-        public int CurrentFloorIndex => currentFloorIndex;
-        public int FloorsInThisTimeline => floorsInThisTimeline;
-        public TimelineId CurrentTimeline => currentTimeline;
-        public RoomInstance KeyRoom => keyRoom;
 
         #endregion
     }

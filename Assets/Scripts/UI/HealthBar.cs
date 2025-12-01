@@ -7,9 +7,16 @@ namespace Geneforge.UI
     [RequireComponent(typeof(Canvas))]
     public class HealthBar : MonoBehaviour
     {
-        public Enemy enemy;
-        public Image fillImage;
-        public Vector3 offset = Vector3.up * 1.2f;
+        [SerializeField] private EnemyCore enemy;
+        [SerializeField] private Image fillImage;
+        [SerializeField] private Vector3 offset = Vector3.up * 1.2f;
+
+        public EnemyCore Enemy
+        {
+            get => enemy;
+            set => enemy = value;
+        }
+
 
         Camera mainCam;
         Canvas canvas;
@@ -27,7 +34,7 @@ namespace Geneforge.UI
         void OnEnable()
         {
             if (enemy == null)
-                enemy = GetComponentInParent<Enemy>();
+                enemy = GetComponentInParent<EnemyCore>();
 
             if (enemy != null)
                 enemy.OnFirstHit += OnEnemyFirstHit;

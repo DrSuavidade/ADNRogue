@@ -75,10 +75,8 @@ namespace Geneforge.Gameplay.Characters.Enemies.AI
 
         void TryAttack()
         {
-            if (Time.time < lastAttackTime + 1f / Mathf.Max(0.001f, attackRate))
+            if (!IsAttackReady(ref lastAttackTime, attackRate))
                 return;
-
-            lastAttackTime = Time.time;
 
             if (animator != null && !string.IsNullOrEmpty(attackTrigger))
                 animator.SetTrigger(attackTrigger);

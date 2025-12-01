@@ -9,9 +9,14 @@ namespace Geneforge.Gameplay.Map
     public class NorthExitGate : MonoBehaviour
     {
         [Header("Optional FX hooks")]
-        public UnityEvent onUseDenied;
-        public UnityEvent onUseAcceptedNextFloor;
-        public UnityEvent onUseAcceptedBoss;
+        [SerializeField] private UnityEvent onUseDenied;
+        [SerializeField] private UnityEvent onUseAcceptedNextFloor;
+        [SerializeField] private UnityEvent onUseAcceptedBoss;
+
+        public UnityEvent OnUseDeniedEvent => onUseDenied;
+        public UnityEvent OnUseAcceptedNextFloorEvent => onUseAcceptedNextFloor;
+        public UnityEvent OnUseAcceptedBossEvent => onUseAcceptedBoss;
+
 
         private void OnTriggerEnter(Collider other)
         {
@@ -23,19 +28,9 @@ namespace Geneforge.Gameplay.Map
             }
         }
 
-        public void OnUseDenied()
-        {
-            onUseDenied?.Invoke();
-        }
+        public void OnUseDenied() { onUseDenied?.Invoke(); }
+        public void OnUseAcceptedNextFloor() { onUseAcceptedNextFloor?.Invoke(); }
+        public void OnUseAcceptedBoss() { onUseAcceptedBoss?.Invoke(); }
 
-        public void OnUseAcceptedNextFloor()
-        {
-            onUseAcceptedNextFloor?.Invoke();
-        }
-
-        public void OnUseAcceptedBoss()
-        {
-            onUseAcceptedBoss?.Invoke();
-        }
     }
 }

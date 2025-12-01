@@ -2,26 +2,42 @@ using UnityEngine;
 using System;
 using System.Collections;
 using Geneforge.Core.UI;
+using Geneforge.Core.Pooling;
 using Geneforge.Gameplay.Characters.Enemies.AI;
 
 namespace Geneforge.Gameplay.Characters.Enemies
 {
-    public class EnemyCore : MonoBehaviour
+    public class EnemyCore : MonoBehaviour, IEnemy
     {
         [Header("Stats")]
-        public float maxHealth = 5f;
+        [SerializeField] private float maxHealth = 5f;
         private float currentHealth;
 
         [Header("Animation")]
-        public Animator animator;
-        public string damagedTrigger = "Damaged";
-        public string deathTrigger = "Death";
-        [Tooltip("Length of the death animation clip in seconds")]
-        public float deathAnimDuration = 1f;
+        [SerializeField] private Animator animator;
+        [SerializeField] private string damagedTrigger = "Damaged";
+        [SerializeField] private string deathTrigger = "Death";
+        [SerializeField] private float deathAnimDuration = 1f;
 
-        // Expose health
+        [Header("Feedback")]
+        [SerializeField] private GameObject damageTextPrefab;
+        [SerializeField] private Vector3 damageTextOffset = new Vector3(0, 2.5f, 0);
+
+        [Header("Hit thresholds")]
+        [SerializeField] private float[] hitHealthThresholds = { 0.7f, 0.4f, 0.15f };
+
+        // Expose fields
         public float CurrentHealth => currentHealth;
-        public float MaxHealth => maxHealth;
+        public float MaxHealth { get => maxHealth; set => maxHealth = value; }
+        public Animator Animator => animator;
+        public string DamagedTrigger => damagedTrigger;
+        public string DeathTrigger => deathTrigger;
+        public float DeathAnimDuration => deathAnimDuration;
+
+        public GameObject DamageTextPrefab => damageTextPrefab;
+        public Vector3 DamageTextOffset => damageTextOffset;
+        public float[] HitHealthThresholds => hitHealthThresholds;
+
 
         // Events
         public event Action OnFirstHit;
@@ -34,19 +50,7 @@ namespace Geneforge.Gameplay.Characters.Enemies
         public bool HasBeenHit => hasBeenHit; // NEW: in case brains/UI need this
         public bool IsDead => isDead;         // NEW: convenient read for brains
 
-        [Header("Damage UI")]
-        public GameObject damageTextPrefab;
-        public Vector3 damageTextOffset = new Vector3(0, 2.5f, 0);
-
-        // =====================================================
-        // HIT REACTION — LIMITADO (MÁXIMO 3 NA VIDA INTEIRA)
-        // =====================================================
-        [Header("Hit Reaction (MAX 3 total)")]
-        [Tooltip("Percentagens de vida (0.1) onde o inimigo reage com Hit.")]
-        public float[] hitHealthThresholds = { 0.7f, 0.4f, 0.15f };
-
         int _hitReactionIndex = 0;
-        // =====================================================
 
         // Coroutines
         private Coroutine _despawnCo;
@@ -69,17 +73,7 @@ namespace Geneforge.Gameplay.Characters.Enemies
 
             currentHealth = Mathf.Max(0f, currentHealth - dmg);
 
-            Debug.Log($"{name} took {dmg} damage, remaining HP: {currentHealth}");
-
-            // ---------------- DAMAGE TEXT ----------------
-            if (damageTextPrefab != null)
-            {
-                Vector3 spawnPos = transform.position + damageTextOffset;
-                var dtObj = Instantiate(damageTextPrefab, spawnPos, Quaternion.identity);
-                var dt = dtObj.GetComponent<DamageText>();
-                if (dt != null) dt.Initialize(dmg, wasCrit);
-            }
-            // ---------------------------------------------
+            SpawnDamageText(dmg, wasCrit);
 
             OnDamaged?.Invoke(dmg);
 
@@ -136,11 +130,7 @@ namespace Geneforge.Gameplay.Characters.Enemies
 
                 if (!rb.isKinematic)
                 {
-#if UNITY_6000_0_OR_NEWER
                     rb.linearVelocity = Vector3.zero;
-#else
-                    rb.velocity = Vector3.zero;
-#endif
                     rb.angularVelocity = Vector3.zero;
                 }
 
@@ -174,6 +164,31 @@ namespace Geneforge.Gameplay.Characters.Enemies
                 yield return null;
             }
             Destroy(gameObject);
+        }
+
+        public void Heal(float amount, bool showText = true)
+        {
+            if (amount <= 0f || isDead) return;
+
+            currentHealth = Mathf.Min(maxHealth, currentHealth + amount);
+
+            if (showText && damageTextPrefab != null)
+            {
+                // optionally spawn green “+X” text; re-use pooled DamageText if needed
+            }
+        }
+
+        void SpawnDamageText(float dmg, bool wasCrit)
+        {
+            if (damageTextPrefab == null) return;
+
+            Vector3 spawnPos = transform.position + damageTextOffset;
+            GameObject dtObj = PoolManager.Instance != null
+                ? PoolManager.Instance.Spawn(damageTextPrefab, spawnPos, Quaternion.identity)
+                : Instantiate(damageTextPrefab, spawnPos, Quaternion.identity);
+
+            var dt = dtObj.GetComponent<DamageText>();
+            if (dt != null) dt.Initialize(dmg, wasCrit);
         }
 
         // Smooth knockback slide — sem StopAllCoroutines()

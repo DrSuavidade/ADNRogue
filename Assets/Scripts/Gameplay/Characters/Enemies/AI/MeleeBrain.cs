@@ -29,7 +29,6 @@ namespace Geneforge.Gameplay.Characters.Enemies.AI
         [Header("Damage Pause")]
         public float damagePauseDuration = 0.5f;
 
-        Vector3 spawnPos;
         Vector3 wanderTarget;
         float wanderTimer;
         float lastAttackTime;
@@ -43,7 +42,6 @@ namespace Geneforge.Gameplay.Characters.Enemies.AI
         protected override void Awake()
         {
             base.Awake();
-            spawnPos = transform.position;
             PickWanderTarget();
         }
 
@@ -117,16 +115,14 @@ namespace Geneforge.Gameplay.Characters.Enemies.AI
         void PickWanderTarget()
         {
             wanderTimer = wanderInterval;
-            Vector2 rnd = UnityEngine.Random.insideUnitCircle * wanderRadius;
-            wanderTarget = spawnPos + new Vector3(rnd.x, 0f, rnd.y);
+            wanderTarget = GetRandomPointAroundSpawn(wanderRadius);
         }
+
 
         void TryAttack()
         {
-            if (Time.time < lastAttackTime + 1f / Mathf.Max(0.001f, attackRate))
+            if (!IsAttackReady(ref lastAttackTime, attackRate))
                 return;
-
-            lastAttackTime = Time.time;
 
             if (animator != null)
             {

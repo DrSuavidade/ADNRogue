@@ -13,13 +13,11 @@ namespace Geneforge.Gameplay.Characters.Enemies.AI
         public float supportInterval = 4f;
         public string supportTrigger = "Support";
 
-        Vector3 spawnPos;
         float supportTimer;
 
         protected override void Awake()
         {
             base.Awake();
-            spawnPos = transform.position;
             supportTimer = supportInterval;
         }
 
@@ -28,9 +26,9 @@ namespace Geneforge.Gameplay.Characters.Enemies.AI
             supportTimer -= dt;
 
             // Support enemies tend to hover near their spawn
-            if ((transform.position - spawnPos).sqrMagnitude > followRadiusFromSpawn * followRadiusFromSpawn)
+            if ((transform.position - spawnPosition).sqrMagnitude > followRadiusFromSpawn * followRadiusFromSpawn)
             {
-                MoveTowards(spawnPos, repositionSpeed);
+                MoveTowards(spawnPosition, repositionSpeed);
             }
             else if (animator != null)
             {

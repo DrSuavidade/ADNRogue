@@ -13,6 +13,10 @@ namespace Geneforge.Gameplay.Characters.Enemies.Eras.Prehistoric
         public float dotDamagePerSecond = 2f;
         public float dotDuration = 4f;
 
+        [Tooltip("What layers the poison dart can affect (usually Player).")]
+        public LayerMask hitMask;
+
+
         public void AnimEvent_ShootDart()
         {
             if (!dartPrefab || !shootOrigin || !target) return;
@@ -27,7 +31,7 @@ namespace Geneforge.Gameplay.Characters.Enemies.Eras.Prehistoric
 
             var proj = obj.GetComponent<PrehistoricPoisonDartProjectile>();
             if (!proj) proj = obj.AddComponent<PrehistoricPoisonDartProjectile>();
-            proj.Init(hitDamage, dotDamagePerSecond, dotDuration);
+            proj.Init(hitDamage, dotDamagePerSecond, dotDuration, hitMask);
         }
     }
 
@@ -36,21 +40,29 @@ namespace Geneforge.Gameplay.Characters.Enemies.Eras.Prehistoric
         float hitDamage;
         float dotDps;
         float dotDuration;
+        LayerMask hitMask;
 
-        public void Init(float hit, float dps, float duration)
+        public void Init(float hit, float dps, float duration, LayerMask mask)
         {
             hitDamage = hit;
             dotDps = dps;
             dotDuration = duration;
+            hitMask = mask;
             Destroy(gameObject, 8f);
         }
 
         void OnTriggerEnter(Collider other)
         {
-            if (!other.CompareTag("Player")) return;
+            // Layer filter first
+            if ((hitMask.value & (1 << other.gameObject.layer)) == 0)
+                return;
 
-            var hp = other.GetComponent<Geneforge.Gameplay.Characters.Player.PlayerHealth>();
-            if (!hp) { Destroy(gameObject); return; }
+            var hp = other.GetComponent<Player.PlayerHealth>();
+            if (!hp)
+            {
+                Destroy(gameObject);
+                return;
+            }
 
             hp.ApplyDamage(hitDamage);
             hp.StartCoroutine(ApplyDot(hp));

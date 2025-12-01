@@ -12,6 +12,10 @@ namespace Geneforge.Gameplay.Characters.Enemies.Eras.Prehistoric
         public float arcHeight = 1.0f;
         public float damage = 10f;
 
+        [Tooltip("What layers this spear can damage (usually Player).")]
+        public LayerMask hitMask;
+
+
         public void AnimEvent_ThrowSpear()
         {
             if (!spearPrefab || !throwOrigin || !target) return;
@@ -28,28 +32,35 @@ namespace Geneforge.Gameplay.Characters.Enemies.Eras.Prehistoric
 
             var proj = obj.GetComponent<PrehistoricSpearProjectile>();
             if (!proj) proj = obj.AddComponent<PrehistoricSpearProjectile>();
-            proj.Init(damage);
+            proj.Init(damage, hitMask);
         }
     }
 
     public class PrehistoricSpearProjectile : MonoBehaviour
     {
         float damage;
+        LayerMask hitMask;
 
-        public void Init(float dmg)
+        public void Init(float dmg, LayerMask mask)
         {
             damage = dmg;
+            hitMask = mask;
             Destroy(gameObject, 8f);
         }
 
         void OnTriggerEnter(Collider other)
         {
-            if (other.CompareTag("Player"))
+            // Layer filter first
+            if ((hitMask.value & (1 << other.gameObject.layer)) == 0)
+                return;
+
+            var hp = other.GetComponent<Player.PlayerHealth>();
+            if (hp != null)
             {
-                var hp = other.GetComponent<Player.PlayerHealth>();
-                if (hp) hp.ApplyDamage(damage);
-                Destroy(gameObject);
+                hp.ApplyDamage(damage);
             }
+
+            Destroy(gameObject);
         }
     }
 }

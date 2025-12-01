@@ -6,10 +6,19 @@ namespace Geneforge.Gameplay.Map
     {
         [Header("Spawn Settings")]
         [Tooltip("How many enemies to spawn from the global enemy pool.")]
-        public int spawnCount = 1;
+        [SerializeField] private int spawnCount = 1;
 
         [Tooltip("Points to spawn enemies at; if fewer than spawnCount, they will wrap around.")]
-        public Transform[] spawnPoints;
+        [SerializeField] private Transform[] spawnPoints;
+
+        public int SpawnCount
+        {
+            get => spawnCount;
+            set => spawnCount = Mathf.Max(0, value);
+        }
+
+        public Transform[] SpawnPoints => spawnPoints;
+
 
         private RoomInstance ownerRoom;
         private int aliveEnemies;
@@ -54,9 +63,9 @@ namespace Geneforge.Gameplay.Map
                 Transform point = spawnPoints[i % spawnPoints.Length];
                 if (point == null) continue;
 
-                GameObject enemy = Object.Instantiate(enemyPrefab, point.position, point.rotation);
+                GameObject enemy = Instantiate(enemyPrefab, point.position, point.rotation);
                 var notifier = enemy.AddComponent<EnemyDeathNotifier>();
-                notifier.ownerSpawner = this;
+                notifier.OwnerSpawner = this;
 
                 spawned++;
             }

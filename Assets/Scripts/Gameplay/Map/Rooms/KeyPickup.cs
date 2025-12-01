@@ -1,9 +1,12 @@
 using UnityEngine;
+using UnityEngine.Events;
 
 namespace Geneforge.Gameplay.Map
 {
     public class KeyPickup : MonoBehaviour
     {
+        [Header("Optional FX hooks")]
+        [SerializeField] private UnityEvent onPickedUp;
         private void OnTriggerEnter(Collider other)
         {
             if (!other.CompareTag("Player")) return;
@@ -11,7 +14,8 @@ namespace Geneforge.Gameplay.Map
             if (DungeonMapManager.Instance != null)
                 DungeonMapManager.Instance.NotifyPlayerPickedUpKey();
 
-            // TODO: play SFX/VFX here
+            onPickedUp?.Invoke();
+
             Destroy(gameObject);
         }
     }

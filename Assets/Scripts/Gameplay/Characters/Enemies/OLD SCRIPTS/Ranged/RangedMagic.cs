@@ -1,9 +1,8 @@
 using UnityEngine;
 using System.Collections;
-using System.Collections.Generic;
 using UnityEngine.Events;
 using Geneforge.Gameplay.Characters.Player;
-using Geneforge.Gameplay.Characters.Enemies;
+using Geneforge.Gameplay.Abilities.Special;
 
 namespace Geneforge.Gameplay.Characters.Enemies.Ranged
 {

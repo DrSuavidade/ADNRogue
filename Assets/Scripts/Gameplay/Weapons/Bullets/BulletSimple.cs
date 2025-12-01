@@ -7,9 +7,28 @@ namespace Geneforge.Gameplay.Weapons.Bullets
     public class BulletSimple : MonoBehaviour
     {
         [Header("Configuração")]
-        public float speed = 25f;
-        public float damage = 10f;
-        public float lifeTime = 3f;
+        [SerializeField] private float speed = 25f;
+        [SerializeField] private float damage = 10f;
+        [SerializeField] private float lifeTime = 3f;
+
+        public float Speed
+        {
+            get => speed;
+            set => speed = value;
+        }
+
+        public float Damage
+        {
+            get => damage;
+            set => damage = value;
+        }
+
+        public float LifeTime
+        {
+            get => lifeTime;
+            set => lifeTime = value;
+        }
+
 
         [Header("Referências")]
         private Rigidbody rb;

@@ -15,7 +15,7 @@ MonoBehaviour:
   displayName: Drummer
   maxHealth: 10
   baseMoveSpeed: 3
-  animatorController: {fileID: 0}
+  animatorController: {fileID: 9100000, guid: f9961b68990c1444798e54853cde401e, type: 2}
   melee:
     detectionRadius: 0
     chaseSpeed: 0

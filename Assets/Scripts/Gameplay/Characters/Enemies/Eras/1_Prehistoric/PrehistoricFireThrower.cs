@@ -13,13 +13,15 @@ namespace Geneforge.Gameplay.Characters.Enemies.Eras.Prehistoric
 
         [Header("Damage")]
         public float impactDamage = 6f;
+        [Tooltip("What layers this torch can damage (usually Player).")]
+        public LayerMask hitMask;
 
         // Animation event
         public void AnimEvent_ThrowTorch()
         {
             if (!torchProjectilePrefab || !throwOrigin || !target) return;
 
-            var projObj = Object.Instantiate(
+            var projObj = Instantiate(
                 torchProjectilePrefab,
                 throwOrigin.position,
                 Quaternion.identity
@@ -38,7 +40,7 @@ namespace Geneforge.Gameplay.Characters.Enemies.Eras.Prehistoric
             if (!proj)
                 proj = projObj.AddComponent<PrehistoricFireProjectile>();
 
-            proj.Init(impactDamage);
+            proj.Init(impactDamage, hitMask);
         }
     }
 
@@ -49,21 +51,28 @@ namespace Geneforge.Gameplay.Characters.Enemies.Eras.Prehistoric
     public class PrehistoricFireProjectile : MonoBehaviour
     {
         float damage;
+        LayerMask hitMask;
 
-        public void Init(float dmg)
+        public void Init(float dmg, LayerMask mask)
         {
             damage = dmg;
+            hitMask = mask;
             Destroy(gameObject, 6f);
         }
 
         void OnTriggerEnter(Collider other)
         {
-            if (other.CompareTag("Player"))
+            // First, check if this collider is on a hittable layer
+            if ((hitMask.value & (1 << other.gameObject.layer)) == 0)
+                return;
+
+            var hp = other.GetComponent<Player.PlayerHealth>();
+            if (hp != null)
             {
-                var hp = other.GetComponent<Geneforge.Gameplay.Characters.Player.PlayerHealth>();
-                if (hp) hp.ApplyDamage(damage);
-                Destroy(gameObject);
+                hp.ApplyDamage(damage);
             }
+
+            Destroy(gameObject);
         }
     }
 }

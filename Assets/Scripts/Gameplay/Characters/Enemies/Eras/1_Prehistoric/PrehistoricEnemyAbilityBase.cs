@@ -10,14 +10,14 @@ namespace Geneforge.Gameplay.Characters.Enemies.Eras.Prehistoric
     [DisallowMultipleComponent]
     public abstract class PrehistoricEnemyAbilityBase : MonoBehaviour
     {
-        protected Enemy enemy;
+        protected EnemyCore enemy;
         protected Transform self;
         protected Transform target;
         protected PlayerHealth playerHealth;
 
         protected virtual void Awake()
         {
-            enemy = GetComponent<Enemy>();
+            enemy = GetComponent<EnemyCore>();
             self = transform;
 
             var playerObj = GameObject.FindWithTag("Player");

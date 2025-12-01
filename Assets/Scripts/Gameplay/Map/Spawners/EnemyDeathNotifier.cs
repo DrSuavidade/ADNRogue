@@ -8,8 +8,15 @@ namespace Geneforge.Gameplay.Map
     /// </summary>
     public class EnemyDeathNotifier : MonoBehaviour
     {
-        [HideInInspector] public EnemySpawner ownerSpawner;
+        [HideInInspector, SerializeField] private EnemySpawner ownerSpawner;
         bool _reported;
+
+        public EnemySpawner OwnerSpawner
+        {
+            get => ownerSpawner;
+            set => ownerSpawner = value;
+        }
+
 
         public void ReportDeath()
         {

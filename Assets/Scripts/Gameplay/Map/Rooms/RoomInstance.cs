@@ -10,31 +10,47 @@ namespace Geneforge.Gameplay.Map
     public class RoomInstance : MonoBehaviour
     {
         [Header("Static (per prefab)")]
-        public RoomType roomType = RoomType.Combat;
+        [SerializeField] private RoomType roomType = RoomType.Combat;
 
         [Header("Encounter Setup (combat rooms)")]
-        [Tooltip("If true, entering this room's trigger will start the encounter.")]
-        public bool autoStartEncounterOnEnter = true;
+        [SerializeField] private bool autoStartEncounterOnEnter = true;
 
-        [Tooltip("Enemy spawners belonging to this room (will be auto-filled from children if empty).")]
-        public EnemySpawner[] enemySpawners;
+        [Header("Scene children / hooks")]
+        [SerializeField] private EnemySpawner[] enemySpawners;
+        [SerializeField] private RewardSpawner[] rewardSpawners;
 
-        [Tooltip("Reward spawners in this room (auto-filled from children if empty).")]
-        public RewardSpawner[] rewardSpawners;
-
-        [Header("Runtime (filled by DungeonMapManager)")]
-        public TimelineId timelineId;
-        public int floorIndex;
-        public RoomDirection directionFromHub;
-        public int visitOrderGlobal = -1;
-        public int visitOrderAmongDiagonals = -1;
-        public bool isKeyRoom;
+        [Header("Runtime state (debug)")]
+        [SerializeField] private TimelineId timelineId;
+        [SerializeField] private int floorIndex;
+        [SerializeField] private RoomDirection directionFromHub;
+        [SerializeField] private int visitOrderGlobal = -1;
+        [SerializeField] private int visitOrderAmongDiagonals = -1;
+        [SerializeField] private bool isKeyRoom;
 
         public Guid RoomGuid { get; private set; }
+
 
         // Encounter state
         private bool encounterStarted;
         private int enemiesAlive;
+
+        #region Query API
+
+        public RoomType RoomType => roomType;
+        public TimelineId TimelineId => timelineId;
+        public int FloorIndex => floorIndex;
+        public RoomDirection DirectionFromHub => directionFromHub;
+        public int VisitOrderGlobal { get => visitOrderGlobal; set => visitOrderGlobal = value; }
+        public int VisitOrderAmongDiagonals { get => visitOrderAmongDiagonals; set => visitOrderAmongDiagonals = value; }
+        public bool IsKeyRoom => isKeyRoom;
+        public bool EncounterStarted => encounterStarted;
+        public bool AutoStartEncounterOnEnter => autoStartEncounterOnEnter;
+        public EnemySpawner[] EnemySpawners => enemySpawners;
+        public RewardSpawner[] RewardSpawners => rewardSpawners;
+
+
+        #endregion
+
 
         private void Awake()
         {
@@ -75,7 +91,15 @@ namespace Geneforge.Gameplay.Map
         private void OnTriggerEnter(Collider other)
         {
             if (!other.CompareTag("Player")) return;
+            OnPlayerEnteredRoom();
+        }
 
+        /// <summary>
+        /// Hook for subclasses (e.g. shops, events) to customize what happens when the player enters.
+        /// Base implementation handles visit tracking and auto-starting combat encounters.
+        /// </summary>
+        protected virtual void OnPlayerEnteredRoom()
+        {
             // 1) Room visit tracking / key logic
             if (DungeonMapManager.Instance != null)
             {

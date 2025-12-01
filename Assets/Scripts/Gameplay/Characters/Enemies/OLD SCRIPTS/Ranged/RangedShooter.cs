@@ -1,7 +1,7 @@
 using UnityEngine;
-using System.Collections;
 using Geneforge.Gameplay.Characters.Player;
 using Geneforge.Gameplay.Weapons.Bullets;
+using Geneforge.Gameplay.Abilities.Special;
 
 namespace Geneforge.Gameplay.Characters.Enemies.Ranged
 {
@@ -437,9 +437,9 @@ namespace Geneforge.Gameplay.Characters.Enemies.Ranged
             Bullet stats = bullet.GetComponent<Bullet>();
             if (stats != null)
             {
-                stats.damage = 15f;          // podes ajustar aqui
-                stats.isCrit = false;
-                stats.knockbackForce = 0f;
+                stats.Damage = 15f;          // podes ajustar aqui
+                stats.IsCrit = false;
+                stats.KnockbackForce = 0f;
             }
         }
 

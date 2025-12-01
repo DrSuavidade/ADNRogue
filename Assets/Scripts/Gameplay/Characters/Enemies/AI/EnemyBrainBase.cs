@@ -28,6 +28,10 @@ namespace Geneforge.Gameplay.Characters.Enemies.AI
         [SerializeField] protected float lineOfSightPadding = 0.1f;
 
         protected PlayerHealth playerHealth;
+
+        protected Vector3 spawnPosition;
+        bool spawnPositionInitialized;
+
         protected bool isDead;
 
         public float DefaultMoveSpeed   // <- add this
@@ -49,8 +53,8 @@ namespace Geneforge.Gameplay.Characters.Enemies.AI
 
             if (animator == null)
             {
-                if (enemy != null && enemy.animator != null)
-                    animator = enemy.animator;
+                if (enemy != null && enemy.Animator != null)
+                    animator = enemy.Animator;
                 else
                     animator = GetComponentInChildren<Animator>();
             }
@@ -61,6 +65,12 @@ namespace Geneforge.Gameplay.Characters.Enemies.AI
                 target = playerObj.transform;
                 playerHealth = playerObj.GetComponent<PlayerHealth>();
             }
+            if (!spawnPositionInitialized)
+            {
+                spawnPosition = transform.position;
+                spawnPositionInitialized = true;
+            }
+
         }
 
         protected virtual void OnEnable()
@@ -212,6 +222,42 @@ namespace Geneforge.Gameplay.Characters.Enemies.AI
             Vector3 b = target.position;
             a.y = b.y = 0f;
             return Vector3.Distance(a, b);
+        }
+
+        /// <summary>
+        /// Reset the spawn/origin position to the current transform.
+        /// Useful if you dynamically move enemies or teleport them.
+        /// </summary>
+        public void ResetSpawnPosition()
+        {
+            spawnPosition = transform.position;
+            spawnPositionInitialized = true;
+        }
+
+        /// <summary>
+        /// Picks a random point on the XZ plane around spawnPosition within radius.
+        /// </summary>
+        protected Vector3 GetRandomPointAroundSpawn(float radius)
+        {
+            Vector2 rnd = Random.insideUnitCircle * radius;
+            return spawnPosition + new Vector3(rnd.x, 0f, rnd.y);
+        }
+
+        /// <summary>
+        /// Returns true if an attack is ready based on attacks-per-second (attackRate).
+        /// Updates lastAttackTime to Time.time when it fires.
+        /// </summary>
+        protected bool IsAttackReady(ref float lastAttackTime, float attackRate)
+        {
+            if (attackRate <= 0f)
+                return false;
+
+            float cooldown = 1f / Mathf.Max(0.001f, attackRate);
+            if (Time.time < lastAttackTime + cooldown)
+                return false;
+
+            lastAttackTime = Time.time;
+            return true;
         }
     }
 }

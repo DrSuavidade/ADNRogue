@@ -20,20 +20,16 @@ namespace Geneforge.Gameplay.Characters.Enemies.Eras.Prehistoric
                 if (cols[i].attachedRigidbody && cols[i].attachedRigidbody.gameObject == gameObject)
                     continue;
 
-                var e = cols[i].GetComponentInParent<Enemy>();
+                var e = cols[i].GetComponentInParent<EnemyCore>();
                 if (!e || e == enemy) continue;
                 if (e.CurrentHealth <= 0f) continue;
 
-                // simple heal – clamp to max
-                float newHp = Mathf.Min(e.CurrentHealth + healPerCast, e.MaxHealth);
-                float delta = newHp - e.CurrentHealth;
+                // how much we can actually heal without exceeding max
+                float delta = Mathf.Min(healPerCast, e.MaxHealth - e.CurrentHealth);
                 if (delta <= 0f) continue;
 
-                // reuse TakeDamage as a negative damage? Better to expose a Heal,
-                // but for now we do a simple field adjust if you prefer.
-                var field = typeof(Enemy).GetField("currentHealth", System.Reflection.BindingFlags.NonPublic | System.Reflection.BindingFlags.Instance);
-                if (field != null)
-                    field.SetValue(e, newHp);
+                // use the proper API instead of reflection
+                e.Heal(delta);
             }
         }
     }

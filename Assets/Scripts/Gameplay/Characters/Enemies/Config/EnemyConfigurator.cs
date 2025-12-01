@@ -32,7 +32,7 @@ namespace Geneforge.Gameplay.Characters.Enemies.Config
             }
 
             if (enemy != null)
-                enemy.maxHealth = archetype.maxHealth;
+                enemy.MaxHealth = archetype.maxHealth;
 
             if (animator != null && archetype.animatorController != null)
                 animator.runtimeAnimatorController = archetype.animatorController;

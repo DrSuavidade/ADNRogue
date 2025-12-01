@@ -19,7 +19,6 @@ namespace Geneforge.Gameplay.Characters.Enemies.AI
         public float attackRate = 1.25f;
         public string attackTrigger = "Attack";
 
-        Vector3 spawnPos;
         Vector3 wanderTarget;
         float wanderTimer;
         float lastAttackTime;
@@ -27,7 +26,6 @@ namespace Geneforge.Gameplay.Characters.Enemies.AI
         protected override void Awake()
         {
             base.Awake();
-            spawnPos = transform.position;
             PickWanderTarget();
         }
 
@@ -82,9 +80,9 @@ namespace Geneforge.Gameplay.Characters.Enemies.AI
         void PickWanderTarget()
         {
             wanderTimer = wanderInterval;
-            Vector2 rnd = UnityEngine.Random.insideUnitCircle * wanderRadius;
-            wanderTarget = spawnPos + new Vector3(rnd.x, 0f, rnd.y);
+            wanderTarget = GetRandomPointAroundSpawn(wanderRadius);
         }
+
 
         void Strafe(float dt)
         {
@@ -102,10 +100,8 @@ namespace Geneforge.Gameplay.Characters.Enemies.AI
 
         void TryAttack()
         {
-            if (Time.time < lastAttackTime + 1f / Mathf.Max(0.001f, attackRate))
+            if (!IsAttackReady(ref lastAttackTime, attackRate))
                 return;
-
-            lastAttackTime = Time.time;
 
             if (animator != null && !string.IsNullOrEmpty(attackTrigger))
                 animator.SetTrigger(attackTrigger);

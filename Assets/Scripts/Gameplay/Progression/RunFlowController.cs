@@ -9,12 +9,19 @@ namespace Geneforge.Gameplay.Progression
         public static RunFlowController Instance { get; private set; }
 
         [Header("Scene Names")]
-        public string dungeonSceneName = "Dungeon";
+        [SerializeField] private string dungeonSceneName = "Dungeon";
 
-        public string prehistoricBossSceneName = "Boss_Prehistoric";
-        public string romanBossSceneName = "Boss_Roman";
-        public string presentBossSceneName = "Boss_Present";
-        public string futureBossSceneName = "Boss_Future";
+        [SerializeField] private string prehistoricBossSceneName = "Boss_Prehistoric";
+        [SerializeField] private string romanBossSceneName = "Boss_Roman";
+        [SerializeField] private string presentBossSceneName = "Boss_Present";
+        [SerializeField] private string futureBossSceneName = "Boss_Future";
+
+        public string DungeonSceneName => dungeonSceneName;
+        public string PrehistoricBossSceneName => prehistoricBossSceneName;
+        public string RomanBossSceneName => romanBossSceneName;
+        public string PresentBossSceneName => presentBossSceneName;
+        public string FutureBossSceneName => futureBossSceneName;
+
 
         private void Awake()
         {
