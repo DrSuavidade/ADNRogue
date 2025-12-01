@@ -74,7 +74,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: d0b1c0d991bf8fe4782a687f3a93b40c, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  enemy: {fileID: 6793067370983324062}
+  enemy: {fileID: 4978355865993467342}
   fillImage: {fileID: 7565365152618398896}
   offset: {x: 0, y: 2.2, z: 0}
 --- !u!114 &8454240459836763548
@@ -89,7 +89,6 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 781cdc936ea01b343a9b5713c6112736, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  sourcePrefab: {fileID: 0}
 --- !u!1 &157278776160237104
 GameObject:
   m_ObjectHideFlags: 0
@@ -728,10 +727,12 @@ GameObject:
   m_Component:
   - component: {fileID: 8643704228900336698}
   - component: {fileID: 8951362324333849935}
-  - component: {fileID: 6793067370983324062}
   - component: {fileID: 5615347123532969311}
-  - component: {fileID: 453855838198358919}
   - component: {fileID: 4049140026613856608}
+  - component: {fileID: 4978355865993467342}
+  - component: {fileID: 5754146732298803613}
+  - component: {fileID: 1563789858464509814}
+  - component: {fileID: 3481557965177417252}
   m_Layer: 0
   m_Name: Muscles_Prefab
   m_TagString: Untagged
@@ -779,25 +780,6 @@ Animator:
   m_AllowConstantClipSamplingOptimization: 1
   m_KeepAnimatorStateOnDisable: 0
   m_WriteDefaultValuesOnDisable: 0
---- !u!114 &6793067370983324062
-MonoBehaviour:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 4097680685806662130}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: e4a43c4621d7d934c958167a5153415f, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: 
-  maxHealth: 5
-  animator: {fileID: 8951362324333849935}
-  damagedTrigger: Damaged
-  deathTrigger: Death
-  deathAnimDuration: 5
-  damageTextPrefab: {fileID: 8104875995613135839, guid: 51bfa69456bef62438805f10c2608f9f, type: 3}
-  damageTextOffset: {x: 0, y: 2.5, z: 0}
 --- !u!65 &5615347123532969311
 BoxCollider:
   m_ObjectHideFlags: 0
@@ -819,56 +801,6 @@ BoxCollider:
   serializedVersion: 3
   m_Size: {x: 0.60432434, y: 1.795417, z: 0.5696602}
   m_Center: {x: -0.043851852, y: 0.8747634, z: -0.069402695}
---- !u!114 &453855838198358919
-MonoBehaviour:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 4097680685806662130}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: 9f5333ad6dd6de548a6f720b49aea61f, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: 
-  animator: {fileID: 8951362324333849935}
-  playerHealth: {fileID: 0}
-  stayStationary: 0
-  rotateInPlace: 1
-  wanderRadius: 5
-  wanderInterval: 3
-  wanderSpeed: 2
-  idleWaitDuration: 1
-  detectionRadius: 6
-  chaseSpeed: 4
-  attackRange: 1.5
-  attackRate: 1
-  damagePerHit: 10
-  attackVariants: 2
-  knockbackRootOverride: {fileID: 0}
-  applyKnockback: 1
-  knockbackForce: 6
-  knockbackUpward: 0.5
-  knockbackMaxSpeed: 12
-  damagePauseDuration: 0.5
-  disableRootMotionWhenLocked: 1
-  hardStopRigidbodyWhenLocked: 1
-  hardStopFreezeRotationY: 1
-  freezeRotationWhileAttacking: 1
-  attackStateNames:
-  - Attack
-  - AttackB
-  - AttackC
-  attackStateTags:
-  - Attack
-  freezeRotationWhileHit: 1
-  hitStateNames:
-  - Damaged
-  - Hit
-  - Hurt
-  hitStateTags:
-  - Hurt
-  - Damaged
 --- !u!54 &4049140026613856608
 Rigidbody:
   m_ObjectHideFlags: 0
@@ -896,6 +828,92 @@ Rigidbody:
   m_Interpolate: 0
   m_Constraints: 0
   m_CollisionDetection: 0
+--- !u!114 &4978355865993467342
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 4097680685806662130}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 04262b82bdec8064fb09624bede68c08, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  maxHealth: 5
+  animator: {fileID: 8951362324333849935}
+  damagedTrigger: Damaged
+  deathTrigger: Death
+  deathAnimDuration: 1
+  damageTextPrefab: {fileID: 0}
+  damageTextOffset: {x: 0, y: 2.5, z: 0}
+  hitHealthThresholds:
+  - 0.7
+  - 0.4
+  - 0.15
+--- !u!114 &5754146732298803613
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 4097680685806662130}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 3dc47d85428014f44aa44d8f7711fd2c, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  enemy: {fileID: 4978355865993467342}
+  animator: {fileID: 8951362324333849935}
+  target: {fileID: 0}
+  defaultMoveSpeed: 3
+  rotationSpeedDegPerSec: 540
+  faceTargetWhileMoving: 1
+  useLineOfSight: 0
+  lineOfSightMask:
+    serializedVersion: 2
+    m_Bits: 4294967295
+  lineOfSightPadding: 0.1
+  stayStationary: 0
+  rotateInPlace: 1
+  wanderRadius: 5
+  wanderInterval: 3
+  wanderSpeed: 2
+  detectionRadius: 20
+  chaseSpeed: 4
+  attackRange: 1.5
+  attackRate: 1
+  damagePerHit: 10
+  attackVariants: 2
+  damagePauseDuration: 0.5
+--- !u!114 &1563789858464509814
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 4097680685806662130}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 041dfb9d0021c764c89fc81d23aea2ae, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  slamDamage: 18
+  slamRange: 2.8
+  slamAngle: 80
+--- !u!114 &3481557965177417252
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 4097680685806662130}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 9aebafe7010ecf54e8eae55b15a6233d, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  archetype: {fileID: 11400000, guid: c3228a33b0662de4f8084130de5d81bb, type: 2}
 --- !u!1 &4183706480518803915
 GameObject:
   m_ObjectHideFlags: 0
