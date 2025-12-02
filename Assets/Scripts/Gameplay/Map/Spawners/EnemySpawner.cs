@@ -29,6 +29,7 @@ namespace Geneforge.Gameplay.Map
         public void Initialize(RoomInstance room)
         {
             ownerRoom = room;
+            aliveEnemies = 0;
         }
 
         /// <summary>
@@ -84,7 +85,7 @@ namespace Geneforge.Gameplay.Map
                 aliveEnemies = 0;
             }
 
-            if (aliveEnemies == 0 && ownerRoom != null)
+            if (ownerRoom != null)
             {
                 ownerRoom.NotifyEnemyDied();
             }

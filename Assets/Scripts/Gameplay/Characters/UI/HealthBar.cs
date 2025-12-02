@@ -10,6 +10,9 @@ namespace Geneforge.Gameplay.Characters.UI
         [SerializeField] private EnemyCore enemy;
         [SerializeField] private Image fillImage;
         [SerializeField] private Vector3 offset = Vector3.up * 1.2f;
+        [SerializeField] private bool autoHeightFromEnemy = true;
+        [SerializeField] private float extraHeight = 0.15f; // how far above the top of the enemy
+        float cachedHeight = -1f;
 
         public EnemyCore Enemy
         {
@@ -65,6 +68,7 @@ namespace Geneforge.Gameplay.Characters.UI
             }
 
             enemy = owner;
+            RecomputeOffset();
 
             // If we're already enabled, hook the event immediately
             if (isActiveAndEnabled && enemy != null && !_subscribed)
@@ -83,6 +87,7 @@ namespace Geneforge.Gameplay.Characters.UI
             {
                 enemy.OnFirstHit += OnEnemyFirstHit;
                 _subscribed = true;
+                RecomputeOffset();
 
                 if (enemy.HasBeenHit)
                     canvas.enabled = true;
@@ -132,5 +137,41 @@ namespace Geneforge.Gameplay.Characters.UI
             else
                 fillImage.color = Color.green;
         }
+
+        void RecomputeOffset()
+        {
+            if (!autoHeightFromEnemy || enemy == null)
+                return;
+
+            float h = EstimateHeight(enemy);
+            cachedHeight = h;
+            offset = Vector3.up * (h + extraHeight);
+        }
+
+        float EstimateHeight(EnemyCore e)
+        {
+            if (e == null) return 1.2f;
+
+            // 1) explicit override per enemy (designer control)
+            if (e.HealthBarHeightOverride > 0f)
+                return e.HealthBarHeightOverride;
+
+            // 2) auto from CharacterController / Collider
+            float h = 1.6f; // a reasonable human-ish default
+            var cc = e.GetComponent<CharacterController>();
+            if (cc)
+            {
+                h = cc.height;
+            }
+            else
+            {
+                var col = e.GetComponent<Collider>();
+                if (col)
+                    h = Mathf.Max(1f, col.bounds.size.y);
+            }
+
+            return h;
+        }
+
     }
 }

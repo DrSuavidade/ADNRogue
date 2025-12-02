@@ -22,11 +22,15 @@ namespace Geneforge.Gameplay.Map
         {
             if (_reported) return;
             _reported = true;
+
+            Debug.Log($"[EnemyDeathNotifier] Death reported from {gameObject.name}", this);
+
             if (ownerSpawner != null)
             {
                 ownerSpawner.NotifyEnemyDied();
             }
         }
+
 
         private void OnDestroy()
         {

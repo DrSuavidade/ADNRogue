@@ -31,6 +31,10 @@ namespace Geneforge.Gameplay.Characters.Enemies
         [Tooltip("Pooled world-space health bar prefab (must have HealthBar + PoolIdentifier).")]
         [SerializeField] private GameObject healthBarPrefab;
 
+        [Tooltip("Optional explicit height (in world units) above the enemy pivot for the health bar. " +
+         "If <= 0, a height is auto-estimated from colliders/CharacterController.")]
+        [SerializeField] private float healthBarHeightOverride = -1f;
+
         // Expose fields
         public float CurrentHealth => currentHealth;
         public float MaxHealth { get => maxHealth; set => maxHealth = value; }
@@ -42,6 +46,7 @@ namespace Geneforge.Gameplay.Characters.Enemies
         public GameObject DamageTextPrefab => damageTextPrefab;
         public Vector3 DamageTextOffset => damageTextOffset;
         public float[] HitHealthThresholds => hitHealthThresholds;
+        public float HealthBarHeightOverride => healthBarHeightOverride;
 
 
         // Events

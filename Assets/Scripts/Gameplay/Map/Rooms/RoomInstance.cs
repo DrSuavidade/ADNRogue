@@ -146,11 +146,15 @@ namespace Geneforge.Gameplay.Map
         internal void NotifyEnemyDied()
         {
             enemiesAlive--;
+            Debug.Log($"[RoomInstance] Enemy died in {name}, enemiesAlive now = {enemiesAlive}");
+
             if (enemiesAlive <= 0)
             {
+                Debug.Log($"[RoomInstance] All enemies cleared in {name}, spawning rewards.");
                 OnAllEnemiesCleared();
             }
         }
+
 
         private void OnAllEnemiesCleared()
         {
