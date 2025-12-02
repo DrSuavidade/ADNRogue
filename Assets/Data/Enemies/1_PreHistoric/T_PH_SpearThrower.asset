@@ -15,7 +15,7 @@ MonoBehaviour:
   displayName: Spear Thrower
   maxHealth: 10
   baseMoveSpeed: 3
-  animatorController: {fileID: 0}
+  animatorController: {fileID: 9100000, guid: 06e2c4b49a155154fa056b665a47c206, type: 2}
   melee:
     detectionRadius: 0
     chaseSpeed: 0

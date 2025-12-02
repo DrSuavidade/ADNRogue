@@ -15,7 +15,7 @@ MonoBehaviour:
   displayName: Tammer
   maxHealth: 10
   baseMoveSpeed: 3
-  animatorController: {fileID: 0}
+  animatorController: {fileID: 9100000, guid: 9143f241fc731bf44a6ce8248708ca26, type: 2}
   melee:
     detectionRadius: 0
     chaseSpeed: 0

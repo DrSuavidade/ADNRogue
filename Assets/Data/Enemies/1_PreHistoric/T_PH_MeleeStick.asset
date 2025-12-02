@@ -15,7 +15,7 @@ MonoBehaviour:
   displayName: Melee Stick
   maxHealth: 10
   baseMoveSpeed: 3
-  animatorController: {fileID: 0}
+  animatorController: {fileID: 9100000, guid: f2bef8728ee51f1499e9e864fb8317e8, type: 2}
   melee:
     detectionRadius: 0
     chaseSpeed: 0

@@ -15,7 +15,7 @@ MonoBehaviour:
   displayName: Meditation
   maxHealth: 10
   baseMoveSpeed: 3
-  animatorController: {fileID: 0}
+  animatorController: {fileID: 9100000, guid: 281f1fbc9d75470428dd8b1f8d4aefde, type: 2}
   melee:
     detectionRadius: 0
     chaseSpeed: 0

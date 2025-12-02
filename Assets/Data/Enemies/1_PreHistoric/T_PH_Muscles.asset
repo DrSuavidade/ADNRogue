@@ -15,7 +15,7 @@ MonoBehaviour:
   displayName: Muscles
   maxHealth: 10
   baseMoveSpeed: 3
-  animatorController: {fileID: 0}
+  animatorController: {fileID: 9100000, guid: e5b65934c995a8a4ca58c73be39528b8, type: 2}
   melee:
     detectionRadius: 0
     chaseSpeed: 0
