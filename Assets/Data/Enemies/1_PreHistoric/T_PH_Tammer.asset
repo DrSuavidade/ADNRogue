@@ -36,10 +36,10 @@ MonoBehaviour:
     strafeSpeed: 0
     attackRate: 0
   support:
-    followRadiusFromSpawn: 0
-    repositionSpeed: 0
-    detectionRadius: 0
-    supportInterval: 0
+    followRadiusFromSpawn: 12
+    repositionSpeed: 8
+    detectionRadius: 15
+    supportInterval: 7
   animal:
     roamRadius: 0
     roamInterval: 0

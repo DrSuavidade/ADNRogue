@@ -27,14 +27,14 @@ MonoBehaviour:
     damagePerHit: 0
     attackVariants: 1
   ranged:
-    detectionRadius: 0
-    wanderRadius: 0
-    wanderInterval: 0
-    wanderSpeed: 0
-    preferredRange: 0
-    minRange: 0
-    strafeSpeed: 0
-    attackRate: 0
+    detectionRadius: 12
+    wanderRadius: 4
+    wanderInterval: 4
+    wanderSpeed: 2
+    preferredRange: 9
+    minRange: 6
+    strafeSpeed: 1.5
+    attackRate: 0.9
   support:
     followRadiusFromSpawn: 0
     repositionSpeed: 0

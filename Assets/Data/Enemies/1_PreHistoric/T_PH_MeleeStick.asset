@@ -17,14 +17,14 @@ MonoBehaviour:
   baseMoveSpeed: 3
   animatorController: {fileID: 9100000, guid: f2bef8728ee51f1499e9e864fb8317e8, type: 2}
   melee:
-    detectionRadius: 0
-    chaseSpeed: 0
-    wanderRadius: 0
-    wanderInterval: 0
-    wanderSpeed: 0
-    attackRange: 0
-    attackRate: 0
-    damagePerHit: 0
+    detectionRadius: 5
+    chaseSpeed: 4
+    wanderRadius: 10
+    wanderInterval: 2
+    wanderSpeed: 2
+    attackRange: 2
+    attackRate: 1
+    damagePerHit: 1
     attackVariants: 1
   ranged:
     detectionRadius: 0

@@ -41,12 +41,12 @@ MonoBehaviour:
     detectionRadius: 0
     supportInterval: 0
   animal:
-    roamRadius: 0
-    roamInterval: 0
-    roamSpeed: 0
-    detectionRadius: 0
-    pounceRange: 0
-    chaseSpeed: 0
+    roamRadius: 9
+    roamInterval: 3
+    roamSpeed: 3
+    detectionRadius: 10
+    pounceRange: 3.5
+    chaseSpeed: 4
   flying:
     hoverHeight: 0
     hoverLerpSpeed: 0
