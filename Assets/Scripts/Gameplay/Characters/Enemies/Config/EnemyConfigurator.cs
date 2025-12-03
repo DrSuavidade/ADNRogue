@@ -3,6 +3,39 @@ using Geneforge.Gameplay.Characters.Enemies.AI;
 
 namespace Geneforge.Gameplay.Characters.Enemies.Config
 {
+    // ================== NOVO: TIPOS PARA O RANGED ==================
+
+    public enum RangedAttackMode
+    {
+        RangedThrow,
+        RangedShooter
+    }
+
+    [System.Serializable]
+    public class ThrowAttackSettings
+    {
+        [Tooltip("Onde a lança está \"presa\" na mão/corpo do inimigo.")]
+        public Transform spearSocket;
+
+        [Tooltip("Prefab da lança que será lançada.")]
+        public GameObject spearPrefab;
+
+        [Tooltip("Ponto exato de onde a lança é lançada (pode ser igual ao spearSocket).")]
+        public Transform throwOrigin;
+    }
+
+    [System.Serializable]
+    public class ShooterAttackSettings
+    {
+        [Tooltip("Ponto da arma de onde sai o projétil.")]
+        public Transform firePoint;
+
+        [Tooltip("Prefab do projétil/bala que é disparado.")]
+        public GameObject bulletPrefab;
+    }
+
+    // ================== SCRIPT ORIGINAL + CAMPOS NOVOS ==================
+
     /// <summary>
     /// Applies an EnemyArchetype to the attached Enemy + Brain(s) at runtime.
     /// This makes enemies fully data-driven.
@@ -12,6 +45,25 @@ namespace Geneforge.Gameplay.Characters.Enemies.Config
     public class EnemyConfigurator : MonoBehaviour
     {
         [SerializeField] private EnemyArchetype archetype;
+
+        // ----------- NOVO BLOCO, NÃO MEXE NA LÓGICA EXISTENTE -----------
+
+        [Header("Ranged Visual/Spawn Setup")]
+        [Tooltip("Tipo de ataque à distância que este inimigo usa.")]
+        [SerializeField] private RangedAttackMode rangedAttackMode = RangedAttackMode.RangedThrow;
+
+        [Tooltip("Definições para inimigos que lançam a arma que têm na mão.")]
+        [SerializeField] private ThrowAttackSettings throwSettings = new ThrowAttackSettings();
+
+        [Tooltip("Definições para inimigos que disparam projéteis/balas.")]
+        [SerializeField] private ShooterAttackSettings shooterSettings = new ShooterAttackSettings();
+
+        // Getters públicos (para animation events / abilities irem buscar isto)
+        public RangedAttackMode RangedMode => rangedAttackMode;
+        public ThrowAttackSettings ThrowSettings => throwSettings;
+        public ShooterAttackSettings ShooterSettings => shooterSettings;
+
+        // ----------------------------------------------------------------
 
         EnemyCore enemy;
         Animator animator;
@@ -81,6 +133,10 @@ namespace Geneforge.Gameplay.Characters.Enemies.Config
             brain.minRange        = c.minRange;
             brain.strafeSpeed     = c.strafeSpeed;
             brain.attackRate      = c.attackRate;
+
+            // Nota: NÃO alterei nada da lógica aqui.
+            // O tipo Throw/Shooter é só configuração visual/spawn,
+            // usado depois pelos teus scripts / animation events.
         }
 
         void ApplySupportConfig()
@@ -107,7 +163,6 @@ namespace Geneforge.Gameplay.Characters.Enemies.Config
             brain.detectionRadius = c.detectionRadius;
             brain.pounceRange     = c.pounceRange;
             brain.chaseSpeed      = c.chaseSpeed;
-            brain.attackRate      = c.attackRate;   // <-- cooldown de ataque vindo do archetype
         }
 
         void ApplyFlyingConfig()

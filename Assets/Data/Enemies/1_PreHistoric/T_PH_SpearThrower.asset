@@ -27,12 +27,12 @@ MonoBehaviour:
     damagePerHit: 0
     attackVariants: 1
   ranged:
-    detectionRadius: 15
+    detectionRadius: 12
     wanderRadius: 6
     wanderInterval: 7
     wanderSpeed: 5
     preferredRange: 12
-    minRange: 9
+    minRange: 5
     strafeSpeed: 5
     attackRate: 1
   support:
@@ -47,6 +47,7 @@ MonoBehaviour:
     detectionRadius: 0
     pounceRange: 0
     chaseSpeed: 0
+    attackRate: 0
   flying:
     hoverHeight: 0
     hoverLerpSpeed: 0

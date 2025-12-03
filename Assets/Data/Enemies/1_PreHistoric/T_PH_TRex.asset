@@ -47,7 +47,7 @@ MonoBehaviour:
     detectionRadius: 10
     pounceRange: 3
     chaseSpeed: 4
-    attackRate: 4
+    attackRate: 1.5
   flying:
     hoverHeight: 0
     hoverLerpSpeed: 0

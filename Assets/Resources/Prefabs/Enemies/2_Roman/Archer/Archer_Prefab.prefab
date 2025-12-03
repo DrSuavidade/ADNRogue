@@ -133,6 +133,9 @@ PrefabInstance:
     - targetCorrespondingSourceObject: {fileID: 919132149155446097, guid: 67cf4f970ccdbf0489f541ceef0dd86d, type: 3}
       insertIndex: -1
       addedObject: {fileID: 6185619920435322272}
+    - targetCorrespondingSourceObject: {fileID: 919132149155446097, guid: 67cf4f970ccdbf0489f541ceef0dd86d, type: 3}
+      insertIndex: -1
+      addedObject: {fileID: 3224830986448891683}
   m_SourcePrefab: {fileID: 100100000, guid: 67cf4f970ccdbf0489f541ceef0dd86d, type: 3}
 --- !u!4 &8580213124949620819 stripped
 Transform:
@@ -211,6 +214,7 @@ MonoBehaviour:
   - 0.4
   - 0.15
   healthBarPrefab: {fileID: 7692226100105962595, guid: fbae99ce307c85f42989e3e9d541584f, type: 3}
+  healthBarHeightOverride: -1
 --- !u!114 &3717115239682665837
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -256,10 +260,31 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   arrowPrefab: {fileID: 0}
-  shootOrigin: {fileID: 3865821694927854932}
+  shootOrigin: {fileID: 0}
   arrowSpeed: 26
   arcHeight: 0.5
   damage: 8
   hitMask:
     serializedVersion: 2
-    m_Bits: 4294967295
+    m_Bits: 8
+--- !u!114 &3224830986448891683
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 8960152028553962217}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 9aebafe7010ecf54e8eae55b15a6233d, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  archetype: {fileID: 11400000, guid: f7ac99907c51692409863d6887055b9c, type: 2}
+  rangedAttackMode: 0
+  throwSettings:
+    spearSocket: {fileID: 0}
+    spearPrefab: {fileID: 0}
+    throwOrigin: {fileID: 3865821694927854932}
+  shooterSettings:
+    firePoint: {fileID: 0}
+    bulletPrefab: {fileID: 0}

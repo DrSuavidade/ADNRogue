@@ -244,7 +244,7 @@ MonoBehaviour:
   useLineOfSight: 0
   lineOfSightMask:
     serializedVersion: 2
-    m_Bits: 4294967295
+    m_Bits: 8
   lineOfSightPadding: 0.1
   wanderRadius: 6
   wanderInterval: 4
@@ -267,8 +267,6 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: bf5cbc290a2e05f40ae8585957c6fef9, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  spearPrefab: {fileID: 3478011260350783487, guid: fb8520eaff9df8c4b9d87830e37d5895, type: 3}
-  throwOrigin: {fileID: 1197512567069754311}
   throwSpeed: 22
   arcHeight: 1
   damage: 10
@@ -288,3 +286,11 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   archetype: {fileID: 11400000, guid: 413473681191690469f86998df714461, type: 2}
+  rangedAttackMode: 0
+  throwSettings:
+    spearSocket: {fileID: 2175245406134525817}
+    spearPrefab: {fileID: 3478011260350783487, guid: fb8520eaff9df8c4b9d87830e37d5895, type: 3}
+    throwOrigin: {fileID: 1197512567069754311}
+  shooterSettings:
+    firePoint: {fileID: 0}
+    bulletPrefab: {fileID: 0}
