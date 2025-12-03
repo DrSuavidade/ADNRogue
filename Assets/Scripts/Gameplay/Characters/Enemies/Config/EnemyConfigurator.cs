@@ -107,6 +107,7 @@ namespace Geneforge.Gameplay.Characters.Enemies.Config
             brain.detectionRadius = c.detectionRadius;
             brain.pounceRange     = c.pounceRange;
             brain.chaseSpeed      = c.chaseSpeed;
+            brain.attackRate      = c.attackRate;   // <-- cooldown de ataque vindo do archetype
         }
 
         void ApplyFlyingConfig()

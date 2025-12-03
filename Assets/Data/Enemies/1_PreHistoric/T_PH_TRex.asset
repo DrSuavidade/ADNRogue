@@ -45,8 +45,9 @@ MonoBehaviour:
     roamInterval: 3
     roamSpeed: 3
     detectionRadius: 10
-    pounceRange: 3.5
+    pounceRange: 3
     chaseSpeed: 4
+    attackRate: 4
   flying:
     hoverHeight: 0
     hoverLerpSpeed: 0

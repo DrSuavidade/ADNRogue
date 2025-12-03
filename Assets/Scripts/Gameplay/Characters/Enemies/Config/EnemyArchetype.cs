@@ -22,7 +22,6 @@ namespace Geneforge.Gameplay.Characters.Enemies.Config
 
         // --------------------------------------------------------------------
         // Brain-specific configs
-        // Only the relevant section is used depending on which brain is attached
         // --------------------------------------------------------------------
 
         [System.Serializable]
@@ -70,6 +69,7 @@ namespace Geneforge.Gameplay.Characters.Enemies.Config
             public float detectionRadius;
             public float pounceRange;
             public float chaseSpeed;
+            public float attackRate;   // <-- cooldown entre ataques dos animais
         }
 
         [System.Serializable]
@@ -102,10 +102,6 @@ namespace Geneforge.Gameplay.Characters.Enemies.Config
         public FlyingConfig flying;
         public BossConfig boss;
 
-        // --------------------------------------------------------------------
-        // Ability knobs (generic)
-        // You *can* put era-specific ability data here, but I’d start small.
-        // For Prehistoric we’ll keep those on the ability components directly.
-        // --------------------------------------------------------------------
+        // Aqui podes adicionar coisas de abilities específicas se quiseres mais tarde.
     }
 }

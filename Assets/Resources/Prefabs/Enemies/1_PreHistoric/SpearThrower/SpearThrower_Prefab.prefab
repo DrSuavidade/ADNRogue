@@ -222,6 +222,7 @@ MonoBehaviour:
   - 0.4
   - 0.15
   healthBarPrefab: {fileID: 7692226100105962595, guid: fbae99ce307c85f42989e3e9d541584f, type: 3}
+  healthBarHeightOverride: -1
 --- !u!114 &7511186842910701520
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -273,7 +274,7 @@ MonoBehaviour:
   damage: 10
   hitMask:
     serializedVersion: 2
-    m_Bits: 0
+    m_Bits: 8
 --- !u!114 &9182396021259245474
 MonoBehaviour:
   m_ObjectHideFlags: 0

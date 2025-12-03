@@ -6,7 +6,7 @@ namespace Geneforge.Gameplay.Characters.Enemies.AI
 {
     /// <summary>
     /// Base class for all enemy brains. Owns high-level behaviour and locomotion,
-    /// but never health/knockback/death (those live on Enemy).
+    /// but never health/knockback/death (those live on EnemyCore).
     /// </summary>
     [DisallowMultipleComponent]
     public abstract class EnemyBrainBase : MonoBehaviour
@@ -34,7 +34,7 @@ namespace Geneforge.Gameplay.Characters.Enemies.AI
 
         protected bool isDead;
 
-        public float DefaultMoveSpeed   // <- add this
+        public float DefaultMoveSpeed
         {
             get => defaultMoveSpeed;
             set => defaultMoveSpeed = value;
@@ -65,12 +65,12 @@ namespace Geneforge.Gameplay.Characters.Enemies.AI
                 target = playerObj.transform;
                 playerHealth = playerObj.GetComponent<PlayerHealth>();
             }
+
             if (!spawnPositionInitialized)
             {
                 spawnPosition = transform.position;
                 spawnPositionInitialized = true;
             }
-
         }
 
         protected virtual void OnEnable()
@@ -96,31 +96,18 @@ namespace Geneforge.Gameplay.Characters.Enemies.AI
         protected virtual void Update()
         {
             if (isDead || enemy == null || enemy.IsDead) return;
-
             TickBrain(Time.deltaTime);
         }
 
-        /// <summary>
-        /// Main brain update loop. Called every frame while the enemy is alive.
-        /// </summary>
         protected abstract void TickBrain(float deltaTime);
 
-        /// <summary>Called the first time Enemy takes damage.</summary>
         protected virtual void HandleFirstHit() { }
-
-        /// <summary>Called every time Enemy takes damage.</summary>
         protected virtual void HandleDamaged(float dmg) { }
 
-        /// <summary>
-        /// Called from Enemy.OnDied and from Enemy.Die().
-        /// Override if you need a custom shutdown, but always call base.
-        /// </summary>
         public virtual void OnOwnerDied()
         {
             if (isDead) return;
             isDead = true;
-
-            // Stop brain updates.
             enabled = false;
         }
 
@@ -130,7 +117,7 @@ namespace Geneforge.Gameplay.Characters.Enemies.AI
         }
 
         // --------------------------------------------------------------------
-        // Utility helpers for child brains
+        // Helpers
         // --------------------------------------------------------------------
 
         protected void MoveTowards(Vector3 worldTarget, float speed)
@@ -174,7 +161,7 @@ namespace Geneforge.Gameplay.Characters.Enemies.AI
             dir.y = 0f;
             if (dir.sqrMagnitude <= 0.0001f) return;
 
-            Vector3 destination = transform.position + dir.normalized; // 1 unit step direction
+            Vector3 destination = transform.position + dir.normalized;
             MoveTowards(destination, speed);
         }
 
@@ -224,29 +211,18 @@ namespace Geneforge.Gameplay.Characters.Enemies.AI
             return Vector3.Distance(a, b);
         }
 
-        /// <summary>
-        /// Reset the spawn/origin position to the current transform.
-        /// Useful if you dynamically move enemies or teleport them.
-        /// </summary>
         public void ResetSpawnPosition()
         {
             spawnPosition = transform.position;
             spawnPositionInitialized = true;
         }
 
-        /// <summary>
-        /// Picks a random point on the XZ plane around spawnPosition within radius.
-        /// </summary>
         protected Vector3 GetRandomPointAroundSpawn(float radius)
         {
             Vector2 rnd = Random.insideUnitCircle * radius;
             return spawnPosition + new Vector3(rnd.x, 0f, rnd.y);
         }
 
-        /// <summary>
-        /// Returns true if an attack is ready based on attacks-per-second (attackRate).
-        /// Updates lastAttackTime to Time.time when it fires.
-        /// </summary>
         protected bool IsAttackReady(ref float lastAttackTime, float attackRate)
         {
             if (attackRate <= 0f)

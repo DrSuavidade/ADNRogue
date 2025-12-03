@@ -1,5 +1,4 @@
 using UnityEngine;
-using System;
 
 namespace Geneforge.Gameplay.Characters.Enemies.AI
 {
@@ -12,14 +11,18 @@ namespace Geneforge.Gameplay.Characters.Enemies.AI
 
         [Header("Aggro")]
         public float detectionRadius = 18f;
-        public float pounceRange = 4f;
+        public float pounceRange = 4f;   // distância a que começa a atacar
         public float chaseSpeed = 5f;
 
+        [Header("Attack")]
+        public float attackRate = 1f;    // ataques por segundo
+
         [Header("Animation")]
-        public string pounceTrigger = "Pounce";
+        public string attackTrigger = "Attack";  // TEM de existir no Animator
 
         Vector3 roamTarget;
         float roamTimer;
+        float lastAttackTime;
 
         protected override void Awake()
         {
@@ -44,12 +47,14 @@ namespace Geneforge.Gameplay.Characters.Enemies.AI
 
             if (dist > pounceRange)
             {
+                // Perseguir o alvo
                 MoveTowards(target.position, chaseSpeed);
             }
             else
             {
+                // Dentro de alcance de ataque
                 FaceTarget();
-                TryPounce();
+                TryAttack();
             }
         }
 
@@ -68,13 +73,17 @@ namespace Geneforge.Gameplay.Characters.Enemies.AI
             roamTarget = GetRandomPointAroundSpawn(roamRadius);
         }
 
-
-        void TryPounce()
+        void TryAttack()
         {
-            if (animator != null && !string.IsNullOrEmpty(pounceTrigger))
-                animator.SetTrigger(pounceTrigger);
+            // Usa helper do EnemyBrainBase para cooldown
+            if (!IsAttackReady(ref lastAttackTime, attackRate))
+                return;
 
-            // Pounce damage / movement handled by the ability component.
+            if (animator != null && !string.IsNullOrEmpty(attackTrigger))
+            {
+                animator.SetTrigger(attackTrigger);
+            }
+            // O dano é tratado via Animation Event em PrehistoricTRex.
         }
     }
 }
