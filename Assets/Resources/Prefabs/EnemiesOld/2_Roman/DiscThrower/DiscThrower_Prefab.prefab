@@ -112,7 +112,7 @@ PrefabInstance:
       objectReference: {fileID: 0}
     - target: {fileID: 919132149155446097, guid: d0c5ab328de083c4f818d45666547178, type: 3}
       propertyPath: m_Name
-      value: Disc
+      value: DiscThrower_Prefab
       objectReference: {fileID: 0}
     - target: {fileID: 4436688111662040078, guid: d0c5ab328de083c4f818d45666547178, type: 3}
       propertyPath: 'm_Materials.Array.data[0]'
@@ -140,9 +140,6 @@ PrefabInstance:
     - targetCorrespondingSourceObject: {fileID: 919132149155446097, guid: d0c5ab328de083c4f818d45666547178, type: 3}
       insertIndex: -1
       addedObject: {fileID: 6336777833197869962}
-    - targetCorrespondingSourceObject: {fileID: 919132149155446097, guid: d0c5ab328de083c4f818d45666547178, type: 3}
-      insertIndex: -1
-      addedObject: {fileID: 4242098644507966310}
   m_SourcePrefab: {fileID: 100100000, guid: d0c5ab328de083c4f818d45666547178, type: 3}
 --- !u!4 &2635958152007520506 stripped
 Transform:
@@ -216,41 +213,10 @@ MonoBehaviour:
   deathAnimDuration: 5
   damageTextPrefab: {fileID: 8104875995613135839, guid: 51bfa69456bef62438805f10c2608f9f, type: 3}
   damageTextOffset: {x: 0, y: 2.5, z: 0}
---- !u!114 &4242098644507966310
-MonoBehaviour:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 3593882271550198371}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: 9917ed6e72275ce4caafa7bcb7fefd71, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: 
-  animator: {fileID: 5441496402898897468}
-  playerHealth: {fileID: 0}
-  stayStationary: 0
-  rotateInPlace: 1
-  wanderRadius: 5
-  wanderInterval: 3
-  wanderSpeed: 2
-  idleWaitDuration: 1
-  detectionRadius: 20
-  chaseSpeed: 4
-  attackRange: 12
-  attackRate: 1.25
-  requireLineOfSight: 1
-  lineOfSightMask:
-    serializedVersion: 2
-    m_Bits: 4294967295
-  lineOfSightPadding: 0.1
-  spearPrefab: {fileID: 6933402500392632678, guid: dfcd17966b5b1d745b28bc0f7ffa9397, type: 3}
-  spearSocket: {fileID: 7820174345819926286}
-  throwOrigin: {fileID: 8703068689626874202}
-  throwForce: 30
-  aimOffset: {x: 0, y: 0, z: 0}
-  damagePauseDuration: 0.5
+  hitHealthThresholds:
+  - 0.7
+  - 0.4
+  - 0.15
 --- !u!4 &4227710505187444953 stripped
 Transform:
   m_CorrespondingSourceObject: {fileID: -8679921383154817045, guid: d0c5ab328de083c4f818d45666547178, type: 3}
@@ -371,7 +337,7 @@ PrefabInstance:
     - target: {fileID: 7425616556199135783, guid: fbae99ce307c85f42989e3e9d541584f, type: 3}
       propertyPath: enemy
       value: 
-      objectReference: {fileID: 6336777833197869962}
+      objectReference: {fileID: 0}
     - target: {fileID: 7425616556199135783, guid: fbae99ce307c85f42989e3e9d541584f, type: 3}
       propertyPath: offset.y
       value: 2.2

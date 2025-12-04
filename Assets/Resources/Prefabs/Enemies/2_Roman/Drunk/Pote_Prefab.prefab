@@ -82,9 +82,6 @@ PrefabInstance:
     - targetCorrespondingSourceObject: {fileID: 919132149155446097, guid: 69929d154b982e844903fc7951d891bb, type: 3}
       insertIndex: -1
       addedObject: {fileID: 6926369012845437933}
-    - targetCorrespondingSourceObject: {fileID: 919132149155446097, guid: 69929d154b982e844903fc7951d891bb, type: 3}
-      insertIndex: -1
-      addedObject: {fileID: 8621446013383328959}
   m_SourcePrefab: {fileID: 100100000, guid: 69929d154b982e844903fc7951d891bb, type: 3}
 --- !u!1 &3251573819424899401 stripped
 GameObject:
@@ -133,31 +130,9 @@ BoxCollider:
     serializedVersion: 2
     m_Bits: 0
   m_LayerOverridePriority: 0
-  m_IsTrigger: 0
+  m_IsTrigger: 1
   m_ProvidesContacts: 0
   m_Enabled: 1
   serializedVersion: 3
   m_Size: {x: 0.013606933, y: 0.017560076, z: 0.011754688}
   m_Center: {x: -0.00019639253, y: 0.0023211306, z: -0.0002457541}
---- !u!114 &8621446013383328959
-MonoBehaviour:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 3251573819424899401}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: dc3df1e3c85b83d4ab356d510a5255a1, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: 
-  lifeSeconds: 10
-  alignToVelocity: 0
-  launchPitchDegrees: 10
-  damage: 20
-  hittable:
-    serializedVersion: 2
-    m_Bits: 8
-  clampByOwnerRange: 1
-  ownerRangeFallback: 30
-  killWhenBehindOwner: 1

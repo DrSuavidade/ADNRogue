@@ -1,14 +1,14 @@
 using UnityEngine;
 using Geneforge.Gameplay.Characters.Player;
+using Geneforge.Gameplay.Characters.Enemies.Config; // <- para EnemyConfigurator
 
 namespace Geneforge.Gameplay.Characters.Enemies.Eras.Roman
 {
     [RequireComponent(typeof(EnemyCore))]
+    [RequireComponent(typeof(EnemyConfigurator))]
     public class RomanDiscThrower : RomanEnemyAbilityBase
     {
-        [Header("Disc")]
-        public GameObject discPrefab;
-        public Transform throwOrigin;
+        [Header("Tiro")]
         public float throwSpeed = 22f;
         public float arcHeight = 0.8f;
         public float damage = 12f;
@@ -16,15 +16,35 @@ namespace Geneforge.Gameplay.Characters.Enemies.Eras.Roman
         [Tooltip("Layers que o disco pode atingir.")]
         public LayerMask hitMask = ~0;
 
+        EnemyConfigurator _config;
+
+        protected override void Awake()
+        {
+            base.Awake();
+            if (_config == null)
+                _config = GetComponent<EnemyConfigurator>();
+        }
+
+        // Chamado pelo Animation Event na animação (ex: AnimEvent_ThrowDisc)
         public void AnimEvent_ThrowDisc()
         {
-            if (!discPrefab || !throwOrigin || !target) return;
+            if (_config == null)
+                _config = GetComponent<EnemyConfigurator>();
 
-            var obj = Instantiate(discPrefab, throwOrigin.position, throwOrigin.rotation);
+            var settings = _config.ThrowSettings;
+            // Usa o que estiver no EnemyConfigurator (SpearPrefab = Throw_Disc, ThrowOrigin = ThrowOrigin)
+            if (settings == null || !settings.spearPrefab || !settings.throwOrigin || !target)
+                return;
+
+            Transform origin = settings.throwOrigin;
+            GameObject prefab = settings.spearPrefab;
+
+            var obj = Instantiate(prefab, origin.position, origin.rotation);
+
             var rb = obj.GetComponent<Rigidbody>();
             if (rb)
             {
-                Vector3 to = target.position - throwOrigin.position;
+                Vector3 to = target.position - origin.position;
                 to.y += arcHeight;
                 Vector3 vel = to.normalized * throwSpeed;
 
@@ -41,6 +61,7 @@ namespace Geneforge.Gameplay.Characters.Enemies.Eras.Roman
         }
     }
 
+    // Igual ao teu, só deixei completo aqui
     public class RomanDiscProjectile : MonoBehaviour
     {
         float damage;
@@ -55,6 +76,7 @@ namespace Geneforge.Gameplay.Characters.Enemies.Eras.Roman
 
         void OnTriggerEnter(Collider other)
         {
+            // filtrar por layer
             if ((hitMask.value & (1 << other.gameObject.layer)) == 0)
                 return;
 
