@@ -15,7 +15,7 @@ MonoBehaviour:
   displayName: Machine Gun
   maxHealth: 10
   baseMoveSpeed: 3
-  animatorController: {fileID: 0}
+  animatorController: {fileID: 9100000, guid: b8f5caf14067beb468cd74dc16aeda5b, type: 2}
   melee:
     detectionRadius: 0
     chaseSpeed: 0
@@ -27,14 +27,14 @@ MonoBehaviour:
     damagePerHit: 0
     attackVariants: 1
   ranged:
-    detectionRadius: 0
-    wanderRadius: 0
-    wanderInterval: 0
-    wanderSpeed: 0
-    preferredRange: 0
-    minRange: 0
-    strafeSpeed: 0
-    attackRate: 0
+    detectionRadius: 12
+    wanderRadius: 3
+    wanderInterval: 4
+    wanderSpeed: 2
+    preferredRange: 9
+    minRange: 4
+    strafeSpeed: 5
+    attackRate: 1
   support:
     followRadiusFromSpawn: 0
     repositionSpeed: 0
@@ -47,6 +47,7 @@ MonoBehaviour:
     detectionRadius: 0
     pounceRange: 0
     chaseSpeed: 0
+    attackRate: 0
   flying:
     hoverHeight: 0
     hoverLerpSpeed: 0
