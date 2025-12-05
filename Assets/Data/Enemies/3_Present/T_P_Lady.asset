@@ -15,16 +15,16 @@ MonoBehaviour:
   displayName: Lady
   maxHealth: 10
   baseMoveSpeed: 3
-  animatorController: {fileID: 0}
+  animatorController: {fileID: 9100000, guid: 38ec14dfa929e844981963e1463f944e, type: 2}
   melee:
-    detectionRadius: 0
-    chaseSpeed: 0
-    wanderRadius: 0
-    wanderInterval: 0
-    wanderSpeed: 0
-    attackRange: 0
-    attackRate: 0
-    damagePerHit: 0
+    detectionRadius: 20
+    chaseSpeed: 5
+    wanderRadius: 5
+    wanderInterval: 2
+    wanderSpeed: 2
+    attackRange: 1
+    attackRate: 1
+    damagePerHit: 3
     attackVariants: 1
   ranged:
     detectionRadius: 0
@@ -47,6 +47,7 @@ MonoBehaviour:
     detectionRadius: 0
     pounceRange: 0
     chaseSpeed: 0
+    attackRate: 0
   flying:
     hoverHeight: 0
     hoverLerpSpeed: 0

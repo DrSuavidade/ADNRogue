@@ -734,6 +734,7 @@ MonoBehaviour:
   - 0.4
   - 0.15
   healthBarPrefab: {fileID: 7692226100105962595, guid: fbae99ce307c85f42989e3e9d541584f, type: 3}
+  healthBarHeightOverride: -1
 --- !u!114 &5754146732298803613
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -755,7 +756,7 @@ MonoBehaviour:
   useLineOfSight: 0
   lineOfSightMask:
     serializedVersion: 2
-    m_Bits: 4294967295
+    m_Bits: 8
   lineOfSightPadding: 0.1
   stayStationary: 0
   rotateInPlace: 1
@@ -783,7 +784,7 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   slamDamage: 18
   slamRange: 2.8
-  slamAngle: 80
+  slamAngle: 71.5
 --- !u!114 &3481557965177417252
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -797,6 +798,14 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   archetype: {fileID: 11400000, guid: c3228a33b0662de4f8084130de5d81bb, type: 2}
+  rangedAttackMode: 0
+  throwSettings:
+    spearSocket: {fileID: 0}
+    spearPrefab: {fileID: 0}
+    throwOrigin: {fileID: 0}
+  shooterSettings:
+    firePoint: {fileID: 0}
+    bulletPrefab: {fileID: 0}
 --- !u!1 &4183706480518803915
 GameObject:
   m_ObjectHideFlags: 0
