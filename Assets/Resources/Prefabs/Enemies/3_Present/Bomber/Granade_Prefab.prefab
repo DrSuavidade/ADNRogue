@@ -70,7 +70,7 @@ PrefabInstance:
       objectReference: {fileID: 2100000, guid: cc49435adaf83644783be06bd38bf222, type: 2}
     - target: {fileID: 919132149155446097, guid: fabceeec5d9a6c34c8234f50f443609f, type: 3}
       propertyPath: m_Name
-      value: Nade
+      value: Granade_Prefab
       objectReference: {fileID: 0}
     m_RemovedComponents: []
     m_RemovedGameObjects: []
@@ -82,9 +82,6 @@ PrefabInstance:
     - targetCorrespondingSourceObject: {fileID: 919132149155446097, guid: fabceeec5d9a6c34c8234f50f443609f, type: 3}
       insertIndex: -1
       addedObject: {fileID: 5503010218890603288}
-    - targetCorrespondingSourceObject: {fileID: 919132149155446097, guid: fabceeec5d9a6c34c8234f50f443609f, type: 3}
-      insertIndex: -1
-      addedObject: {fileID: 8831537213143562287}
   m_SourcePrefab: {fileID: 100100000, guid: fabceeec5d9a6c34c8234f50f443609f, type: 3}
 --- !u!1 &9120280536377733256 stripped
 GameObject:
@@ -139,25 +136,3 @@ Rigidbody:
   m_Interpolate: 0
   m_Constraints: 84
   m_CollisionDetection: 2
---- !u!114 &8831537213143562287
-MonoBehaviour:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 9120280536377733256}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: dc3df1e3c85b83d4ab356d510a5255a1, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: 
-  lifeSeconds: 10
-  alignToVelocity: 0
-  launchPitchDegrees: 8.6
-  damage: 20
-  hittable:
-    serializedVersion: 2
-    m_Bits: 8
-  clampByOwnerRange: 1
-  ownerRangeFallback: 30
-  killWhenBehindOwner: 1
