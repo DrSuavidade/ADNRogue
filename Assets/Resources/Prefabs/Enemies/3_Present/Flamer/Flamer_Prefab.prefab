@@ -730,7 +730,7 @@ MonoBehaviour:
     throwOrigin: {fileID: 7538016838676153319, guid: 92588258b2093a8479a819badcf69743, type: 3}
   shooterSettings:
     firePoint: {fileID: 5675758834790622151}
-    bulletPrefab: {fileID: 0}
+    bulletPrefab: {fileID: 8418156172347864564, guid: 9dfd4632d64c0214d9785b8e9316bc3f, type: 3}
 --- !u!114 &6498318131882488457
 MonoBehaviour:
   m_ObjectHideFlags: 0
