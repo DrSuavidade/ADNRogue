@@ -46,6 +46,7 @@ namespace Geneforge.Gameplay.Characters.Enemies.AI
             animator = GetComponentInChildren<Animator>();
         }
 
+        // EnemyBrainBase.cs
         protected virtual void Awake()
         {
             if (enemy == null)
@@ -58,6 +59,10 @@ namespace Geneforge.Gameplay.Characters.Enemies.AI
                 else
                     animator = GetComponentInChildren<Animator>();
             }
+
+
+            if (animator != null)
+                animator.applyRootMotion = false;
 
             var playerObj = GameObject.FindWithTag("Player");
             if (playerObj != null)
@@ -120,40 +125,55 @@ namespace Geneforge.Gameplay.Characters.Enemies.AI
         // Helpers
         // --------------------------------------------------------------------
 
-        protected void MoveTowards(Vector3 worldTarget, float speed)
+     protected void MoveTowards(Vector3 worldTarget, float speed)
+{
+    if (speed <= 0f) return;
+
+    // ⬇️ NOVO: se o Animator estiver numa animação de ataque, não mexemos o inimigo
+    if (animator != null)
+    {
+        var state = animator.GetCurrentAnimatorStateInfo(0);
+
+        // Se o estado atual tiver nome/tag "Attack", não mover
+        if (state.IsName("Attack") || state.IsTag("Attack"))
         {
-            if (speed <= 0f) return;
-
-            Vector3 pos = transform.position;
-            Vector3 to = worldTarget - pos;
-            to.y = 0f;
-
-            if (to.sqrMagnitude <= 0.0001f)
-            {
-                if (animator != null)
-                    animator.SetFloat("Speed", 0f);
-                return;
-            }
-
-            Vector3 dir = to.normalized;
-            float step = speed * Time.deltaTime;
-            transform.position = pos + dir * step;
-
-            if (faceTargetWhileMoving)
-            {
-                Quaternion targetRot = Quaternion.LookRotation(dir);
-                transform.rotation = Quaternion.RotateTowards(
-                    transform.rotation,
-                    targetRot,
-                    rotationSpeedDegPerSec * Time.deltaTime);
-            }
-
-            if (animator != null && defaultMoveSpeed > 0f)
-            {
-                float normalizedSpeed = Mathf.Clamp01(speed / defaultMoveSpeed);
-                animator.SetFloat("Speed", normalizedSpeed);
-            }
+            animator.SetFloat("Speed", 0f);
+            return;
         }
+    }
+    // ⬆️ FIM DO NOVO BLOCO
+
+    Vector3 pos = transform.position;
+    Vector3 to = worldTarget - pos;
+    to.y = 0f;
+
+    if (to.sqrMagnitude <= 0.0001f)
+    {
+        if (animator != null)
+            animator.SetFloat("Speed", 0f);
+        return;
+    }
+
+    Vector3 dir = to.normalized;
+    float step = speed * Time.deltaTime;
+    transform.position = pos + dir * step;
+
+    if (faceTargetWhileMoving)
+    {
+        Quaternion targetRot = Quaternion.LookRotation(dir);
+        transform.rotation = Quaternion.RotateTowards(
+            transform.rotation,
+            targetRot,
+            rotationSpeedDegPerSec * Time.deltaTime);
+    }
+
+    if (animator != null && defaultMoveSpeed > 0f)
+    {
+        float normalizedSpeed = Mathf.Clamp01(speed / defaultMoveSpeed);
+        animator.SetFloat("Speed", normalizedSpeed);
+    }
+}
+
 
         protected void MoveAwayFrom(Vector3 worldTarget, float speed)
         {
