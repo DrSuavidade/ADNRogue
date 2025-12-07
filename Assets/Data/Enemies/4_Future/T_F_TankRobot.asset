@@ -13,9 +13,9 @@ MonoBehaviour:
   m_Name: T_F_TankRobot
   m_EditorClassIdentifier: 
   displayName: Tank Robot
-  maxHealth: 10
+  maxHealth: 300
   baseMoveSpeed: 3
-  animatorController: {fileID: 0}
+  animatorController: {fileID: 9100000, guid: 97cf7afcbc4239c488c0b6ffad376150, type: 2}
   melee:
     detectionRadius: 20
     chaseSpeed: 5

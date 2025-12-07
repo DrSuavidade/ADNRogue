@@ -13,9 +13,9 @@ MonoBehaviour:
   m_Name: T_R_Archer
   m_EditorClassIdentifier: 
   displayName: Archer
-  maxHealth: 10
+  maxHealth: 120
   baseMoveSpeed: 3
-  animatorController: {fileID: 0}
+  animatorController: {fileID: 9100000, guid: eb24d04fcdca9984b90ecec9580d9262, type: 2}
   melee:
     detectionRadius: 0
     chaseSpeed: 0

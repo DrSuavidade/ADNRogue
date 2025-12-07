@@ -13,7 +13,7 @@ MonoBehaviour:
   m_Name: T_R_DiscThrower
   m_EditorClassIdentifier: 
   displayName: Disc Thrower
-  maxHealth: 10
+  maxHealth: 150
   baseMoveSpeed: 3
   animatorController: {fileID: 9100000, guid: dbb79b3672a780c428403b3535bef49a, type: 2}
   melee:

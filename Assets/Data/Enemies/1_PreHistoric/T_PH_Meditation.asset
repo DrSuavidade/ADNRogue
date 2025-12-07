@@ -13,7 +13,7 @@ MonoBehaviour:
   m_Name: T_PH_Meditation
   m_EditorClassIdentifier: 
   displayName: Meditation
-  maxHealth: 10
+  maxHealth: 200
   baseMoveSpeed: 3
   animatorController: {fileID: 9100000, guid: 281f1fbc9d75470428dd8b1f8d4aefde, type: 2}
   melee:
@@ -47,6 +47,7 @@ MonoBehaviour:
     detectionRadius: 0
     pounceRange: 0
     chaseSpeed: 0
+    attackRate: 0
   flying:
     hoverHeight: 0
     hoverLerpSpeed: 0

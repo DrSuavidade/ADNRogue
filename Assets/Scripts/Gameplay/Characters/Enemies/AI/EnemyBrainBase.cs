@@ -99,10 +99,23 @@ namespace Geneforge.Gameplay.Characters.Enemies.AI
         }
 
         protected virtual void Update()
+{
+    if (isDead || enemy == null || enemy.IsDead) return;
+
+    // 👉 Se estiver na animação de Hit, não corremos o cérebro (não há movimento)
+    if (animator != null)
+    {
+        var state = animator.GetCurrentAnimatorStateInfo(0);
+
+        // Usa o nome OU a tag "Hit" – ajusta ao que tens no Animator
+        if (state.IsName("Hit") || state.IsTag("Hit"))
         {
-            if (isDead || enemy == null || enemy.IsDead) return;
-            TickBrain(Time.deltaTime);
+            return;
         }
+    }
+
+    TickBrain(Time.deltaTime);
+}
 
         protected abstract void TickBrain(float deltaTime);
 

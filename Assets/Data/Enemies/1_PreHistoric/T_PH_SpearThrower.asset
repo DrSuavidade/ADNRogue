@@ -13,7 +13,7 @@ MonoBehaviour:
   m_Name: T_PH_SpearThrower
   m_EditorClassIdentifier: 
   displayName: Spear Thrower
-  maxHealth: 10
+  maxHealth: 200
   baseMoveSpeed: 3
   animatorController: {fileID: 9100000, guid: 06e2c4b49a155154fa056b665a47c206, type: 2}
   melee:

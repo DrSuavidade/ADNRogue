@@ -13,7 +13,7 @@ MonoBehaviour:
   m_Name: T_F_MeleeRobot
   m_EditorClassIdentifier: 
   displayName: Melee Robot
-  maxHealth: 10
+  maxHealth: 200
   baseMoveSpeed: 3
   animatorController: {fileID: 9100000, guid: 0ed9b78de77dfcc42b2db257aa5ac503, type: 2}
   melee:

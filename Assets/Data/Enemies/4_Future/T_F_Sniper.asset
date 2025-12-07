@@ -13,9 +13,9 @@ MonoBehaviour:
   m_Name: T_F_Sniper
   m_EditorClassIdentifier: 
   displayName: Sniper
-  maxHealth: 10
+  maxHealth: 120
   baseMoveSpeed: 3
-  animatorController: {fileID: 0}
+  animatorController: {fileID: 9100000, guid: b76b6bb73b8876a40b3cea8d0f313975, type: 2}
   melee:
     detectionRadius: 0
     chaseSpeed: 0
