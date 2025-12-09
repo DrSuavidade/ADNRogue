@@ -12,10 +12,10 @@ namespace Geneforge.Gameplay.Characters.Enemies.AI
         public float orbitRadius = 10f;
         public float orbitAngularSpeedDeg = 60f;
 
-        [Header("Attack")]
+        [Header("Attack Logic")]
+        // continuam a existir porque o EnemyConfigurator/flying archetype os usa
         public float attackRate = 1.5f;
         public float preferredRange = 12f;
-        public string attackTrigger = "Attack";
 
         float orbitAngle;
         float lastAttackTime;
@@ -34,20 +34,20 @@ namespace Geneforge.Gameplay.Characters.Enemies.AI
 
             if (dist > preferredRange * 1.2f)
             {
-                // move closer
+                // Aproxima
                 MoveTowards(target.position, defaultMoveSpeed);
             }
             else if (dist < preferredRange * 0.8f)
             {
-                // move away a bit
+                // Afasta um bocadinho
                 MoveAwayFrom(target.position, defaultMoveSpeed);
             }
             else
             {
-                // orbit around the player at roughly preferredRange
+                // Órbita à volta do alvo
                 OrbitTarget(dt);
                 FaceTarget();
-                TryAttack();
+                TryAttack(); // aqui NÃO usamos Animator
             }
         }
 
@@ -78,10 +78,12 @@ namespace Geneforge.Gameplay.Characters.Enemies.AI
             if (!IsAttackReady(ref lastAttackTime, attackRate))
                 return;
 
-            if (animator != null && !string.IsNullOrEmpty(attackTrigger))
-                animator.SetTrigger(attackTrigger);
-
-            // Projectile / dive-bomb ability goes in a separate component.
+            // Aqui é onde podes:
+            // - disparar projéteis
+            // - chamar uma ability
+            // - ou simplesmente não fazer nada por agora
+            //
+            // NÃO há qualquer chamada a Animator aqui.
         }
     }
 }

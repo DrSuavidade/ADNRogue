@@ -173,6 +173,11 @@ Transform:
   m_CorrespondingSourceObject: {fileID: 7144269206953838830, guid: 14d4bcc7a8b7cab4e8037db511e4e68b, type: 3}
   m_PrefabInstance: {fileID: 1417498792506449870}
   m_PrefabAsset: {fileID: 0}
+--- !u!1 &8918725905970023834 stripped
+GameObject:
+  m_CorrespondingSourceObject: {fileID: 7525051333444801108, guid: 14d4bcc7a8b7cab4e8037db511e4e68b, type: 3}
+  m_PrefabInstance: {fileID: 1417498792506449870}
+  m_PrefabAsset: {fileID: 0}
 --- !u!1001 &2434856274735013978
 PrefabInstance:
   m_ObjectHideFlags: 0
@@ -325,16 +330,22 @@ PrefabInstance:
       addedObject: {fileID: 336369523514903534}
     - targetCorrespondingSourceObject: {fileID: 919132149155446097, guid: 89484e8d7a3b758488a4df88a1b0e7f1, type: 3}
       insertIndex: -1
-      addedObject: {fileID: 7086686815051689558}
-    - targetCorrespondingSourceObject: {fileID: 919132149155446097, guid: 89484e8d7a3b758488a4df88a1b0e7f1, type: 3}
-      insertIndex: -1
       addedObject: {fileID: 3638120457076259424}
     - targetCorrespondingSourceObject: {fileID: 919132149155446097, guid: 89484e8d7a3b758488a4df88a1b0e7f1, type: 3}
       insertIndex: -1
-      addedObject: {fileID: 1591521546454582771}
+      addedObject: {fileID: 8008042030425339823}
     - targetCorrespondingSourceObject: {fileID: 919132149155446097, guid: 89484e8d7a3b758488a4df88a1b0e7f1, type: 3}
       insertIndex: -1
-      addedObject: {fileID: 8008042030425339823}
+      addedObject: {fileID: 6167653076999934008}
+    - targetCorrespondingSourceObject: {fileID: 919132149155446097, guid: 89484e8d7a3b758488a4df88a1b0e7f1, type: 3}
+      insertIndex: -1
+      addedObject: {fileID: 5360246213931477454}
+    - targetCorrespondingSourceObject: {fileID: 919132149155446097, guid: 89484e8d7a3b758488a4df88a1b0e7f1, type: 3}
+      insertIndex: -1
+      addedObject: {fileID: 4956780400943172237}
+    - targetCorrespondingSourceObject: {fileID: 919132149155446097, guid: 89484e8d7a3b758488a4df88a1b0e7f1, type: 3}
+      insertIndex: -1
+      addedObject: {fileID: 9121221816947263452}
   m_SourcePrefab: {fileID: 100100000, guid: 89484e8d7a3b758488a4df88a1b0e7f1, type: 3}
 --- !u!4 &1458726521076674929 stripped
 Transform:
@@ -368,25 +379,6 @@ Animator:
   m_AllowConstantClipSamplingOptimization: 1
   m_KeepAnimatorStateOnDisable: 0
   m_WriteDefaultValuesOnDisable: 0
---- !u!114 &7086686815051689558
-MonoBehaviour:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 4810826319620790755}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: e4a43c4621d7d934c958167a5153415f, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: 
-  maxHealth: 5
-  animator: {fileID: 336369523514903534}
-  damagedTrigger: Damaged
-  deathTrigger: Death
-  deathAnimDuration: 5
-  damageTextPrefab: {fileID: 8104875995613135839, guid: 51bfa69456bef62438805f10c2608f9f, type: 3}
-  damageTextOffset: {x: 0, y: 2.5, z: 0}
 --- !u!65 &3638120457076259424
 BoxCollider:
   m_ObjectHideFlags: 0
@@ -408,79 +400,6 @@ BoxCollider:
   serializedVersion: 3
   m_Size: {x: 0.46228027, y: 1.9356794, z: 0.5309448}
   m_Center: {x: 0.017160416, y: 1.2502699, z: 0.04107666}
---- !u!114 &1591521546454582771
-MonoBehaviour:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 4810826319620790755}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: 69c79ea2d0f996f4a87a3ca1ea082e38, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: 
-  animator: {fileID: 336369523514903534}
-  playerHealth: {fileID: 0}
-  stayStationary: 0
-  rotateInPlace: 1
-  wanderRadius: 5
-  wanderInterval: 3
-  wanderSpeed: 2
-  idleWaitDuration: 1
-  detectionRadius: 20
-  chaseSpeed: 4
-  requireLineOfSight: 0
-  lineOfSightMask:
-    serializedVersion: 2
-    m_Bits: 8
-  lineOfSightPadding: 0.1
-  throwOrigin: {fileID: 7274252169102820387}
-  defaultAimOffset: {x: 0, y: 0, z: 0}
-  spellA:
-    name: Spell A (Close)
-    prefab: {fileID: 0}
-    attackRange: 6
-    attackRate: 1.1
-    throwForce: 22
-    aimOffset: {x: 0, y: 0, z: 0}
-    animatorTrigger: Attack
-  spellB:
-    name: Spell B (Mid)
-    prefab: {fileID: 0}
-    attackRange: 10
-    attackRate: 1.4
-    throwForce: 26
-    aimOffset: {x: 0, y: 0, z: 0}
-    animatorTrigger: AttackB
-  spellC:
-    name: Spell C (Long)
-    prefab: {fileID: 0}
-    attackRange: 14
-    attackRate: 1.8
-    throwForce: 32
-    aimOffset: {x: 0, y: 0, z: 0}
-    animatorTrigger: AttackC
-  damagePauseDuration: 0.5
-  disableRootMotionWhenLocked: 1
-  hardStopRigidbodyWhenLocked: 1
-  hardStopFreezeRotationY: 1
-  freezeRotationWhileAttacking: 1
-  attackStateNames:
-  - Attack
-  - AttackB
-  - AttackC
-  attackStateTags:
-  - Attack
-  freezeRotationWhileHit: 1
-  hitStateNames:
-  - Damaged
-  - Hit
-  - Hurt
-  hitStateTags:
-  - Hurt
-  - Damaged
-  deathStateName: Death
 --- !u!54 &8008042030425339823
 Rigidbody:
   m_ObjectHideFlags: 0
@@ -508,6 +427,98 @@ Rigidbody:
   m_Interpolate: 0
   m_Constraints: 84
   m_CollisionDetection: 2
+--- !u!114 &6167653076999934008
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 4810826319620790755}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 04262b82bdec8064fb09624bede68c08, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  maxHealth: 5
+  animator: {fileID: 336369523514903534}
+  damagedTrigger: Damaged
+  deathTrigger: Death
+  deathAnimDuration: 1
+  damageTextPrefab: {fileID: 8104875995613135839, guid: 51bfa69456bef62438805f10c2608f9f, type: 3}
+  damageTextOffset: {x: 0, y: 2.5, z: 0}
+  hitHealthThresholds:
+  - 0.7
+  - 0.4
+  - 0.15
+  healthBarPrefab: {fileID: 7692226100105962595, guid: fbae99ce307c85f42989e3e9d541584f, type: 3}
+  healthBarHeightOverride: -1
+--- !u!114 &5360246213931477454
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 4810826319620790755}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: efc138260381d8f48a98f9f4496f92e0, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  enemy: {fileID: 6167653076999934008}
+  animator: {fileID: 336369523514903534}
+  target: {fileID: 0}
+  defaultMoveSpeed: 3
+  rotationSpeedDegPerSec: 540
+  faceTargetWhileMoving: 1
+  useLineOfSight: 0
+  lineOfSightMask:
+    serializedVersion: 2
+    m_Bits: 8
+  lineOfSightPadding: 0.1
+  wanderRadius: 6
+  wanderInterval: 4
+  wanderSpeed: 2
+  detectionRadius: 25
+  preferredRange: 12
+  minRange: 6
+  strafeSpeed: 3
+  attackRate: 1.25
+  attackTrigger: Attack
+--- !u!114 &4956780400943172237
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 4810826319620790755}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 4c4b62130c83e8d4e8370099aa4959de, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  waveRadius: 9
+  damage: 6
+--- !u!114 &9121221816947263452
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 4810826319620790755}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 9aebafe7010ecf54e8eae55b15a6233d, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  archetype: {fileID: 11400000, guid: 2b4f33c0759c30e46ae8ae2bcfe5bde6, type: 2}
+  rangedAttackMode: 0
+  throwSettings:
+    spearSocket: {fileID: 2402410824814006675}
+    spearPrefab: {fileID: 8918725905970023834}
+    throwOrigin: {fileID: 7274252169102820387}
+  shooterSettings:
+    firePoint: {fileID: 0}
+    bulletPrefab: {fileID: 0}
 --- !u!4 &5298675864771789657 stripped
 Transform:
   m_CorrespondingSourceObject: {fileID: -8679921383154817045, guid: 89484e8d7a3b758488a4df88a1b0e7f1, type: 3}

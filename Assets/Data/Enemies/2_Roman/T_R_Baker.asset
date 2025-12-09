@@ -15,16 +15,16 @@ MonoBehaviour:
   displayName: Baker
   maxHealth: 10
   baseMoveSpeed: 3
-  animatorController: {fileID: 0}
+  animatorController: {fileID: 9100000, guid: d6fec11461697cc4ebb4577bb11e989c, type: 2}
   melee:
-    detectionRadius: 0
-    chaseSpeed: 0
-    wanderRadius: 0
-    wanderInterval: 0
-    wanderSpeed: 0
-    attackRange: 0
-    attackRate: 0
-    damagePerHit: 0
+    detectionRadius: 5
+    chaseSpeed: 4
+    wanderRadius: 10
+    wanderInterval: 2
+    wanderSpeed: 2
+    attackRange: 2
+    attackRate: 1
+    damagePerHit: 1
     attackVariants: 1
   ranged:
     detectionRadius: 0
@@ -47,6 +47,7 @@ MonoBehaviour:
     detectionRadius: 0
     pounceRange: 0
     chaseSpeed: 0
+    attackRate: 0
   flying:
     hoverHeight: 0
     hoverLerpSpeed: 0

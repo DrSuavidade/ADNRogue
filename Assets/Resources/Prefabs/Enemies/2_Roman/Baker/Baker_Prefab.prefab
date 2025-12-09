@@ -65,10 +65,19 @@ PrefabInstance:
       addedObject: {fileID: 1181787573071132683}
     - targetCorrespondingSourceObject: {fileID: 919132149155446097, guid: 9c126e7be6c2c964d8063ec4e40d1dad, type: 3}
       insertIndex: -1
-      addedObject: {fileID: 6490196717445699379}
+      addedObject: {fileID: 1457986441876663050}
     - targetCorrespondingSourceObject: {fileID: 919132149155446097, guid: 9c126e7be6c2c964d8063ec4e40d1dad, type: 3}
       insertIndex: -1
-      addedObject: {fileID: 1457986441876663050}
+      addedObject: {fileID: 749394645257096998}
+    - targetCorrespondingSourceObject: {fileID: 919132149155446097, guid: 9c126e7be6c2c964d8063ec4e40d1dad, type: 3}
+      insertIndex: -1
+      addedObject: {fileID: 8669189829366734143}
+    - targetCorrespondingSourceObject: {fileID: 919132149155446097, guid: 9c126e7be6c2c964d8063ec4e40d1dad, type: 3}
+      insertIndex: -1
+      addedObject: {fileID: 6183213945070783925}
+    - targetCorrespondingSourceObject: {fileID: 919132149155446097, guid: 9c126e7be6c2c964d8063ec4e40d1dad, type: 3}
+      insertIndex: -1
+      addedObject: {fileID: 8387895046087830147}
   m_SourcePrefab: {fileID: 100100000, guid: 9c126e7be6c2c964d8063ec4e40d1dad, type: 3}
 --- !u!1 &1860872812865197226 stripped
 GameObject:
@@ -97,29 +106,6 @@ Animator:
   m_AllowConstantClipSamplingOptimization: 1
   m_KeepAnimatorStateOnDisable: 0
   m_WriteDefaultValuesOnDisable: 0
---- !u!114 &6490196717445699379
-MonoBehaviour:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 1860872812865197226}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: e4a43c4621d7d934c958167a5153415f, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: 
-  maxHealth: 5
-  animator: {fileID: 1181787573071132683}
-  damagedTrigger: Damaged
-  deathTrigger: Death
-  deathAnimDuration: 5
-  damageTextPrefab: {fileID: 8104875995613135839, guid: 51bfa69456bef62438805f10c2608f9f, type: 3}
-  damageTextOffset: {x: 0, y: 2.5, z: 0}
-  hitHealthThresholds:
-  - 0.7
-  - 0.4
-  - 0.15
 --- !u!65 &1457986441876663050
 BoxCollider:
   m_ObjectHideFlags: 0
@@ -141,3 +127,98 @@ BoxCollider:
   serializedVersion: 3
   m_Size: {x: 1, y: 1.40592, z: 0.5355219}
   m_Center: {x: -6.628842e-10, y: 1.0671773, z: 0.05204648}
+--- !u!114 &749394645257096998
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1860872812865197226}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 3dc47d85428014f44aa44d8f7711fd2c, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  enemy: {fileID: 0}
+  animator: {fileID: 1181787573071132683}
+  target: {fileID: 0}
+  defaultMoveSpeed: 3
+  rotationSpeedDegPerSec: 540
+  faceTargetWhileMoving: 1
+  useLineOfSight: 0
+  lineOfSightMask:
+    serializedVersion: 2
+    m_Bits: 8
+  lineOfSightPadding: 0.1
+  stayStationary: 0
+  rotateInPlace: 1
+  wanderRadius: 5
+  wanderInterval: 3
+  wanderSpeed: 2
+  detectionRadius: 20
+  chaseSpeed: 4
+  attackRange: 1.5
+  attackRate: 1
+  damagePerHit: 10
+  attackVariants: 1
+  damagePauseDuration: 0.5
+--- !u!114 &8669189829366734143
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1860872812865197226}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 04262b82bdec8064fb09624bede68c08, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  maxHealth: 5
+  animator: {fileID: 1181787573071132683}
+  damagedTrigger: Damaged
+  deathTrigger: Death
+  deathAnimDuration: 1
+  damageTextPrefab: {fileID: 0}
+  damageTextOffset: {x: 0, y: 2.5, z: 0}
+  hitHealthThresholds:
+  - 0.7
+  - 0.4
+  - 0.15
+  healthBarPrefab: {fileID: 0}
+  healthBarHeightOverride: -1
+--- !u!114 &6183213945070783925
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1860872812865197226}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 9aebafe7010ecf54e8eae55b15a6233d, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  archetype: {fileID: 11400000, guid: b02f9075d64e0ac4783e95e63e7b7cea, type: 2}
+  rangedAttackMode: 0
+  throwSettings:
+    spearSocket: {fileID: 0}
+    spearPrefab: {fileID: 0}
+    throwOrigin: {fileID: 0}
+  shooterSettings:
+    firePoint: {fileID: 0}
+    bulletPrefab: {fileID: 0}
+--- !u!114 &8387895046087830147
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1860872812865197226}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: b106cd8e775364a4ab2512a551b43b56, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  damage: 10
+  hitRange: 1.8

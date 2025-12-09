@@ -13,7 +13,7 @@ MonoBehaviour:
   m_Name: T_R_FlyMachine
   m_EditorClassIdentifier: 
   displayName: Fly Machine
-  maxHealth: 10
+  maxHealth: 200
   baseMoveSpeed: 3
   animatorController: {fileID: 0}
   melee:
@@ -47,13 +47,14 @@ MonoBehaviour:
     detectionRadius: 0
     pounceRange: 0
     chaseSpeed: 0
-  flying:
-    hoverHeight: 0
-    hoverLerpSpeed: 0
-    orbitRadius: 0
-    orbitAngularSpeedDeg: 0
     attackRate: 0
-    preferredRange: 0
+  flying:
+    hoverHeight: 4
+    hoverLerpSpeed: 3
+    orbitRadius: 6
+    orbitAngularSpeedDeg: 90
+    attackRate: 2
+    preferredRange: 7
   boss:
     phase2Threshold: 0
     phase3Threshold: 0
