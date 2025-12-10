@@ -1,0 +1,176 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!1001 &5530365300363325265
+PrefabInstance:
+  m_ObjectHideFlags: 0
+  serializedVersion: 2
+  m_Modification:
+    serializedVersion: 3
+    m_TransformParent: {fileID: 0}
+    m_Modifications:
+    - target: {fileID: -8679921383154817045, guid: 2c167c5e048641d4d94e72705d497627, type: 3}
+      propertyPath: m_LocalPosition.x
+      value: -12.84961
+      objectReference: {fileID: 0}
+    - target: {fileID: -8679921383154817045, guid: 2c167c5e048641d4d94e72705d497627, type: 3}
+      propertyPath: m_LocalPosition.y
+      value: 0.021514216
+      objectReference: {fileID: 0}
+    - target: {fileID: -8679921383154817045, guid: 2c167c5e048641d4d94e72705d497627, type: 3}
+      propertyPath: m_LocalPosition.z
+      value: 3.492846
+      objectReference: {fileID: 0}
+    - target: {fileID: -8679921383154817045, guid: 2c167c5e048641d4d94e72705d497627, type: 3}
+      propertyPath: m_LocalRotation.w
+      value: 1
+      objectReference: {fileID: 0}
+    - target: {fileID: -8679921383154817045, guid: 2c167c5e048641d4d94e72705d497627, type: 3}
+      propertyPath: m_LocalRotation.x
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: -8679921383154817045, guid: 2c167c5e048641d4d94e72705d497627, type: 3}
+      propertyPath: m_LocalRotation.y
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: -8679921383154817045, guid: 2c167c5e048641d4d94e72705d497627, type: 3}
+      propertyPath: m_LocalRotation.z
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: -8679921383154817045, guid: 2c167c5e048641d4d94e72705d497627, type: 3}
+      propertyPath: m_LocalEulerAnglesHint.x
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: -8679921383154817045, guid: 2c167c5e048641d4d94e72705d497627, type: 3}
+      propertyPath: m_LocalEulerAnglesHint.y
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: -8679921383154817045, guid: 2c167c5e048641d4d94e72705d497627, type: 3}
+      propertyPath: m_LocalEulerAnglesHint.z
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 919132149155446097, guid: 2c167c5e048641d4d94e72705d497627, type: 3}
+      propertyPath: m_Name
+      value: PrivateJet_Prefab
+      objectReference: {fileID: 0}
+    m_RemovedComponents: []
+    m_RemovedGameObjects: []
+    m_AddedGameObjects: []
+    m_AddedComponents:
+    - targetCorrespondingSourceObject: {fileID: 919132149155446097, guid: 2c167c5e048641d4d94e72705d497627, type: 3}
+      insertIndex: -1
+      addedObject: {fileID: 3620429725187196716}
+    - targetCorrespondingSourceObject: {fileID: 919132149155446097, guid: 2c167c5e048641d4d94e72705d497627, type: 3}
+      insertIndex: -1
+      addedObject: {fileID: 7273296720372536162}
+    - targetCorrespondingSourceObject: {fileID: 919132149155446097, guid: 2c167c5e048641d4d94e72705d497627, type: 3}
+      insertIndex: -1
+      addedObject: {fileID: 6516437014311371179}
+    - targetCorrespondingSourceObject: {fileID: 919132149155446097, guid: 2c167c5e048641d4d94e72705d497627, type: 3}
+      insertIndex: -1
+      addedObject: {fileID: 431848661360652233}
+  m_SourcePrefab: {fileID: 100100000, guid: 2c167c5e048641d4d94e72705d497627, type: 3}
+--- !u!1 &4647332328782189056 stripped
+GameObject:
+  m_CorrespondingSourceObject: {fileID: 919132149155446097, guid: 2c167c5e048641d4d94e72705d497627, type: 3}
+  m_PrefabInstance: {fileID: 5530365300363325265}
+  m_PrefabAsset: {fileID: 0}
+--- !u!114 &3620429725187196716
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 4647332328782189056}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 7d0e4fa1f9ccc604fabfeb927e956000, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  enemy: {fileID: 7273296720372536162}
+  animator: {fileID: 0}
+  target: {fileID: 0}
+  defaultMoveSpeed: 3
+  rotationSpeedDegPerSec: 540
+  faceTargetWhileMoving: 1
+  useLineOfSight: 0
+  lineOfSightMask:
+    serializedVersion: 2
+    m_Bits: 8
+  lineOfSightPadding: 0.1
+  hoverHeight: 5
+  hoverLerpSpeed: 5
+  orbitRadius: 10
+  orbitAngularSpeedDeg: 60
+  attackRate: 1.5
+  preferredRange: 12
+--- !u!114 &7273296720372536162
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 4647332328782189056}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 04262b82bdec8064fb09624bede68c08, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  maxHealth: 5
+  animator: {fileID: 0}
+  damagedTrigger: Damaged
+  deathTrigger: Death
+  deathAnimDuration: 1
+  damageTextPrefab: {fileID: 0}
+  damageTextOffset: {x: 0, y: 2.5, z: 0}
+  hitHealthThresholds:
+  - 0.7
+  - 0.4
+  - 0.15
+  healthBarPrefab: {fileID: 0}
+  healthBarHeightOverride: -1
+--- !u!114 &6516437014311371179
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 4647332328782189056}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 9aebafe7010ecf54e8eae55b15a6233d, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  archetype: {fileID: 11400000, guid: 7fd5e1405798dc940a46cba2443a75ad, type: 2}
+  rangedAttackMode: 0
+  throwSettings:
+    spearSocket: {fileID: 0}
+    spearPrefab: {fileID: 0}
+    throwOrigin: {fileID: 0}
+  shooterSettings:
+    firePoint: {fileID: 0}
+    bulletPrefab: {fileID: 0}
+--- !u!114 &431848661360652233
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 4647332328782189056}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: ee4fe154c0f164242a6d5678784f504f, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  intervalSeconds: 600
+  telegraphDuration: 2
+  damageRadius: 3
+  damageAmount: 30
+  hitMask:
+    serializedVersion: 2
+    m_Bits: 8
+  vehiclePrefab: {fileID: 4647332328782189056}
+  vehicleHeight: 20
+  vehicleTravelDistance: 40
+  vehicleTravelTime: 3
+  vehicleAlwaysLookAtPlayer: 1
+  bombVisualPrefab: {fileID: 7226888052703040409, guid: 7ec363c8df426644ea85f8d6d570561c, type: 3}
