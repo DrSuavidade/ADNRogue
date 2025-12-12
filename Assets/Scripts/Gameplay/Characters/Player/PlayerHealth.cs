@@ -1,5 +1,6 @@
 using UnityEngine;
 using Geneforge.Core.Stats;
+using Geneforge.Gameplay.Progression;
 
 namespace Geneforge.Gameplay.Characters.Player
 {
@@ -18,13 +19,16 @@ namespace Geneforge.Gameplay.Characters.Player
 
         void Awake()
         {
-            runStats = GetComponent<RunStats>();
+            RunSession.Ensure();
+            runStats = RunSession.Instance != null ? RunSession.Instance.Run : null;
+
             if (runStats == null)
             {
-                Debug.LogError("PlayerHealth requires a RunStats component on the same GameObject.", this);
+                Debug.LogError("PlayerHealth could not find RunSession/RunStats. Ensure RunSession exists.", this);
                 enabled = false;
                 return;
             }
+
 
             runStats.OnPlayerDeath += HandleDeath;
             animator = GetComponentInChildren<Animator>();
@@ -96,8 +100,10 @@ namespace Geneforge.Gameplay.Characters.Player
 
         void GameOver()
         {
-            // Your end‐of‐run logic: disable input, show summary screen, etc.
             Debug.Log("No lives left. Game Over!");
+
+            if (RunFlowController.Instance != null)
+                RunFlowController.Instance.EndRun(survived: false);
         }
     }
 }

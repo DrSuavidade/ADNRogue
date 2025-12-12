@@ -34,7 +34,10 @@ namespace Geneforge.Gameplay.Characters.Enemies.AI
         float lastAttackTime;
 
         enum State { Wandering, Chasing, Attacking }
+
+        [SerializeField, Tooltip("Debug: current AI state")]
         State state = State.Wandering;
+
 
         bool isDamagePaused = false;
         float damagePauseTimer = 0f;
@@ -88,12 +91,12 @@ namespace Geneforge.Gameplay.Characters.Enemies.AI
             }
             else if (dist > attackRange)
             {
-                state = State.Chasing;
+                DebugState(State.Chasing);
                 MoveTowards(target.position, chaseSpeed);
             }
             else
             {
-                state = State.Attacking;
+                DebugState(State.Attacking);
                 if (animator != null) animator.SetFloat("Speed", 0f);
                 FaceTarget();
                 TryAttack();
@@ -102,7 +105,7 @@ namespace Geneforge.Gameplay.Characters.Enemies.AI
 
         void TickWander(float dt)
         {
-            state = State.Wandering;
+            DebugState(State.Wandering);
             wanderTimer -= dt;
             if (wanderTimer <= 0f)
             {
@@ -117,6 +120,14 @@ namespace Geneforge.Gameplay.Characters.Enemies.AI
             wanderTimer = wanderInterval;
             wanderTarget = GetRandomPointAroundSpawn(wanderRadius);
         }
+
+        [System.Diagnostics.Conditional("UNITY_EDITOR")]
+        void DebugState(State s)
+        {
+            // Read the state in editor builds so CS0414 goes away and you can breakpoint/inspect.
+            if (state != s) state = s;
+        }
+
 
 
         void TryAttack()

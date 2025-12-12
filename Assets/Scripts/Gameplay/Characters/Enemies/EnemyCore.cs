@@ -147,11 +147,6 @@ namespace Geneforge.Gameplay.Characters.Enemies
             if (isDead) return;
             isDead = true;
 
-            // 1) parar AI/movimento imediatamente
-            // Old animal AI (legacy) – still disabled for compatibility
-            var animal = GetComponent<Animal.Animal>();
-            if (animal != null) animal.enabled = false;
-
             // NEW: disable brain in a clean, centralized way
             var brain = GetComponent<EnemyBrainBase>();
             if (brain != null)

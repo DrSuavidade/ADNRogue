@@ -4,7 +4,6 @@ using System.Collections.Generic;
 using Geneforge.Gameplay.Characters.Enemies;
 using Geneforge.Gameplay.Weapons.Stats;
 using Geneforge.Gameplay.Abilities;
-using Geneforge.Gameplay.Characters.Enemies.Ranged;
 using Geneforge.Core.Pooling;
 
 namespace Geneforge.Gameplay.Weapons.Bullets
@@ -328,13 +327,6 @@ namespace Geneforge.Gameplay.Weapons.Bullets
 
         void HandleHitEnemy(EnemyCore enemy, Vector3 hitPoint)
         {
-            var rangedMagic = enemy.GetComponent<RangedMagic>();
-            if (rangedMagic != null && rangedMagic.IsBlocking)
-            {
-                Despawn();
-                return;
-            }
-
             if (_hitEnemies.Contains(enemy)) return;
             _hitEnemies.Add(enemy);
 

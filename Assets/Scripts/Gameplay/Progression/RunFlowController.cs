@@ -1,7 +1,7 @@
 using UnityEngine;
 using UnityEngine.SceneManagement;
 using Geneforge.Gameplay.Map;
-
+using Geneforge.Core.Stats;
 namespace Geneforge.Gameplay.Progression
 {
     public class RunFlowController : MonoBehaviour
@@ -22,6 +22,10 @@ namespace Geneforge.Gameplay.Progression
         public string PresentBossSceneName => presentBossSceneName;
         public string FutureBossSceneName => futureBossSceneName;
 
+        [Header("Run End Scenes")]
+        [SerializeField] private string runCompleteSceneName = "MainMenu";
+        [SerializeField] private string runFailedSceneName = "MainMenu";
+
 
         private void Awake()
         {
@@ -31,15 +35,29 @@ namespace Geneforge.Gameplay.Progression
                 return;
             }
             Instance = this;
+            RunSession.Ensure();
             DontDestroyOnLoad(gameObject);
         }
 
         public void StartNewRun()
         {
+            // Ensure persistent systems exist
+            RunSession.Ensure();
+
+            // Begin run BEFORE loading gameplay scenes
+            var meta = MetaStats.Instance != null
+                ? MetaStats.Instance
+                : FindAnyObjectByType<MetaStats>();
+
+            RunSession.Instance.BeginRun(meta);
+
+            // Timeline setup
             RunState.CurrentTimeline = TimelineId.Prehistoric;
             RunState.HasTimelineOverride = true;
+
             SafeLoadScene(dungeonSceneName);
         }
+
 
         public void OnBossStairsUsed()
         {
@@ -58,8 +76,19 @@ namespace Geneforge.Gameplay.Progression
 
         public void OnBossDefeated()
         {
+            var mgr = DungeonMapManager.Instance;
+            TimelineId current = mgr != null ? mgr.CurrentTimeline : RunState.CurrentTimeline;
+
+            // Final boss (Future) completes the run
+            if (current == TimelineId.Future)
+            {
+                EndRun(survived: true);
+                return;
+            }
+
             GoToNextTimeline();
         }
+
 
         private void GoToNextTimeline()
         {
@@ -98,6 +127,22 @@ namespace Geneforge.Gameplay.Progression
                 yield return null;
             // TODO: hide loading UI here
         }
+
+        public void EndRun(bool survived)
+        {
+            var meta = Geneforge.Core.Stats.MetaStats.Instance != null
+                ? Geneforge.Core.Stats.MetaStats.Instance
+                : FindAnyObjectByType<Geneforge.Core.Stats.MetaStats>();
+
+            if (RunSession.Instance != null)
+                RunSession.Instance.EndRun(meta, survived);
+
+            // Clear timeline override so the dungeon doesn't auto-start in editor/etc.
+            RunState.HasTimelineOverride = false;
+
+            SafeLoadScene(survived ? runCompleteSceneName : runFailedSceneName);
+        }
+
 
         private string GetBossSceneName(TimelineId t)
         {

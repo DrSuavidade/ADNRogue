@@ -32,7 +32,6 @@ namespace Geneforge.Gameplay.Characters.Player
 
         [Header("Dodge Roll")]
         [Tooltip("A tecla do roll agora é definida nas Input Actions (ação 'roll'). Este campo já não é usado.")]
-        [SerializeField] KeyCode rollKey = KeyCode.Space; // mantido só para compat, não é usado
         [SerializeField] float rollDuration = 2f;
         [SerializeField] float rollCooldown = 1f;
         [SerializeField] float rollDistance = 5f;
