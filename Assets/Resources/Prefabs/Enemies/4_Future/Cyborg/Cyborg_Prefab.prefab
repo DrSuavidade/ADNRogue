@@ -170,9 +170,6 @@ PrefabInstance:
       addedObject: {fileID: 1484647001252783911}
     - targetCorrespondingSourceObject: {fileID: 919132149155446097, guid: be0c2b89c427b8a4285987a6ce6d1685, type: 3}
       insertIndex: -1
-      addedObject: {fileID: 3266129579793121342}
-    - targetCorrespondingSourceObject: {fileID: 919132149155446097, guid: be0c2b89c427b8a4285987a6ce6d1685, type: 3}
-      insertIndex: -1
       addedObject: {fileID: 580425318902825949}
     - targetCorrespondingSourceObject: {fileID: 919132149155446097, guid: be0c2b89c427b8a4285987a6ce6d1685, type: 3}
       insertIndex: -1
@@ -183,6 +180,9 @@ PrefabInstance:
     - targetCorrespondingSourceObject: {fileID: 919132149155446097, guid: be0c2b89c427b8a4285987a6ce6d1685, type: 3}
       insertIndex: -1
       addedObject: {fileID: 4209952211586735527}
+    - targetCorrespondingSourceObject: {fileID: 919132149155446097, guid: be0c2b89c427b8a4285987a6ce6d1685, type: 3}
+      insertIndex: -1
+      addedObject: {fileID: 1608899866064532174}
   m_SourcePrefab: {fileID: 100100000, guid: be0c2b89c427b8a4285987a6ce6d1685, type: 3}
 --- !u!4 &2857599377247455023 stripped
 Transform:
@@ -242,20 +242,6 @@ BoxCollider:
   serializedVersion: 3
   m_Size: {x: 0.60432434, y: 2.0572927, z: 0.5696602}
   m_Center: {x: -0.043851852, y: 1.0057014, z: -0.069402695}
---- !u!114 &3266129579793121342
-MonoBehaviour:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 8166493388852031421}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: e96c56e5b936f434ba2c2731c11fd958, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: 
-  shieldPrefab: {fileID: 5554606779009064907, guid: d127f5488fe950a418f3d03fdbb821b9, type: 3}
-  attachPoint: {fileID: 216340218107686620}
 --- !u!114 &580425318902825949
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -363,8 +349,8 @@ MonoBehaviour:
   OnBlockStart:
     m_PersistentCalls:
       m_Calls:
-      - m_Target: {fileID: 3266129579793121342}
-        m_TargetAssemblyTypeName: Geneforge.Gameplay.Characters.Enemies.Ranged.ShieldFX,
+      - m_Target: {fileID: 1608899866064532174}
+        m_TargetAssemblyTypeName: Geneforge.Gameplay.Characters.Enemies.Habilidades.ShieldFX,
           Geneforge.Gameplay
         m_MethodName: ShowShield
         m_Mode: 1
@@ -379,8 +365,8 @@ MonoBehaviour:
   OnBlockEnd:
     m_PersistentCalls:
       m_Calls:
-      - m_Target: {fileID: 3266129579793121342}
-        m_TargetAssemblyTypeName: Geneforge.Gameplay.Characters.Enemies.Ranged.ShieldFX,
+      - m_Target: {fileID: 1608899866064532174}
+        m_TargetAssemblyTypeName: Geneforge.Gameplay.Characters.Enemies.Habilidades.ShieldFX,
           Geneforge.Gameplay
         m_MethodName: HideShield
         m_Mode: 1
@@ -392,6 +378,20 @@ MonoBehaviour:
           m_StringArgument: 
           m_BoolArgument: 0
         m_CallState: 2
+--- !u!114 &1608899866064532174
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 8166493388852031421}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 73450f73f04b1c34a845662d9329a452, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  shieldPrefab: {fileID: 8166493388852031421}
+  attachPoint: {fileID: 216340218107686620}
 --- !u!4 &8799724522378474759 stripped
 Transform:
   m_CorrespondingSourceObject: {fileID: -8679921383154817045, guid: be0c2b89c427b8a4285987a6ce6d1685, type: 3}

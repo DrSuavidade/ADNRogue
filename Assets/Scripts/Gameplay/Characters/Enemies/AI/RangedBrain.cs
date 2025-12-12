@@ -81,12 +81,12 @@ namespace Geneforge.Gameplay.Characters.Enemies.AI
                 return; // muito importante: nada de ataques aqui
             }
 
-            // 2) Está demasiado perto → fugir para trás / reposicionamento
-            if (dist < minRange + 6f) // ajusta o 2f se quiseres mais cedo ou mais tarde
+     if (dist < minRange +2f)
 {
     StartReposition();
     return;
 }
+
 
             // 3) Está demasiado longe da distância ideal → aproximar
             if (dist > preferredRange)
