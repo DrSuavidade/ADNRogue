@@ -19,8 +19,12 @@ namespace Geneforge.Gameplay.Abilities.Special
         public float bubbleDrag = 1.2f;
         public float sizeMult = 0.9f;
         public bool sphereVisual = true;
-        static float _prevFireRateMult = 1f;
-        static float _prevDamageMult = 1f;
+        float _prevFireRateMult = 1f;
+        float _prevDamageMult = 1f;
+
+        // Reused material (prevents per-shot material allocations)
+        Material _bubbleMat;
+
 
         public override void OnPrimaryEquipped(GameObject owner, WeaponStats activeStats)
         {
@@ -74,29 +78,50 @@ namespace Geneforge.Gameplay.Abilities.Special
             if (sphereVisual) MakeSphereVisual(bullet);
         }
 
-        static void MakeSphereVisual(Bullet bullet)
+        void MakeSphereVisual(Bullet bullet)
         {
+            // disable existing bullet renderers (they'll be restored by Bullet.ResetForPool)
             var existing = bullet.GetComponentsInChildren<Renderer>(true);
             for (int i = 0; i < existing.Length; i++) existing[i].enabled = false;
 
-            var sphere = GameObject.CreatePrimitive(PrimitiveType.Sphere);
-            sphere.name = "CrabBubble_Sphere";
-            Destroy(sphere.GetComponent<Collider>());
-            sphere.transform.SetParent(bullet.transform, false);
-            sphere.transform.localPosition = Vector3.zero;
-            sphere.transform.localRotation = Quaternion.identity;
-            sphere.transform.localScale = Vector3.one;
+            // reuse sphere if already created for this pooled bullet
+            Transform t = bullet.transform.Find("CrabBubble_Sphere");
+            GameObject sphere;
+
+            if (t != null)
+            {
+                sphere = t.gameObject;
+                sphere.SetActive(true);
+            }
+            else
+            {
+                sphere = GameObject.CreatePrimitive(PrimitiveType.Sphere);
+                sphere.name = "CrabBubble_Sphere";
+                Destroy(sphere.GetComponent<Collider>());
+                sphere.transform.SetParent(bullet.transform, false);
+                sphere.transform.localPosition = Vector3.zero;
+                sphere.transform.localRotation = Quaternion.identity;
+                sphere.transform.localScale = Vector3.one;
+            }
 
             var r = sphere.GetComponent<Renderer>();
-            if (r)
+            if (!r) return;
+
+            if (_bubbleMat == null)
             {
                 var mat = new Material(Shader.Find("Universal Render Pipeline/Lit"));
                 if (mat == null) mat = new Material(Shader.Find("Standard"));
+
                 if (mat.HasProperty("_BaseColor")) mat.SetColor("_BaseColor", new Color(0.8f, 0.95f, 1f, 1f));
                 else if (mat.HasProperty("_Color")) mat.color = new Color(0.8f, 0.95f, 1f, 1f);
-                r.material = mat;
+
+                _bubbleMat = mat;
             }
+
+            // Use sharedMaterial to avoid Unity making per-renderer instances
+            r.sharedMaterial = _bubbleMat;
         }
+
 
         public override void ApplyUpgrades(AbilityUpgrade[] upgrades)
         {

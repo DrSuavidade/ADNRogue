@@ -26,44 +26,48 @@ namespace Geneforge.Gameplay.Abilities.Special
         [Header("Tongue tug (first shot after invis)")]
         public float tetherDuration = 0.6f;
         public float pullForce = 15f;
-        public static bool InvisibleActive { get; private set; }
+        Transform _owner;
+        CamouflageRuntime _rt;
 
-        static Transform s_owner;
-        static bool s_armed;
-        static CamouflageRuntime s_rt;
 
         public override void OnPrimaryEquipped(GameObject owner, WeaponStats activeStats)
         {
-            s_owner = owner.transform;
-            s_rt = owner.GetComponent<CamouflageRuntime>();
-            if (!s_rt) s_rt = owner.AddComponent<CamouflageRuntime>();
-            s_rt.Configure(this, owner);
+            _owner = owner.transform;
+            _rt = owner.GetComponent<CamouflageRuntime>();
+            if (!_rt) _rt = owner.AddComponent<CamouflageRuntime>();
+            _rt.Configure(this, owner);
         }
+
+
 
         public override void OnPrimaryUnequipped(GameObject owner)
         {
-            if (s_rt) Destroy(s_rt);
-            s_rt = null; s_owner = null; s_armed = false;
-            InvisibleActive = false;
+            if (_rt) Destroy(_rt);
+            _rt = null;
+            _owner = null;
         }
+
 
         public override void OnBulletSpawn(Bullet bullet, WeaponStats stats)
         {
-            if (s_armed)
+            if (_rt != null && _rt.TryConsumeTongueShot())
             {
-                bullet.gameObject.AddComponent<TongueMarker>().Init(this);
-                s_armed = false;
-                if (s_rt) s_rt.EndInvis();
+                bullet.SetTongueMarker(_owner, tetherDuration, pullForce);
+                _rt.EndInvis();
             }
         }
 
+
         public override void OnHitEnemy(Bullet bullet, EnemyCore enemy, WeaponStats stats)
         {
-            var marker = bullet.GetComponent<TongueMarker>();
-            if (!marker || enemy == null || s_owner == null) return;
+            if (enemy == null) return;
 
-            bullet.StartCoroutine(PullEnemy(enemy, s_owner, tetherDuration, pullForce));
+            if (bullet.TryConsumeTongueMarker(out var player, out var dur, out var force))
+            {
+                bullet.StartCoroutine(PullEnemy(enemy, player, dur, force));
+            }
         }
+
 
         IEnumerator PullEnemy(EnemyCore e, Transform player, float dur, float force)
         {
@@ -78,12 +82,6 @@ namespace Geneforge.Gameplay.Abilities.Special
                 t += Time.deltaTime;
                 yield return null;
             }
-        }
-
-        class TongueMarker : MonoBehaviour
-        {
-            A_ChameleonCamouflage owner;
-            public void Init(A_ChameleonCamouflage a) { owner = a; }
         }
 
         public class CamouflageRuntime : MonoBehaviour
@@ -102,7 +100,18 @@ namespace Geneforge.Gameplay.Abilities.Special
 
             float lastHP;
             bool invisible;
+            bool armedShot;
             Coroutine timer;
+
+            public bool IsInvisible => invisible;
+
+            public bool TryConsumeTongueShot()
+            {
+                if (!armedShot) return false;
+                armedShot = false;
+                return true;
+            }
+
 
             public void Configure(A_ChameleonCamouflage d, GameObject owner)
             {
@@ -138,12 +147,12 @@ namespace Geneforge.Gameplay.Abilities.Special
                     return;
                 }
 
-                s_armed = true;
+                armedShot = true;
                 ApplyGlass();
                 FlipToInvisibleLayer();
 
-                InvisibleActive = true;
                 invisible = true;
+
 
                 if (timer != null) StopCoroutine(timer);
                 timer = StartCoroutine(InvisTimer());
@@ -154,11 +163,12 @@ namespace Geneforge.Gameplay.Abilities.Special
                 if (!invisible) return;
 
                 if (timer != null) StopCoroutine(timer);
-                invisible = false; s_armed = false;
-                InvisibleActive = false;
+                invisible = false;
+                armedShot = false;
 
                 RestoreOriginal();
                 RestoreLayer();
+
             }
 
             IEnumerator InvisTimer()
@@ -169,7 +179,6 @@ namespace Geneforge.Gameplay.Abilities.Special
 
             void OnDestroy()
             {
-                InvisibleActive = false;
                 RestoreOriginal();
                 RestoreLayer();
             }

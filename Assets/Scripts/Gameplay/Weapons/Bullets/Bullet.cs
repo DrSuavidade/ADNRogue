@@ -41,6 +41,31 @@ namespace Geneforge.Gameplay.Weapons.Bullets
         WeaponStats _ws;
         PoolIdentifier poolId;
 
+        // ---------------- Pool Reset Baseline ----------------
+        bool _baselineCached;
+
+        Vector3 _baseLocalScale;
+        int _baseLayer;
+
+        float _baseLifeTime;
+        float _baseDamage;
+        float _baseKnockback;
+        bool _baseIsCrit;
+
+        float _baseLinearDamping, _baseAngularDamping;
+
+        Renderer[] _baseRenderers;
+        bool[] _baseRendererEnabled;
+
+        readonly HashSet<Collider> _ignoredColliders = new HashSet<Collider>();
+
+        // ---------------- Chameleon Tongue Marker (no AddComponent) ----------------
+        bool _hasTongue;
+        Transform _tongueOwner;
+        float _tongueDur;
+        float _tongueForce;
+
+
         public float Damage
         {
             get => damage;
@@ -77,7 +102,17 @@ namespace Geneforge.Gameplay.Weapons.Bullets
             rb = GetComponent<Rigidbody>();
             myCol = GetComponent<Collider>();
             poolId = GetComponent<PoolIdentifier>();
+
+            CacheBaseline();
         }
+
+        void OnEnable()
+        {
+            // Pool can re-enable bullets; make sure they're always clean.
+            if (_baselineCached)
+                ResetForPool();
+        }
+
 
         void Update()
         {
@@ -121,16 +156,7 @@ namespace Geneforge.Gameplay.Weapons.Bullets
 
         void Despawn()
         {
-            StopAllCoroutines();
-
-            _abilityAsset = null;
-            _ws = null;
-            _hitEnemies.Clear();
-            lastEnemyHit = null;
-            pierceRemaining = 0;
-            bounceRemaining = 0;
-            homingStrength = 0f;
-            aoeRadius = 0f;
+            ResetForPool();
 
             if (poolId != null && PoolManager.Instance != null)
             {
@@ -142,6 +168,7 @@ namespace Geneforge.Gameplay.Weapons.Bullets
             }
         }
 
+
         public void BindAbility(EssenceAbility ability, WeaponStats stats)
         {
             _abilityAsset = ability;
@@ -149,6 +176,36 @@ namespace Geneforge.Gameplay.Weapons.Bullets
 
             _abilityAsset?.OnBulletSpawn(this, _ws);
         }
+
+        // --- Tongue marker API (used by Chameleon, safe for pooling) ---
+        public void SetTongueMarker(Transform owner, float dur, float force)
+        {
+            _hasTongue = true;
+            _tongueOwner = owner;
+            _tongueDur = dur;
+            _tongueForce = force;
+        }
+
+        public bool TryConsumeTongueMarker(out Transform owner, out float dur, out float force)
+        {
+            if (!_hasTongue)
+            {
+                owner = null; dur = 0f; force = 0f;
+                return false;
+            }
+
+            owner = _tongueOwner;
+            dur = _tongueDur;
+            force = _tongueForce;
+
+            _hasTongue = false;
+            _tongueOwner = null;
+            _tongueDur = 0f;
+            _tongueForce = 0f;
+
+            return true;
+        }
+
 
 
         IEnumerator DieAfter(float t) { yield return new WaitForSeconds(t); Despawn(); }
@@ -348,9 +405,10 @@ namespace Geneforge.Gameplay.Weapons.Bullets
             var cols = enemy.GetComponentsInChildren<Collider>(includeInactive: true);
             for (int i = 0; i < cols.Length; i++)
             {
-                if (cols[i] != null) Physics.IgnoreCollision(myCol, cols[i], ignore);
+                if (cols[i] != null) IgnoreCollisionTracked(cols[i], ignore);
             }
         }
+
 
         IEnumerator AoeRingFollow(Transform target, float radius, float seconds)
         {
@@ -404,10 +462,130 @@ namespace Geneforge.Gameplay.Weapons.Bullets
         {
             if (myCol && other)
             {
-                Physics.IgnoreCollision(myCol, other, true);
+                IgnoreCollisionTracked(other, true);
                 yield return new WaitForSeconds(seconds);
-                if (myCol && other) Physics.IgnoreCollision(myCol, other, false);
+                IgnoreCollisionTracked(other, false);
             }
+        }
+
+        // ---------------- Pool Reset Implementation ----------------
+        void CacheBaseline()
+        {
+            if (_baselineCached) return;
+            _baselineCached = true;
+
+            _baseLocalScale = transform.localScale;
+            _baseLayer = gameObject.layer;
+
+            _baseLifeTime = lifeTime;
+            _baseDamage = damage;
+            _baseKnockback = knockbackForce;
+            _baseIsCrit = isCrit;
+
+            if (rb != null)
+            {
+#if UNITY_6000_0_OR_NEWER
+                _baseLinearDamping = rb.linearDamping;
+                _baseAngularDamping = rb.angularDamping;
+#else
+        _baseDrag = rb.drag;
+        _baseAngularDrag = rb.angularDrag;
+#endif
+            }
+
+            _baseRenderers = GetComponentsInChildren<Renderer>(true);
+            _baseRendererEnabled = new bool[_baseRenderers.Length];
+            for (int i = 0; i < _baseRenderers.Length; i++)
+                _baseRendererEnabled[i] = _baseRenderers[i] && _baseRenderers[i].enabled;
+        }
+
+        void ResetForPool()
+        {
+            StopAllCoroutines();
+
+            // Undo any Physics.IgnoreCollision calls made by this bullet
+            UnignoreAll();
+
+            // Clear ability bindings & runtime hit state
+            _abilityAsset = null;
+            _ws = null;
+            _hitEnemies.Clear();
+            lastEnemyHit = null;
+
+            // Clear runtime projectile modifiers
+            pierceRemaining = 0;
+            bounceRemaining = 0;
+            homingStrength = 0f;
+            aoeRadius = 0f;
+            _cachedHomingTarget = null;
+            _nextHomingScanTime = 0f;
+
+            // Clear tongue marker (Chameleon)
+            _hasTongue = false;
+            _tongueOwner = null;
+            _tongueDur = 0f;
+            _tongueForce = 0f;
+
+            // Restore baseline fields
+            lifeTime = _baseLifeTime;
+            damage = _baseDamage;
+            knockbackForce = _baseKnockback;
+            isCrit = _baseIsCrit;
+
+            // Restore transform + layer
+            transform.localScale = _baseLocalScale;
+            gameObject.layer = _baseLayer;
+
+            // Restore rigidbody damping + velocity
+            if (rb != null)
+            {
+#if UNITY_6000_0_OR_NEWER
+                rb.linearVelocity = Vector3.zero;
+                rb.angularVelocity = Vector3.zero;
+                rb.linearDamping = _baseLinearDamping;
+                rb.angularDamping = _baseAngularDamping;
+#else
+        rb.velocity = Vector3.zero;
+        rb.angularVelocity = Vector3.zero;
+        rb.drag = _baseDrag;
+        rb.angularDrag = _baseAngularDrag;
+#endif
+            }
+
+            // Restore renderers (fix Crab disabling them)
+            if (_baseRenderers != null)
+            {
+                for (int i = 0; i < _baseRenderers.Length; i++)
+                {
+                    var r = _baseRenderers[i];
+                    if (!r) continue;
+                    r.enabled = _baseRendererEnabled[i];
+                }
+            }
+
+            // Disable Crab sphere if present (prevents visual state leak without Destroy timing issues)
+            var bubble = transform.Find("CrabBubble_Sphere");
+            if (bubble != null) bubble.gameObject.SetActive(false);
+        }
+
+        void IgnoreCollisionTracked(Collider other, bool ignore)
+        {
+            if (!myCol || !other) return;
+
+            Physics.IgnoreCollision(myCol, other, ignore);
+
+            if (ignore) _ignoredColliders.Add(other);
+            else _ignoredColliders.Remove(other);
+        }
+
+        void UnignoreAll()
+        {
+            if (!myCol) { _ignoredColliders.Clear(); return; }
+
+            foreach (var c in _ignoredColliders)
+                if (c) Physics.IgnoreCollision(myCol, c, false);
+
+            _ignoredColliders.Clear();
         }
     }
 }
