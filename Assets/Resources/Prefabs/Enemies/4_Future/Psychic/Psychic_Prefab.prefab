@@ -167,9 +167,6 @@ PrefabInstance:
       addedObject: {fileID: 1335578682700467490}
     - targetCorrespondingSourceObject: {fileID: 919132149155446097, guid: 1d305c724ee02ce44964596cc38d74a2, type: 3}
       insertIndex: -1
-      addedObject: {fileID: 8051616359380515513}
-    - targetCorrespondingSourceObject: {fileID: 919132149155446097, guid: 1d305c724ee02ce44964596cc38d74a2, type: 3}
-      insertIndex: -1
       addedObject: {fileID: 7774911738271992155}
     - targetCorrespondingSourceObject: {fileID: 919132149155446097, guid: 1d305c724ee02ce44964596cc38d74a2, type: 3}
       insertIndex: -1
@@ -177,6 +174,9 @@ PrefabInstance:
     - targetCorrespondingSourceObject: {fileID: 919132149155446097, guid: 1d305c724ee02ce44964596cc38d74a2, type: 3}
       insertIndex: -1
       addedObject: {fileID: 2074389150069889635}
+    - targetCorrespondingSourceObject: {fileID: 919132149155446097, guid: 1d305c724ee02ce44964596cc38d74a2, type: 3}
+      insertIndex: -1
+      addedObject: {fileID: 1610407654648112148}
   m_SourcePrefab: {fileID: 100100000, guid: 1d305c724ee02ce44964596cc38d74a2, type: 3}
 --- !u!4 &137647210446057731 stripped
 Transform:
@@ -210,20 +210,6 @@ Animator:
   m_AllowConstantClipSamplingOptimization: 1
   m_KeepAnimatorStateOnDisable: 0
   m_WriteDefaultValuesOnDisable: 0
---- !u!114 &8051616359380515513
-MonoBehaviour:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 766409924401277881}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: e96c56e5b936f434ba2c2731c11fd958, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: 
-  shieldPrefab: {fileID: 5554606779009064907, guid: d127f5488fe950a418f3d03fdbb821b9, type: 3}
-  attachPoint: {fileID: 6380421622372435848}
 --- !u!114 &7774911738271992155
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -285,7 +271,7 @@ MonoBehaviour:
   animator: {fileID: 1335578682700467490}
   headFirePoint: {fileID: 8177256167527670734}
   armsFirePoint: {fileID: 8126829151379735114}
-  laserPrefab: {fileID: 0}
+  laserPrefab: {fileID: 1978689737715041617, guid: afa54037ffe627545886e2741abb365d, type: 3}
   laserSpeed: 60
   laserDamage: 15
   laserLifetime: 4
@@ -294,10 +280,68 @@ MonoBehaviour:
     m_Bits: 8
   OnHeadLaserFired:
     m_PersistentCalls:
-      m_Calls: []
+      m_Calls:
+      - m_Target: {fileID: 2074389150069889635}
+        m_TargetAssemblyTypeName: Geneforge.Gameplay.Characters.Enemies.Eras.Future.FuturePsychic,
+          Geneforge.Gameplay
+        m_MethodName: AnimEvent_FireHeadLaser
+        m_Mode: 1
+        m_Arguments:
+          m_ObjectArgument: {fileID: 0}
+          m_ObjectArgumentAssemblyTypeName: UnityEngine.Object, UnityEngine
+          m_IntArgument: 0
+          m_FloatArgument: 0
+          m_StringArgument: 
+          m_BoolArgument: 0
+        m_CallState: 2
   OnArmsLaserFired:
     m_PersistentCalls:
-      m_Calls: []
+      m_Calls:
+      - m_Target: {fileID: 2074389150069889635}
+        m_TargetAssemblyTypeName: Geneforge.Gameplay.Characters.Enemies.Eras.Future.FuturePsychic,
+          Geneforge.Gameplay
+        m_MethodName: AnimEvent_FireArmsLaser
+        m_Mode: 1
+        m_Arguments:
+          m_ObjectArgument: {fileID: 0}
+          m_ObjectArgumentAssemblyTypeName: UnityEngine.Object, UnityEngine
+          m_IntArgument: 0
+          m_FloatArgument: 0
+          m_StringArgument: 
+          m_BoolArgument: 0
+        m_CallState: 2
+--- !u!114 &1610407654648112148
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 766409924401277881}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: efc138260381d8f48a98f9f4496f92e0, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  enemy: {fileID: 7774911738271992155}
+  animator: {fileID: 1335578682700467490}
+  target: {fileID: 0}
+  defaultMoveSpeed: 3
+  rotationSpeedDegPerSec: 540
+  faceTargetWhileMoving: 1
+  useLineOfSight: 0
+  lineOfSightMask:
+    serializedVersion: 2
+    m_Bits: 8
+  lineOfSightPadding: 0.1
+  wanderRadius: 6
+  wanderInterval: 4
+  wanderSpeed: 2
+  detectionRadius: 25
+  preferredRange: 12
+  minRange: 6
+  strafeSpeed: 3
+  attackRate: 1.25
+  attackTrigger: Attack
 --- !u!4 &6306613564672107392 stripped
 Transform:
   m_CorrespondingSourceObject: {fileID: -3321919801592875672, guid: 1d305c724ee02ce44964596cc38d74a2, type: 3}
