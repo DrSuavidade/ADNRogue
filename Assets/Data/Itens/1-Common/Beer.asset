@@ -1,0 +1,43 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: d27ff37d6da1fbf469fdc45a989d667f, type: 3}
+  m_Name: Beer
+  m_EditorClassIdentifier: 
+  itemName: Beer
+  description: 
+  animationFrames:
+  - {fileID: 21300000, guid: 01c5dbc361c84f44eb16ad350a62ecb3, type: 3}
+  - {fileID: 21300000, guid: ff3e5b787487166479b272b6c8925c85, type: 3}
+  - {fileID: 21300000, guid: b7a0f6cfcff4ab44c87700b278dc585b, type: 3}
+  - {fileID: 21300000, guid: 2f3fd5897e5cd5049b3eb045bbfecaee, type: 3}
+  - {fileID: 21300000, guid: 90faf3af35f144446ab999200a0dc620, type: 3}
+  - {fileID: 21300000, guid: 51a796467f6622d4e9d56fee9571233c, type: 3}
+  - {fileID: 21300000, guid: 4167d272a90dd7549a1124f50071b123, type: 3}
+  - {fileID: 21300000, guid: a1b99a1d2803e184e96bd46d2fa23fa0, type: 3}
+  - {fileID: 21300000, guid: f4b2f207ec0b971418cb52a3727784a4, type: 3}
+  - {fileID: 21300000, guid: ef8a5550928b0db4b833d6bd478d5b75, type: 3}
+  - {fileID: 21300000, guid: 2cfd7513941d95c46b826ce5c364c82e, type: 3}
+  - {fileID: 21300000, guid: 8987749fe5463f14c9ddd965ad6e5ca5, type: 3}
+  - {fileID: 21300000, guid: d0a158ffc1988b942a0e61354704fd66, type: 3}
+  - {fileID: 21300000, guid: f15d983d05f7bdf429b936d0b5fba409, type: 3}
+  - {fileID: 21300000, guid: cbf8fa5d9c6579d46ac6e24c6ea63a48, type: 3}
+  - {fileID: 21300000, guid: e292b345a0e40ac46971d44f0dae609d, type: 3}
+  - {fileID: 21300000, guid: d791fbbad114ee348b9a348c11aca609, type: 3}
+  - {fileID: 21300000, guid: 2b0709c9f4dea4843bbdcc40adee57ff, type: 3}
+  - {fileID: 21300000, guid: eedf1132deb91474bbb9246bba59cc5b, type: 3}
+  - {fileID: 21300000, guid: d0457ba855f04ff4180962a62376cfb3, type: 3}
+  - {fileID: 21300000, guid: a51a72462d184614eb5a66e2f974d393, type: 3}
+  - {fileID: 21300000, guid: 3646c71cec3949649a1a8bbd60640ffb, type: 3}
+  - {fileID: 21300000, guid: 04c438fce64731d4e83d8a5fb5885b19, type: 3}
+  - {fileID: 21300000, guid: 77dbac0df80c164448059b565d36d752, type: 3}
+  framesPerSecond: 12
+  rarity: 0
