@@ -1,0 +1,43 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: d27ff37d6da1fbf469fdc45a989d667f, type: 3}
+  m_Name: KJ Crown
+  m_EditorClassIdentifier: 
+  itemName: KJCrown
+  description: 
+  animationFrames:
+  - {fileID: 21300000, guid: 93ff53b81b1f1854e8b3a6a0dd983f1c, type: 3}
+  - {fileID: 21300000, guid: 4f5e1ac6a989cf84eb6848fdaef25117, type: 3}
+  - {fileID: 21300000, guid: c7cc4eb949affed45aa7305faa537f63, type: 3}
+  - {fileID: 21300000, guid: 485246e86f0627d4eb027086d7901c2e, type: 3}
+  - {fileID: 21300000, guid: d2cbe824cd8025a4e965c69bb8c9ad20, type: 3}
+  - {fileID: 21300000, guid: 1d72bcd177c829942aa7ed62407ee8c9, type: 3}
+  - {fileID: 21300000, guid: d468fe29da579424dbb9ef84f3a397fb, type: 3}
+  - {fileID: 21300000, guid: 4bba8218af5d5ab478fe9f5d1f686c75, type: 3}
+  - {fileID: 21300000, guid: a884873f9a8ab3f4fb5ec0e5e6971bcd, type: 3}
+  - {fileID: 21300000, guid: 5255d374fff51e241877f27739a8bc52, type: 3}
+  - {fileID: 21300000, guid: 3b08b00266d8c8240b33f0c08147ca05, type: 3}
+  - {fileID: 21300000, guid: 2e6b0ed0516d4b84eb8b90ac56651264, type: 3}
+  - {fileID: 21300000, guid: 236eaa98846ca3644be0b0f883c664bf, type: 3}
+  - {fileID: 21300000, guid: 5418839ce7ab838428879e5be7b6a34e, type: 3}
+  - {fileID: 21300000, guid: 0540572f186f8ae4b9dc969a49a4ffcd, type: 3}
+  - {fileID: 21300000, guid: 8a2f0736a1de75342b1452f7634874d0, type: 3}
+  - {fileID: 21300000, guid: 533ba6a7466b5204e839e14226a214c6, type: 3}
+  - {fileID: 21300000, guid: 265736ef78d787241baa3e0d2f914c35, type: 3}
+  - {fileID: 21300000, guid: 01ae5b2f8e1827449af75d18c20f8653, type: 3}
+  - {fileID: 21300000, guid: ba22d5c76ac69e244867f67cdf98b6be, type: 3}
+  - {fileID: 21300000, guid: 2c04d0cf16cc2d24391141d13fae7375, type: 3}
+  - {fileID: 21300000, guid: 4745c4ee022204d4e9c78fb76cec2b55, type: 3}
+  - {fileID: 21300000, guid: 6a064f485e9f1c94c83f547b53b66d67, type: 3}
+  - {fileID: 21300000, guid: 3aaafc4f45e77be40983d50f80ec0077, type: 3}
+  framesPerSecond: 12
+  rarity: 1
