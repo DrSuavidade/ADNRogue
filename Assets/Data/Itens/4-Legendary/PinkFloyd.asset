@@ -1,0 +1,43 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: d27ff37d6da1fbf469fdc45a989d667f, type: 3}
+  m_Name: PinkFloyd
+  m_EditorClassIdentifier: 
+  itemName: PinkFloyd
+  description: 
+  animationFrames:
+  - {fileID: 21300000, guid: ef0dcfe999942584c842f099d63cedba, type: 3}
+  - {fileID: 21300000, guid: 23cddd222db27f04ab65611c700c34b7, type: 3}
+  - {fileID: 21300000, guid: 85b9ecb3e69790548824305d62b1ae31, type: 3}
+  - {fileID: 21300000, guid: 8de5c5ae1aa65384794f266c1236bd42, type: 3}
+  - {fileID: 21300000, guid: 258a419dd4452084ebed0ac84876be8b, type: 3}
+  - {fileID: 21300000, guid: 9aabe79b5abe87142b348f1c025d67a8, type: 3}
+  - {fileID: 21300000, guid: ad38ce4f7793ad64f914ce5e996a8ea3, type: 3}
+  - {fileID: 21300000, guid: 503001b5b18cce242a8f43454c47dd2d, type: 3}
+  - {fileID: 21300000, guid: b382d2f6581edfe4f9f5ee89e79b8323, type: 3}
+  - {fileID: 21300000, guid: feae7775b1aed0842a61a3211b24dcbe, type: 3}
+  - {fileID: 21300000, guid: 463be2a8ce6897244b6620cdeab8df09, type: 3}
+  - {fileID: 21300000, guid: cd48fa2dd8cf5e9418a05635b416e1b4, type: 3}
+  - {fileID: 21300000, guid: ae69996a18135e04e8cbcbfbc9a8a3ef, type: 3}
+  - {fileID: 21300000, guid: 0585fa2b52be7de448ec6e1dc50634a8, type: 3}
+  - {fileID: 21300000, guid: 0968ef4a8510a694ba7b8f2fde950562, type: 3}
+  - {fileID: 21300000, guid: 7008471a50ef5ba4584cc8f969c96618, type: 3}
+  - {fileID: 21300000, guid: 0c8bcdd5de3fa0644ba2447bc60d3d67, type: 3}
+  - {fileID: 21300000, guid: 1753461800f5838478e4adcf0c402fd4, type: 3}
+  - {fileID: 21300000, guid: 9d21eda85d1d60a4391e79354025c48c, type: 3}
+  - {fileID: 21300000, guid: 0c0c652519d11b44ab67cb09f3893542, type: 3}
+  - {fileID: 21300000, guid: 269422c918e2e3940bb77aeb7d220b99, type: 3}
+  - {fileID: 21300000, guid: 438bc4f72dd2f4f4bb85bbc168c2174b, type: 3}
+  - {fileID: 21300000, guid: 561e837a40cc1ac4f988226c68ecba15, type: 3}
+  - {fileID: 21300000, guid: e82a3d4858c833c4cb3905e611c29250, type: 3}
+  framesPerSecond: 12
+  rarity: 3

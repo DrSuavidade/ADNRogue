@@ -12,32 +12,32 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: d27ff37d6da1fbf469fdc45a989d667f, type: 3}
   m_Name: TurtleStick
   m_EditorClassIdentifier: 
-  itemName: New Item
+  itemName: TurtleStick
   description: 
   animationFrames:
-  - {fileID: 0}
-  - {fileID: 0}
-  - {fileID: 0}
-  - {fileID: 0}
-  - {fileID: 0}
-  - {fileID: 0}
-  - {fileID: 0}
-  - {fileID: 0}
-  - {fileID: 0}
-  - {fileID: 0}
-  - {fileID: 0}
-  - {fileID: 0}
-  - {fileID: 0}
-  - {fileID: 0}
-  - {fileID: 0}
-  - {fileID: 0}
-  - {fileID: 0}
-  - {fileID: 0}
-  - {fileID: 0}
-  - {fileID: 0}
-  - {fileID: 0}
-  - {fileID: 0}
-  - {fileID: 0}
-  - {fileID: 0}
+  - {fileID: 21300000, guid: d3a1438a6bdc4b348a984e37095dbf2b, type: 3}
+  - {fileID: 21300000, guid: 89ea266d9e523ac42b4038590b2c9214, type: 3}
+  - {fileID: 21300000, guid: c6c001e539123ae40b2b74c470c2a282, type: 3}
+  - {fileID: 21300000, guid: e349de157b9b15d4b9ad3daab33cdea1, type: 3}
+  - {fileID: 21300000, guid: 694b2ae0e612a29418fd89062499c98a, type: 3}
+  - {fileID: 21300000, guid: d325e2791a7660340917549b3a8a77ea, type: 3}
+  - {fileID: 21300000, guid: 1599bb2b3071a4848ad789137549654d, type: 3}
+  - {fileID: 21300000, guid: ccc661416bd80364a9231c711c792442, type: 3}
+  - {fileID: 21300000, guid: 764142f57d0b93149a72f1367be37795, type: 3}
+  - {fileID: 21300000, guid: 2aac85f912197a34baac348c5298540c, type: 3}
+  - {fileID: 21300000, guid: efd0306f58d7a064a934475be2f8c43d, type: 3}
+  - {fileID: 21300000, guid: a50032a314c22a3459f05263a373c266, type: 3}
+  - {fileID: 21300000, guid: e83af69315750d3408924eaf96305067, type: 3}
+  - {fileID: 21300000, guid: 3004274a2883f8742a9805b64faa66f9, type: 3}
+  - {fileID: 21300000, guid: c1044edb7501b3b4db5bdfde3ab16953, type: 3}
+  - {fileID: 21300000, guid: c1204f7bda2057e4e8c852e8102c7c76, type: 3}
+  - {fileID: 21300000, guid: 5be0bbc38d72086418443238c176e21d, type: 3}
+  - {fileID: 21300000, guid: c7e56264b3a5df5498fd4616e018557d, type: 3}
+  - {fileID: 21300000, guid: 563834797ebaeca42acd525df52f141a, type: 3}
+  - {fileID: 21300000, guid: 6c87cce707f922749b076b54efeba8b0, type: 3}
+  - {fileID: 21300000, guid: 6764f830298cefb43b74310b563c6594, type: 3}
+  - {fileID: 21300000, guid: 321dd750a7eec274888bca1596a786e1, type: 3}
+  - {fileID: 21300000, guid: 97d42a301cdad2e47bbfb5879e94af96, type: 3}
+  - {fileID: 21300000, guid: bc37471d2a3ccc342b6ef772839fb951, type: 3}
   framesPerSecond: 12
-  rarity: 0
+  rarity: 3

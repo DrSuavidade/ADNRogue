@@ -1,0 +1,43 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: d27ff37d6da1fbf469fdc45a989d667f, type: 3}
+  m_Name: GlassShip
+  m_EditorClassIdentifier: 
+  itemName: GlassShip
+  description: 
+  animationFrames:
+  - {fileID: 21300000, guid: a4f2b2446fdd10a40ba6318559433885, type: 3}
+  - {fileID: 21300000, guid: e28a8e35d43bf4e469fccff44df478ab, type: 3}
+  - {fileID: 21300000, guid: 3f4faa735e08ee84d9e163eadffcc068, type: 3}
+  - {fileID: 21300000, guid: a181bf21be32f0d44a87ef95aef34f32, type: 3}
+  - {fileID: 21300000, guid: ee8dcc605f0d9014fae912527230fb37, type: 3}
+  - {fileID: 21300000, guid: 7ce2e269822ed4144a079ca0011abd57, type: 3}
+  - {fileID: 21300000, guid: 2ac175e8ffb9ef44a9ecc5ccb2def18c, type: 3}
+  - {fileID: 21300000, guid: 8b23f5b8b03fade43a75ce1b09f05d65, type: 3}
+  - {fileID: 21300000, guid: 2abe1246f3287ad429b764b6e84b2cd3, type: 3}
+  - {fileID: 21300000, guid: 4d0c23e30da90d649a88d7a98bdef0c4, type: 3}
+  - {fileID: 21300000, guid: c6e10d76e7c95ae43b4922c876c08e57, type: 3}
+  - {fileID: 21300000, guid: d9dd0c409921cc043bebd4950e6c63ed, type: 3}
+  - {fileID: 21300000, guid: 04b415b451ce3cf4f9fc8668ea77c756, type: 3}
+  - {fileID: 21300000, guid: 7e5bb7638974df448858a4b5594614bc, type: 3}
+  - {fileID: 21300000, guid: f446490494efdcb428037ca9a020b8cf, type: 3}
+  - {fileID: 21300000, guid: e06808081bf9d4d44b824fb62a6416a0, type: 3}
+  - {fileID: 21300000, guid: 39f72ff45652da24596d7e007126f536, type: 3}
+  - {fileID: 21300000, guid: ecd0f476a6d75484d82703ea55190412, type: 3}
+  - {fileID: 21300000, guid: 919c5015b0feae046a2023c1ca7fdd3e, type: 3}
+  - {fileID: 21300000, guid: 731bc70186cf3a54facdc4d8c3f592c8, type: 3}
+  - {fileID: 21300000, guid: d09fa7b95362fb14da78f324cf166893, type: 3}
+  - {fileID: 21300000, guid: 59e17b0b05ee9d84f8ead1585ba2dcce, type: 3}
+  - {fileID: 21300000, guid: ed195933678e3b7478586a8f562744ea, type: 3}
+  - {fileID: 21300000, guid: d6fe0291cb5bf8d42875101df681af0e, type: 3}
+  framesPerSecond: 12
+  rarity: 3
