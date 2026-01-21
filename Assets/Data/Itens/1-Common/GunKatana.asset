@@ -12,32 +12,32 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: d27ff37d6da1fbf469fdc45a989d667f, type: 3}
   m_Name: GunKatana
   m_EditorClassIdentifier: 
-  itemName: New Item
+  itemName: GunKatana
   description: 
   animationFrames:
-  - {fileID: 0}
-  - {fileID: 0}
-  - {fileID: 0}
-  - {fileID: 0}
-  - {fileID: 0}
-  - {fileID: 0}
-  - {fileID: 0}
-  - {fileID: 0}
-  - {fileID: 0}
-  - {fileID: 0}
-  - {fileID: 0}
-  - {fileID: 0}
-  - {fileID: 0}
-  - {fileID: 0}
-  - {fileID: 0}
-  - {fileID: 0}
-  - {fileID: 0}
-  - {fileID: 0}
-  - {fileID: 0}
-  - {fileID: 0}
-  - {fileID: 0}
-  - {fileID: 0}
-  - {fileID: 0}
-  - {fileID: 0}
+  - {fileID: 21300000, guid: 3c896e9986d4cae43b0ef489d485b284, type: 3}
+  - {fileID: 21300000, guid: 40c24706307d44d4cadd28386b448cf1, type: 3}
+  - {fileID: 21300000, guid: 132450e6f3656224b88ab99ecbaa87fd, type: 3}
+  - {fileID: 21300000, guid: 6cb2150baeab33340b643f786680c1b2, type: 3}
+  - {fileID: 21300000, guid: 0ea97d1018b0cc84f8e0b783f3c9bd43, type: 3}
+  - {fileID: 21300000, guid: 1eedc15a800ee674ca5a0645375c0f37, type: 3}
+  - {fileID: 21300000, guid: ceaf767bc0394354fb343abdbdb3301a, type: 3}
+  - {fileID: 21300000, guid: c87d7fd24c3aca54eb81bf4a7e6adef4, type: 3}
+  - {fileID: 21300000, guid: dc6e25e27aff58d4d9db9940ffa58341, type: 3}
+  - {fileID: 21300000, guid: 1487763d233b0634fadc6bd186032efe, type: 3}
+  - {fileID: 21300000, guid: 19665fff79114504497b52b6b18f6467, type: 3}
+  - {fileID: 21300000, guid: 0e60a16901851bc42971f28d9a6320aa, type: 3}
+  - {fileID: 21300000, guid: 72a2ebcfe7634f146b924df16aa1ff41, type: 3}
+  - {fileID: 21300000, guid: 94bd5ff2d1b92c6498c4fd67f778ded3, type: 3}
+  - {fileID: 21300000, guid: 53585c348606e944dbbae220aa2cbc9b, type: 3}
+  - {fileID: 21300000, guid: af739e7a4c4bc1445ab026e10553f8cc, type: 3}
+  - {fileID: 21300000, guid: ad41e962ee6a3cd48a9fdab19dd73fd3, type: 3}
+  - {fileID: 21300000, guid: 779e567474117324cb458e65e479d06d, type: 3}
+  - {fileID: 21300000, guid: cf2b0c3fa3881a04fa1dbb6eb5edf279, type: 3}
+  - {fileID: 21300000, guid: cd2015ebdcf81f5438aa4ac5222d3462, type: 3}
+  - {fileID: 21300000, guid: 51d2d3497c2adbe4394002e3e47611b8, type: 3}
+  - {fileID: 21300000, guid: 95f8ffb05bd062245a8819d32ce5b42f, type: 3}
+  - {fileID: 21300000, guid: 4beaa584c1f10434daa5a78513e81ef1, type: 3}
+  - {fileID: 21300000, guid: e0b8186b8f3725e4bad6ba1794e33f00, type: 3}
   framesPerSecond: 12
   rarity: 0

@@ -12,32 +12,32 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: d27ff37d6da1fbf469fdc45a989d667f, type: 3}
   m_Name: Colar
   m_EditorClassIdentifier: 
-  itemName: New Item
+  itemName: Colar
   description: 
   animationFrames:
-  - {fileID: 0}
-  - {fileID: 0}
-  - {fileID: 0}
-  - {fileID: 0}
-  - {fileID: 0}
-  - {fileID: 0}
-  - {fileID: 0}
-  - {fileID: 0}
-  - {fileID: 0}
-  - {fileID: 0}
-  - {fileID: 0}
-  - {fileID: 0}
-  - {fileID: 0}
-  - {fileID: 0}
-  - {fileID: 0}
-  - {fileID: 0}
-  - {fileID: 0}
-  - {fileID: 0}
-  - {fileID: 0}
-  - {fileID: 0}
-  - {fileID: 0}
-  - {fileID: 0}
-  - {fileID: 0}
-  - {fileID: 0}
+  - {fileID: 21300000, guid: 79fdf519766c4964996a3051a04b01cf, type: 3}
+  - {fileID: 21300000, guid: 15fba2523abf72247aaa1a48680a311a, type: 3}
+  - {fileID: 21300000, guid: b902db5a2bfa1bb4d8ed437d1426fec6, type: 3}
+  - {fileID: 21300000, guid: b2e7b9c814ecc9e4398076b8d6014cbd, type: 3}
+  - {fileID: 21300000, guid: beebcbc213b27c149812c2a44497041f, type: 3}
+  - {fileID: 21300000, guid: 88dff3617047a73488315796f8e56e30, type: 3}
+  - {fileID: 21300000, guid: b71d3be46aee78e45bd9d1ac61301f91, type: 3}
+  - {fileID: 21300000, guid: e0f5b9679ae67b648853067b8c27c31b, type: 3}
+  - {fileID: 21300000, guid: b21229390ac1bb044922ec3866b4c66e, type: 3}
+  - {fileID: 21300000, guid: 95bcf2ef2fb0c534eab37c627645c973, type: 3}
+  - {fileID: 21300000, guid: 62d07b561a8bbf542919531be8e27845, type: 3}
+  - {fileID: 21300000, guid: 9d342902bd627fc4d838cfc3449c2100, type: 3}
+  - {fileID: 21300000, guid: bbc1c1e65b2cf9345bf67047ba15e05a, type: 3}
+  - {fileID: 21300000, guid: 3055a8010de8d054782c10697250be54, type: 3}
+  - {fileID: 21300000, guid: e4b5081774d989040aac785600c94100, type: 3}
+  - {fileID: 21300000, guid: 493affaaee45ac04c9846fcd933e6e4a, type: 3}
+  - {fileID: 21300000, guid: b5b8997c901b1fe4785dce3f070b8962, type: 3}
+  - {fileID: 21300000, guid: 6ce39f80d33746f4ab45768e7a7c6ed3, type: 3}
+  - {fileID: 21300000, guid: b287368394648ec45b059fa3ba2fd687, type: 3}
+  - {fileID: 21300000, guid: 92f954da53eb1ab4b91b1eadc990b67a, type: 3}
+  - {fileID: 21300000, guid: 1111fb2a136995b4e81c75ff3b2240d4, type: 3}
+  - {fileID: 21300000, guid: 87f7718ca12d04a449bbd21ea366049c, type: 3}
+  - {fileID: 21300000, guid: 44ab320420fe2c44490ca4ad879f4ea3, type: 3}
+  - {fileID: 21300000, guid: 2c67c401f41b1134a8b38244c89ad170, type: 3}
   framesPerSecond: 12
   rarity: 0

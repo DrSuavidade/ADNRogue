@@ -12,32 +12,32 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: d27ff37d6da1fbf469fdc45a989d667f, type: 3}
   m_Name: EspadsRetorcida
   m_EditorClassIdentifier: 
-  itemName: New Item
+  itemName: EspadaRetorcida
   description: 
   animationFrames:
-  - {fileID: 0}
-  - {fileID: 0}
-  - {fileID: 0}
-  - {fileID: 0}
-  - {fileID: 0}
-  - {fileID: 0}
-  - {fileID: 0}
-  - {fileID: 0}
-  - {fileID: 0}
-  - {fileID: 0}
-  - {fileID: 0}
-  - {fileID: 0}
-  - {fileID: 0}
-  - {fileID: 0}
-  - {fileID: 0}
-  - {fileID: 0}
-  - {fileID: 0}
-  - {fileID: 0}
-  - {fileID: 0}
-  - {fileID: 0}
-  - {fileID: 0}
-  - {fileID: 0}
-  - {fileID: 0}
-  - {fileID: 0}
+  - {fileID: 21300000, guid: 4e0019d8395812747895a6621b11541d, type: 3}
+  - {fileID: 21300000, guid: e80a409db5af260478191fe77fcf2f8b, type: 3}
+  - {fileID: 21300000, guid: 6729abbd583f9b849bfcf5968b7613dd, type: 3}
+  - {fileID: 21300000, guid: 8be83e1de9f29f5498be6ae788c7d0ac, type: 3}
+  - {fileID: 21300000, guid: be163417024b2b44281d935f26a15a66, type: 3}
+  - {fileID: 21300000, guid: c0fd802262a44b54e96d71708166950a, type: 3}
+  - {fileID: 21300000, guid: 9cc50b558fa66d449ba8a55d42b38715, type: 3}
+  - {fileID: 21300000, guid: 32ae012b39c06774f9a39894f195633c, type: 3}
+  - {fileID: 21300000, guid: 3f12b196c78a22e4597cd4c67684d6d1, type: 3}
+  - {fileID: 21300000, guid: 08ba0d382909bca4688bf9b98ca00e92, type: 3}
+  - {fileID: 21300000, guid: 25e6ee52a0529c84a9a7053495e793a5, type: 3}
+  - {fileID: 21300000, guid: 93108be385cd8944b8dd83b5095eccb4, type: 3}
+  - {fileID: 21300000, guid: b4951f3471c05a4448a2df05e41f264d, type: 3}
+  - {fileID: 21300000, guid: 5000f4cde981672408a5b8d5885c6033, type: 3}
+  - {fileID: 21300000, guid: 3fa76f0950b313d43ac48dd6feb923b3, type: 3}
+  - {fileID: 21300000, guid: ee1dc22eda5f3f04a88f22eddbd74a97, type: 3}
+  - {fileID: 21300000, guid: 6f6a893d40f422e4bb62d8c5da965e85, type: 3}
+  - {fileID: 21300000, guid: d65c0baca93618941b48a3118d01dbd8, type: 3}
+  - {fileID: 21300000, guid: cc81b56bc2f818b498f3dda329725f98, type: 3}
+  - {fileID: 21300000, guid: 7a7425ee943800146aee5f71180613b1, type: 3}
+  - {fileID: 21300000, guid: 785f684c472c10044989671d3a309648, type: 3}
+  - {fileID: 21300000, guid: 62b56b7a92da50a4dab2bc5c0a153359, type: 3}
+  - {fileID: 21300000, guid: 203e008dd7faa884188aa916edc850ab, type: 3}
+  - {fileID: 21300000, guid: eb23198a4e9677241995042a5836992f, type: 3}
   framesPerSecond: 12
   rarity: 0

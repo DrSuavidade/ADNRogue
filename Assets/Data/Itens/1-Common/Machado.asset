@@ -12,32 +12,32 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: d27ff37d6da1fbf469fdc45a989d667f, type: 3}
   m_Name: Machado
   m_EditorClassIdentifier: 
-  itemName: New Item
+  itemName: Machado
   description: 
   animationFrames:
-  - {fileID: 0}
-  - {fileID: 0}
-  - {fileID: 0}
-  - {fileID: 0}
-  - {fileID: 0}
-  - {fileID: 0}
-  - {fileID: 0}
-  - {fileID: 0}
-  - {fileID: 0}
-  - {fileID: 0}
-  - {fileID: 0}
-  - {fileID: 0}
-  - {fileID: 0}
-  - {fileID: 0}
-  - {fileID: 0}
-  - {fileID: 0}
-  - {fileID: 0}
-  - {fileID: 0}
-  - {fileID: 0}
-  - {fileID: 0}
-  - {fileID: 0}
-  - {fileID: 0}
-  - {fileID: 0}
-  - {fileID: 0}
+  - {fileID: 21300000, guid: e43b8355984a8df42bb45cb06992f65d, type: 3}
+  - {fileID: 21300000, guid: c7ca38576687996429f463c6f3223430, type: 3}
+  - {fileID: 21300000, guid: b5e60890733944941ad65cb117e9a42e, type: 3}
+  - {fileID: 21300000, guid: 1724071eccb22884a86782d69319389b, type: 3}
+  - {fileID: 21300000, guid: 33200a7bb6167ba49905c7d0e0bdbc76, type: 3}
+  - {fileID: 21300000, guid: 0b1613002e34df940bee61a8eea602d8, type: 3}
+  - {fileID: 21300000, guid: 136561943737e6c4aa8050e57a631e60, type: 3}
+  - {fileID: 21300000, guid: 91d31be4a98211e43bae3976e37a88c9, type: 3}
+  - {fileID: 21300000, guid: 0fd4d0fd3d310884cb55aba00e406da6, type: 3}
+  - {fileID: 21300000, guid: d0ec5415c18330b459ea743ab52c4b71, type: 3}
+  - {fileID: 21300000, guid: 44495d817cf8f8144bd24be1b59f4c45, type: 3}
+  - {fileID: 21300000, guid: 25034b45826e6f1408673842a9106f41, type: 3}
+  - {fileID: 21300000, guid: 223cc5113001b4945949551e3914f4ef, type: 3}
+  - {fileID: 21300000, guid: da218f4ea80447b4c83f08f701ddc55e, type: 3}
+  - {fileID: 21300000, guid: c27623c03633dfd4db9c6c40cf69b23a, type: 3}
+  - {fileID: 21300000, guid: a749a62656b70bc4ea11fdd1f47ef97a, type: 3}
+  - {fileID: 21300000, guid: 799d30f8efc7f0f40a4806a7ed95165c, type: 3}
+  - {fileID: 21300000, guid: 1d14f01fdaacd19419023fd35cd7233b, type: 3}
+  - {fileID: 21300000, guid: 4f117c56a6b53fc4b858da86656e031b, type: 3}
+  - {fileID: 21300000, guid: 7b854b6944dbf4c449cfbf6676be98ce, type: 3}
+  - {fileID: 21300000, guid: 2c71bda33d2e5534e90e4f0876feb078, type: 3}
+  - {fileID: 21300000, guid: ec2937b4358cc6f4496b73145c4814ce, type: 3}
+  - {fileID: 21300000, guid: cd6edfbc651bae044a65dab76238b35f, type: 3}
+  - {fileID: 21300000, guid: 61e1eaa47d725ee4a8e8576b22ad961e, type: 3}
   framesPerSecond: 12
   rarity: 0

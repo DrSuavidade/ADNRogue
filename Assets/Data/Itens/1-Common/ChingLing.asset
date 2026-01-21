@@ -15,29 +15,29 @@ MonoBehaviour:
   itemName: ChingLing Helmet
   description: 
   animationFrames:
-  - {fileID: 0}
-  - {fileID: 0}
-  - {fileID: 0}
-  - {fileID: 0}
-  - {fileID: 0}
-  - {fileID: 0}
-  - {fileID: 0}
-  - {fileID: 0}
-  - {fileID: 0}
-  - {fileID: 0}
-  - {fileID: 0}
-  - {fileID: 0}
-  - {fileID: 0}
-  - {fileID: 0}
-  - {fileID: 0}
-  - {fileID: 0}
-  - {fileID: 0}
-  - {fileID: 0}
-  - {fileID: 0}
-  - {fileID: 0}
-  - {fileID: 0}
-  - {fileID: 0}
-  - {fileID: 0}
-  - {fileID: 0}
+  - {fileID: 21300000, guid: 7e6bf07264ac2f24898b714884b8abe4, type: 3}
+  - {fileID: 21300000, guid: 5c423167d0440224cafec4d189415d20, type: 3}
+  - {fileID: 21300000, guid: 7aa15cc72a9775f4da1024152e1f6e74, type: 3}
+  - {fileID: 21300000, guid: 5aa9354c62d0ff74a978abfe7d7e37a3, type: 3}
+  - {fileID: 21300000, guid: 420db192ae2fcf04f83aff2af52c7fac, type: 3}
+  - {fileID: 21300000, guid: 175a0bf0b78c2704c8596662619779d5, type: 3}
+  - {fileID: 21300000, guid: f6a2abd9eaa72d9478cdf9e38dd0ef4e, type: 3}
+  - {fileID: 21300000, guid: 8260e2b2e89d7a247b2828d55444fef5, type: 3}
+  - {fileID: 21300000, guid: 0d9878f8bdf5c7c4e886ecc93c9a6317, type: 3}
+  - {fileID: 21300000, guid: f1dd3cd60b603f243b9bae42a8e1f93f, type: 3}
+  - {fileID: 21300000, guid: 652e701d60c69a7409c7b9e679285404, type: 3}
+  - {fileID: 21300000, guid: 5c6574a62c246c34a98ae029d3f7aee7, type: 3}
+  - {fileID: 21300000, guid: b270d5484110c5f45866a94bccb7bfa5, type: 3}
+  - {fileID: 21300000, guid: 0f3f7d81411984c4283231a950dc4d36, type: 3}
+  - {fileID: 21300000, guid: eea81ee5894f66649b2ecbcbd9f4dfbf, type: 3}
+  - {fileID: 21300000, guid: df0e8399e200b494986e6e6fb8606299, type: 3}
+  - {fileID: 21300000, guid: 46937dc801bc7b14b8f5303a40ab06dc, type: 3}
+  - {fileID: 21300000, guid: 15d44ae0bfea0ca49938ad11d6018877, type: 3}
+  - {fileID: 21300000, guid: 8dee67c7cd69a04439e8fc2c616d2ddb, type: 3}
+  - {fileID: 21300000, guid: 2a543a89a221b804f805ac4313b3306f, type: 3}
+  - {fileID: 21300000, guid: 3b04d1fda8ced98478b8695bc75edfec, type: 3}
+  - {fileID: 21300000, guid: c938f3d2af8e899499f548c8939a6689, type: 3}
+  - {fileID: 21300000, guid: 047185a475c3ba64995c1c57fe4c86e8, type: 3}
+  - {fileID: 21300000, guid: a4e5922fee2ea554282ff157ae56b040, type: 3}
   framesPerSecond: 12
   rarity: 0

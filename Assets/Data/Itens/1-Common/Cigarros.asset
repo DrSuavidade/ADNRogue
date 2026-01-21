@@ -15,29 +15,29 @@ MonoBehaviour:
   itemName: Cigarros
   description: 
   animationFrames:
-  - {fileID: 0}
-  - {fileID: 0}
-  - {fileID: 0}
-  - {fileID: 0}
-  - {fileID: 0}
-  - {fileID: 0}
-  - {fileID: 0}
-  - {fileID: 0}
-  - {fileID: 0}
-  - {fileID: 0}
-  - {fileID: 0}
-  - {fileID: 0}
-  - {fileID: 0}
-  - {fileID: 0}
-  - {fileID: 0}
-  - {fileID: 0}
-  - {fileID: 0}
-  - {fileID: 0}
-  - {fileID: 0}
-  - {fileID: 0}
-  - {fileID: 0}
-  - {fileID: 0}
-  - {fileID: 0}
-  - {fileID: 0}
+  - {fileID: 21300000, guid: 65b4e6522c8ce7941a846a142988959c, type: 3}
+  - {fileID: 21300000, guid: 8b3cebfaa4510e640838ac6257f758bf, type: 3}
+  - {fileID: 21300000, guid: 101da1e15d201d146b7e07ee0f538ee6, type: 3}
+  - {fileID: 21300000, guid: 166937c68b4b3174eb391db0f2e4bbb5, type: 3}
+  - {fileID: 21300000, guid: c0b4c316bd7c71d4b8cdf88a230af0b6, type: 3}
+  - {fileID: 21300000, guid: b56f9f98f3408994fb2562fbe4e7e565, type: 3}
+  - {fileID: 21300000, guid: 9801fc049b4176248b8071595bd45426, type: 3}
+  - {fileID: 21300000, guid: f8e91764becdc9e4f82e308cffc4fbff, type: 3}
+  - {fileID: 21300000, guid: 9b83daee47f7a0145aeda86bd4477a39, type: 3}
+  - {fileID: 21300000, guid: 71c7037a700c096489ee7c7da5a45849, type: 3}
+  - {fileID: 21300000, guid: aad6485718fd432459570f0b0ab03af3, type: 3}
+  - {fileID: 21300000, guid: 49eb503aef3dba848a7e4170940dc1eb, type: 3}
+  - {fileID: 21300000, guid: 423deb44fc1cb9b419cf7d376b3146c5, type: 3}
+  - {fileID: 21300000, guid: c28535412b74bbe4b8e6ff5d7bc1ce2f, type: 3}
+  - {fileID: 21300000, guid: 69562e14a49df9846b8cdac13fd5688e, type: 3}
+  - {fileID: 21300000, guid: 2f8a2f18194642745a2f37e1c3decf23, type: 3}
+  - {fileID: 21300000, guid: 2a81d644f720d0241bdc4bede6ed612d, type: 3}
+  - {fileID: 21300000, guid: 01631f9fc3987494f83493f86c14b3eb, type: 3}
+  - {fileID: 21300000, guid: 691fd698db73e1046ae72b46d9d76e19, type: 3}
+  - {fileID: 21300000, guid: 811fad658d3443543b64ec9d7b49ff6a, type: 3}
+  - {fileID: 21300000, guid: dcebaa2b95f728e4f9b3a63f4c036f00, type: 3}
+  - {fileID: 21300000, guid: e623926166b8b83498af0da0c653ced1, type: 3}
+  - {fileID: 21300000, guid: b382b05544ce21e4b8df4ba24de4c215, type: 3}
+  - {fileID: 21300000, guid: 9a6a3d77df31d3e42a67560af79737de, type: 3}
   framesPerSecond: 12
   rarity: 0

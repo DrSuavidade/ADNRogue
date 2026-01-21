@@ -12,32 +12,32 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: d27ff37d6da1fbf469fdc45a989d667f, type: 3}
   m_Name: GasMask
   m_EditorClassIdentifier: 
-  itemName: New Item
+  itemName: GasMask
   description: 
   animationFrames:
-  - {fileID: 0}
-  - {fileID: 0}
-  - {fileID: 0}
-  - {fileID: 0}
-  - {fileID: 0}
-  - {fileID: 0}
-  - {fileID: 0}
-  - {fileID: 0}
-  - {fileID: 0}
-  - {fileID: 0}
-  - {fileID: 0}
-  - {fileID: 0}
-  - {fileID: 0}
-  - {fileID: 0}
-  - {fileID: 0}
-  - {fileID: 0}
-  - {fileID: 0}
-  - {fileID: 0}
-  - {fileID: 0}
-  - {fileID: 0}
-  - {fileID: 0}
-  - {fileID: 0}
-  - {fileID: 0}
-  - {fileID: 0}
+  - {fileID: 21300000, guid: 7f9de81555b9e34449fe4cd84539ed37, type: 3}
+  - {fileID: 21300000, guid: 1b4d75023399701459d23293c7fdd2dc, type: 3}
+  - {fileID: 21300000, guid: cfbdc58bbb728c4489018c3c91d63e9c, type: 3}
+  - {fileID: 21300000, guid: 2726169f8b385d5479acd182e69a4409, type: 3}
+  - {fileID: 21300000, guid: ccfa4b531586ee94187044a45804405d, type: 3}
+  - {fileID: 21300000, guid: 5383ea4d37c1ea742b2012863572f3f7, type: 3}
+  - {fileID: 21300000, guid: d66053feb383fb744920d288cf095df6, type: 3}
+  - {fileID: 21300000, guid: 6f26f77bd54d7f140891ead8bb46ab34, type: 3}
+  - {fileID: 21300000, guid: 6774d6e253bef054486598a65c732256, type: 3}
+  - {fileID: 21300000, guid: 7087e7f284d7b69408b54044634da603, type: 3}
+  - {fileID: 21300000, guid: 11f08e68c1e59ed428173f60b2f44725, type: 3}
+  - {fileID: 21300000, guid: 4695e4fed64472e4b888d11de7ea79ff, type: 3}
+  - {fileID: 21300000, guid: db2c1c9d4f39dac43846b8a75fe59458, type: 3}
+  - {fileID: 21300000, guid: ec6abedf03c381e449fac947b9c7de32, type: 3}
+  - {fileID: 21300000, guid: da14bd39701654d40b3dc9d754e57b3f, type: 3}
+  - {fileID: 21300000, guid: 2a34128aeb181bd4cbb3093fde808434, type: 3}
+  - {fileID: 21300000, guid: f62682de7127fe049bcdb6d65f500148, type: 3}
+  - {fileID: 21300000, guid: dd5c77523627fea47b153f5a54c399a2, type: 3}
+  - {fileID: 21300000, guid: d16ca84e2617ea14892cf13d61d7ff00, type: 3}
+  - {fileID: 21300000, guid: 4e50a4a89962ad14da44ca0b840dd022, type: 3}
+  - {fileID: 21300000, guid: bb0065cd377694a4b8368d4e3d6431fa, type: 3}
+  - {fileID: 21300000, guid: b84bec30ab3d3bf4db3130bb2c759f70, type: 3}
+  - {fileID: 21300000, guid: 18cfcd0562f438245b6534d9bc05a92f, type: 3}
+  - {fileID: 21300000, guid: 9cfc59ef098c22c4e84bd6947a69241b, type: 3}
   framesPerSecond: 12
   rarity: 0

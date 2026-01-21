@@ -15,29 +15,29 @@ MonoBehaviour:
   itemName: JackDexter
   description: 
   animationFrames:
-  - {fileID: 0}
-  - {fileID: 0}
-  - {fileID: 0}
-  - {fileID: 0}
-  - {fileID: 0}
-  - {fileID: 0}
-  - {fileID: 0}
-  - {fileID: 0}
-  - {fileID: 0}
-  - {fileID: 0}
-  - {fileID: 0}
-  - {fileID: 0}
-  - {fileID: 0}
-  - {fileID: 0}
-  - {fileID: 0}
-  - {fileID: 0}
-  - {fileID: 0}
-  - {fileID: 0}
-  - {fileID: 0}
-  - {fileID: 0}
-  - {fileID: 0}
-  - {fileID: 0}
-  - {fileID: 0}
-  - {fileID: 0}
+  - {fileID: 21300000, guid: 81058679fee1111428ea45f3f4d5b208, type: 3}
+  - {fileID: 21300000, guid: d0c344ab666f98547a371a4f343c542c, type: 3}
+  - {fileID: 21300000, guid: e039df1183393214082f98221af8d628, type: 3}
+  - {fileID: 21300000, guid: 7823013659d00934a92a4faa8acd74e0, type: 3}
+  - {fileID: 21300000, guid: a5420b55f911a9d4987a1bf63c5f0b2a, type: 3}
+  - {fileID: 21300000, guid: 5411d2afcfa2049458186faaa237fde6, type: 3}
+  - {fileID: 21300000, guid: 227435d53676e55438661ea7ada8f837, type: 3}
+  - {fileID: 21300000, guid: 74fd103a7e4ae1b4d9064124cbd51fdf, type: 3}
+  - {fileID: 21300000, guid: 3918c0c3d0978974ba175e799adaf7d4, type: 3}
+  - {fileID: 21300000, guid: 581cb14910583a542a351d1aafdc937b, type: 3}
+  - {fileID: 21300000, guid: e1c716913b540ff4681e450d673bb2a9, type: 3}
+  - {fileID: 21300000, guid: bd0edab3b6249f44ab295ce3ae3fef98, type: 3}
+  - {fileID: 21300000, guid: f501ca543f4deca4ba8eede0881d6c93, type: 3}
+  - {fileID: 21300000, guid: dae0efab3f948aa43b4e933fdeca8605, type: 3}
+  - {fileID: 21300000, guid: 96b67364e4dd10f43a30ce74b2de4603, type: 3}
+  - {fileID: 21300000, guid: 051e1bfa5acb9e740884ac61bf6f76e3, type: 3}
+  - {fileID: 21300000, guid: f896cffd0b1b8044d8f3bb3ecd273534, type: 3}
+  - {fileID: 21300000, guid: ab39d6d21f36763498b33a3b7ed19414, type: 3}
+  - {fileID: 21300000, guid: ad8ef3fd7600e6a488fece8614b629a3, type: 3}
+  - {fileID: 21300000, guid: 93875d41e75a5a642b9e2e1a9cc754d0, type: 3}
+  - {fileID: 21300000, guid: 4d7cad31766a2ef48b6f295f3e5e643f, type: 3}
+  - {fileID: 21300000, guid: da07f9d530062ea42aba701cf67dce30, type: 3}
+  - {fileID: 21300000, guid: 27a48af6d86652d448333ebcd642c384, type: 3}
+  - {fileID: 21300000, guid: 1494720d30d1f2a46b311ddd6c56471c, type: 3}
   framesPerSecond: 12
   rarity: 0

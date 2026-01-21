@@ -12,32 +12,32 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: d27ff37d6da1fbf469fdc45a989d667f, type: 3}
   m_Name: Gargoile
   m_EditorClassIdentifier: 
-  itemName: New Item
+  itemName: Gargoile
   description: 
   animationFrames:
-  - {fileID: 0}
-  - {fileID: 0}
-  - {fileID: 0}
-  - {fileID: 0}
-  - {fileID: 0}
-  - {fileID: 0}
-  - {fileID: 0}
-  - {fileID: 0}
-  - {fileID: 0}
-  - {fileID: 0}
-  - {fileID: 0}
-  - {fileID: 0}
-  - {fileID: 0}
-  - {fileID: 0}
-  - {fileID: 0}
-  - {fileID: 0}
-  - {fileID: 0}
-  - {fileID: 0}
-  - {fileID: 0}
-  - {fileID: 0}
-  - {fileID: 0}
-  - {fileID: 0}
-  - {fileID: 0}
-  - {fileID: 0}
+  - {fileID: 21300000, guid: 5b113e0d8099c1349a046d3da07b28e8, type: 3}
+  - {fileID: 21300000, guid: 010a85ea7f8724e4eac6f3e4291a8bbb, type: 3}
+  - {fileID: 21300000, guid: 0eddf9b23f91f494b82ce0f0d5f757e2, type: 3}
+  - {fileID: 21300000, guid: f91483d8012b12a468d7e5cdf37d7b54, type: 3}
+  - {fileID: 21300000, guid: a72fcb52de50696468c630f2e7ff2e3d, type: 3}
+  - {fileID: 21300000, guid: 7121e27be90c59b4aa8a9f03b9a5f9c6, type: 3}
+  - {fileID: 21300000, guid: a0607964f918d7e4bb96f39ed8a57482, type: 3}
+  - {fileID: 21300000, guid: f85ed2a1631ba1c49aae893a2349cca9, type: 3}
+  - {fileID: 21300000, guid: b688b98b61cd1324496d85ffc7af32d1, type: 3}
+  - {fileID: 21300000, guid: f825a2f07e7598e4fb6c9efab8e4fa22, type: 3}
+  - {fileID: 21300000, guid: 7869a267e64f97446a3188926619c001, type: 3}
+  - {fileID: 21300000, guid: 6a9a1046db10c5b478e2985849698f24, type: 3}
+  - {fileID: 21300000, guid: 67770c4d60eefe7468602de786ac3f19, type: 3}
+  - {fileID: 21300000, guid: 7e9132461e583bd4abf4afd1826cefaf, type: 3}
+  - {fileID: 21300000, guid: b32de96f98fb7e548a685412e1f74d38, type: 3}
+  - {fileID: 21300000, guid: 75c9ba6178d25cc43a1d6c995d231dab, type: 3}
+  - {fileID: 21300000, guid: 6fcc563fe9dfbcf4f9145ec80aebaa04, type: 3}
+  - {fileID: 21300000, guid: 86bda858c91fe754f9efc780e448f8a4, type: 3}
+  - {fileID: 21300000, guid: 7c87f1c19e2eda54abc7adc401489f49, type: 3}
+  - {fileID: 21300000, guid: 07326b1a3c0a0e549a37c26eb2ea9fe8, type: 3}
+  - {fileID: 21300000, guid: 6776f6f1101ab6f4b93502869a1852c5, type: 3}
+  - {fileID: 21300000, guid: bcfcaf5b6631ff74b8e4ce0040b639c5, type: 3}
+  - {fileID: 21300000, guid: 0b19c840b9030684eb71c2f4fa754eb7, type: 3}
+  - {fileID: 21300000, guid: 1fd77cc01ee110744ad96fe5f412c940, type: 3}
   framesPerSecond: 12
   rarity: 0

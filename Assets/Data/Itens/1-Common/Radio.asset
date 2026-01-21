@@ -1,0 +1,43 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: d27ff37d6da1fbf469fdc45a989d667f, type: 3}
+  m_Name: Radio
+  m_EditorClassIdentifier: 
+  itemName: Radio
+  description: 
+  animationFrames:
+  - {fileID: 21300000, guid: 3a513d9e4d5338f4b95ca2c570a98441, type: 3}
+  - {fileID: 21300000, guid: 250922c66993cb045a794fb8b42fa1df, type: 3}
+  - {fileID: 21300000, guid: b52c54109b1693147bd5a5b2e485cdbc, type: 3}
+  - {fileID: 21300000, guid: bdef6f6dda81d4d419d4fe3c35348269, type: 3}
+  - {fileID: 21300000, guid: d6f8efe076baaa54181298f8a771bfcb, type: 3}
+  - {fileID: 21300000, guid: 3dfc9605506bddd4cae11b1121ceea3d, type: 3}
+  - {fileID: 21300000, guid: 75bc3b72c60688747bcbb8a059b59c42, type: 3}
+  - {fileID: 21300000, guid: c3669ec539ab5fe4981b5a2e9215f0a4, type: 3}
+  - {fileID: 21300000, guid: ae035ad60a852d64aafef28ba8d973df, type: 3}
+  - {fileID: 21300000, guid: e48a8968af376d64980a031bee54a6d8, type: 3}
+  - {fileID: 21300000, guid: de3626c8d8bea8441ac52ee29a4dafbf, type: 3}
+  - {fileID: 21300000, guid: d1895c1365738be41a8c66f559113b06, type: 3}
+  - {fileID: 21300000, guid: d4052c44d5fea3946b7ef489c519aea7, type: 3}
+  - {fileID: 21300000, guid: 1fab1e958da495942ae8339ccb0b3a66, type: 3}
+  - {fileID: 21300000, guid: a4c7821349d0b324db0702bb627d96f6, type: 3}
+  - {fileID: 21300000, guid: 6fa73bd06be9d5647be870da6d9b6238, type: 3}
+  - {fileID: 21300000, guid: 1228b10fe098fac4098a851c162fe649, type: 3}
+  - {fileID: 21300000, guid: 4f04845d3bfb86b4d9a238515e91dbca, type: 3}
+  - {fileID: 21300000, guid: ce8fd6c002a637d49867182cee8527d9, type: 3}
+  - {fileID: 21300000, guid: aa88e3165195ed649bed01cf03128c43, type: 3}
+  - {fileID: 21300000, guid: 59a3458fabf901d4dbbf26e77b92500d, type: 3}
+  - {fileID: 21300000, guid: 65c611317d09bde479fe150c607b9f8f, type: 3}
+  - {fileID: 21300000, guid: 102d0a1ab3d9ccf4b934d42a294d5680, type: 3}
+  - {fileID: 21300000, guid: e917695662a6fed4b979cf303b8edd22, type: 3}
+  framesPerSecond: 12
+  rarity: 0

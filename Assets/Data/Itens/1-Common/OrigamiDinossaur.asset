@@ -1,0 +1,43 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: d27ff37d6da1fbf469fdc45a989d667f, type: 3}
+  m_Name: OrigamiDinossaur
+  m_EditorClassIdentifier: 
+  itemName: OrigamiDinossaur
+  description: 
+  animationFrames:
+  - {fileID: 21300000, guid: 7e7071d17e017bf47a9ef03f077fb6d6, type: 3}
+  - {fileID: 21300000, guid: bda44d8212870a740a9d786d15bfe6e0, type: 3}
+  - {fileID: 21300000, guid: f1f90927096a01a49a63ec31dfb1fb97, type: 3}
+  - {fileID: 21300000, guid: eaf51f5660670484a927aaaf98d00381, type: 3}
+  - {fileID: 21300000, guid: 210a9f9009b94404caba7247934a4525, type: 3}
+  - {fileID: 21300000, guid: b1c2837449b42f9459f722f0d3fa7218, type: 3}
+  - {fileID: 21300000, guid: ed0007421de6e7f47aebcd5e71cf0137, type: 3}
+  - {fileID: 21300000, guid: 0166480329c868446aa2562664f15195, type: 3}
+  - {fileID: 21300000, guid: 36e0b549c3cd43b44b2d2c4d2fab9ceb, type: 3}
+  - {fileID: 21300000, guid: 40a0cc82af6ea75409f8a73d2fe7526d, type: 3}
+  - {fileID: 21300000, guid: 49593355ffee3f24b82f339679b5b7ab, type: 3}
+  - {fileID: 21300000, guid: 6fb9fde8ffcc5cf409d1811d33a2e4b8, type: 3}
+  - {fileID: 21300000, guid: aa956c05917ee8946ae81782cc69d7e7, type: 3}
+  - {fileID: 21300000, guid: dc81db8ce19d85e4c93b8b428598b168, type: 3}
+  - {fileID: 21300000, guid: 14ea61835c4a18141b44367112ec5b18, type: 3}
+  - {fileID: 21300000, guid: f611a59c4f3dff8498013ce46fe8250c, type: 3}
+  - {fileID: 21300000, guid: b06dc66964038da4fb1d797d0b1c969a, type: 3}
+  - {fileID: 21300000, guid: 63e79d1d15dde2e4aa6d50443bdd765b, type: 3}
+  - {fileID: 21300000, guid: db41acd9008009b4c9591547c0f9fb02, type: 3}
+  - {fileID: 21300000, guid: 61a92c673888b6c4b90e22e66090783b, type: 3}
+  - {fileID: 21300000, guid: 842b8ea3bc30c9b43a01f2a5f4d2870b, type: 3}
+  - {fileID: 21300000, guid: 4c11460b4c732a444865982ebd8ba3e0, type: 3}
+  - {fileID: 21300000, guid: 706d3087385835d4385249668b76b77b, type: 3}
+  - {fileID: 21300000, guid: e7af5cc4afc47694eb1df9425f7c4e1e, type: 3}
+  framesPerSecond: 12
+  rarity: 0

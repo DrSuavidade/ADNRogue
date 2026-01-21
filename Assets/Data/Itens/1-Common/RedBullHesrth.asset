@@ -1,0 +1,43 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: d27ff37d6da1fbf469fdc45a989d667f, type: 3}
+  m_Name: RedBullHesrth
+  m_EditorClassIdentifier: 
+  itemName: RedBullHearth
+  description: 
+  animationFrames:
+  - {fileID: 21300000, guid: 40534572d1411a644ad2891b59d02607, type: 3}
+  - {fileID: 21300000, guid: ac3760d20cb718740b834f069e9fa9d9, type: 3}
+  - {fileID: 21300000, guid: a22c8848b1aa457459acbf15272a583a, type: 3}
+  - {fileID: 21300000, guid: e981210b3a0924f46b31c193bf2c7c23, type: 3}
+  - {fileID: 21300000, guid: 6e26156a7a615894ba94aeeb236de206, type: 3}
+  - {fileID: 21300000, guid: 20740c80bf0e9754e86543d31fc0fc71, type: 3}
+  - {fileID: 21300000, guid: f21084499bf6bf94c965c6d3899b6d55, type: 3}
+  - {fileID: 21300000, guid: c742870c00e70734b816b9d91b60783f, type: 3}
+  - {fileID: 21300000, guid: e4c560ad45d651943b8ea22b2ee5a29b, type: 3}
+  - {fileID: 21300000, guid: b72451ab83d93494e9cc4461bbf6bbc5, type: 3}
+  - {fileID: 21300000, guid: 5b89ba5340c45f64abc3fbbdd58ec8f2, type: 3}
+  - {fileID: 21300000, guid: d054f874692643e4780f4b33372b4d4f, type: 3}
+  - {fileID: 21300000, guid: e810fc94df9ef4b43a1e875616988484, type: 3}
+  - {fileID: 21300000, guid: e9a70b4f12d15144db361343c984fb16, type: 3}
+  - {fileID: 21300000, guid: 47d0d9a813aa4e246b0c7acfb8df1950, type: 3}
+  - {fileID: 21300000, guid: 9e96bb3a3b30de840b18b6d73ec38052, type: 3}
+  - {fileID: 21300000, guid: f274e6743dbdd154b841312463885d8a, type: 3}
+  - {fileID: 21300000, guid: cd3d1e4897c0d4345bef707d11fe5b62, type: 3}
+  - {fileID: 21300000, guid: 6e5ff292cb84db941870f0c9bd74c6fa, type: 3}
+  - {fileID: 21300000, guid: b2a46de5aae44014fb441117bf728091, type: 3}
+  - {fileID: 21300000, guid: a56417935f54aa14eb29b6c7d7fd7520, type: 3}
+  - {fileID: 21300000, guid: b2770bed1c1c7e84bb46db956088cebe, type: 3}
+  - {fileID: 21300000, guid: b028229026c4dba4a8cacd558c7568e1, type: 3}
+  - {fileID: 21300000, guid: cc425df4994ce5c469f4640748dd9e34, type: 3}
+  framesPerSecond: 12
+  rarity: 0
