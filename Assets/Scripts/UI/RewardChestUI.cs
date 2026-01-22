@@ -37,22 +37,24 @@ namespace Geneforge.UI
 
         private void Awake()
         {
+            // Register as early as possible
+            RewardChestUIService.Register(this);
+
             if (panelRoot != null)
             {
                 panelRoot.SetActive(false);
+            }
+            else
+            {
+                Debug.LogWarning("[RewardChestUI] Panel Root is not assigned in the inspector!");
             }
         }
 
         private void OnEnable()
         {
-            // Register this UI with the service locator
-            RewardChestUIService.Register(this);
-        }
-
-        private void OnDisable()
-        {
-            // Unregister from the service locator
-            RewardChestUIService.Unregister(this);
+            // Ensure registration if it was somehow lost
+            if (RewardChestUIService.Provider == null)
+                RewardChestUIService.Register(this);
         }
 
         /// <summary>
@@ -63,20 +65,52 @@ namespace Geneforge.UI
         /// <param name="onSelection">Callback when an item is selected.</param>
         public void ShowRewardSelection(List<RewardItemData> items, GameObject player, Action<RewardItemData, GameObject> onSelection)
         {
-            if (_isOpen) return;
+            Debug.Log($"[RewardChestUI] ShowRewardSelection called with {items.Count} items.");
+            if (_isOpen) 
+            {
+                Debug.Log("[RewardChestUI] Panel is already open, ignoring request.");
+                return;
+            }
 
             _currentItems = items;
             _playerRef = player;
             _onSelectionCallback = onSelection;
             _isOpen = true;
 
-            // Setup slots
+            // 1. Show panel and force hierarchy visibility
+            if (panelRoot != null)
+            {
+                Debug.Log($"[RewardChestUI] Activating panelRoot: {panelRoot.name}");
+                panelRoot.SetActive(true);
+
+                // FORCE VISIBILITY: Ensure Canvas and scale are correct
+                var canvas = panelRoot.GetComponentInParent<Canvas>();
+                if (canvas != null) canvas.enabled = true;
+
+                var rect = panelRoot.GetComponent<RectTransform>();
+                if (rect != null)
+                {
+                    rect.localScale = Vector3.one; // Ensure it's not scale 0
+                    // rect.anchoredPosition = Vector2.zero; // Uncomment if it might be off-screen
+                }
+
+                var group = panelRoot.GetComponent<CanvasGroup>();
+                if (group != null)
+                {
+                    group.alpha = 1f;
+                    group.blocksRaycasts = true;
+                    group.interactable = true;
+                }
+            }
+
+            // 2. Setup slots
             for (int i = 0; i < itemSlots.Count; i++)
             {
                 if (i < items.Count && items[i] != null)
                 {
-                    itemSlots[i].Setup(items[i], OnSlotClicked);
+                    Debug.Log($"[RewardChestUI] Setting up slot {i} with item {items[i].ItemName}");
                     itemSlots[i].gameObject.SetActive(true);
+                    itemSlots[i].Setup(items[i], OnSlotClicked);
                 }
                 else
                 {
@@ -84,17 +118,12 @@ namespace Geneforge.UI
                 }
             }
 
-            // Show panel
-            if (panelRoot != null)
-            {
-                panelRoot.SetActive(true);
-            }
-
             // Pause game
             if (pauseGameOnOpen)
             {
                 _previousTimeScale = Time.timeScale;
                 Time.timeScale = 0f;
+                Debug.Log("[RewardChestUI] Game paused successfully.");
             }
 
             // Show cursor

@@ -1,6 +1,7 @@
 using System;
 using System.Collections.Generic;
 using UnityEngine;
+using Geneforge.Gameplay.Items;
 
 namespace Geneforge.Gameplay.Map
 {
@@ -46,7 +47,14 @@ namespace Geneforge.Gameplay.Map
     [CreateAssetMenu(menuName = "Geneforge/Map/DungeonConfig", fileName = "DungeonConfig")]
     public class DungeonConfig : ScriptableObject
     {
+        [Header("Timelines")]
         [SerializeField] private List<TimelineRoomSet> timelines = new List<TimelineRoomSet>();
+
+        [Header("Global Item Pool")]
+        [Tooltip("All possible reward items in the game. These will be filtered by world/rarity.")]
+        [SerializeField] private List<RewardItemData> globalRewardItemPool = new List<RewardItemData>();
+
+        public List<RewardItemData> GlobalRewardItemPool => globalRewardItemPool;
 
         public TimelineRoomSet GetTimeline(TimelineId id)
         {

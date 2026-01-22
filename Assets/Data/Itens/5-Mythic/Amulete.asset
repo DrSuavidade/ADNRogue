@@ -40,4 +40,4 @@ MonoBehaviour:
   - {fileID: 21300000, guid: ef84148d4e5b34a408628ee87480d226, type: 3}
   - {fileID: 21300000, guid: fea253b3fc31ac64796f7e18fe20a63c, type: 3}
   framesPerSecond: 12
-  rarity: 3
+  rarity: 4

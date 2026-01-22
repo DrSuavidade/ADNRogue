@@ -40,8 +40,9 @@ namespace Geneforge.UI
         // Runtime state
         private RewardItemData _currentItem;
         private Action<RewardItemData> _onClickCallback;
-        private Coroutine _animationCoroutine;
         private int _currentFrameIndex;
+        private float _nextFrameTime;
+        private bool _isAnimating = false;
 
         private void Awake()
         {
@@ -59,6 +60,26 @@ namespace Geneforge.UI
             }
         }
 
+        private void Update()
+        {
+            if (!_isAnimating || _currentItem == null || _currentItem.AnimationFrames == null || _currentItem.AnimationFrames.Count <= 1)
+                return;
+
+            // Use unscaledTime so it works while the game is paused
+            if (Time.unscaledTime >= _nextFrameTime)
+            {
+                float frameDelay = 1f / Mathf.Max(1f, _currentItem.FramesPerSecond);
+                _nextFrameTime = Time.unscaledTime + frameDelay;
+
+                _currentFrameIndex = (_currentFrameIndex + 1) % _currentItem.AnimationFrames.Count;
+
+                if (itemImage != null && _currentItem.AnimationFrames[_currentFrameIndex] != null)
+                {
+                    itemImage.sprite = _currentItem.AnimationFrames[_currentFrameIndex];
+                }
+            }
+        }
+
         /// <summary>
         /// Setup the slot with an item.
         /// </summary>
@@ -68,103 +89,48 @@ namespace Geneforge.UI
             _onClickCallback = onClick;
 
             // Set name
-            if (itemNameText != null)
-            {
-                itemNameText.text = item.ItemName;
-            }
+            if (itemNameText != null) itemNameText.text = item.ItemName;
 
             // Set description
-            if (itemDescriptionText != null)
-            {
-                itemDescriptionText.text = item.Description;
-            }
+            if (itemDescriptionText != null) itemDescriptionText.text = item.Description;
 
             // Set rarity color
             Color rarityColor = GetRarityColor(item.Rarity);
-            if (itemNameText != null)
-            {
-                itemNameText.color = rarityColor;
-            }
-            if (rarityBorder != null)
-            {
-                rarityBorder.color = rarityColor;
-            }
+            if (itemNameText != null) itemNameText.color = rarityColor;
+            if (rarityBorder != null) rarityBorder.color = rarityColor;
 
-            // Start animation
-            StartAnimation(item);
-        }
+            // Setup initial frame
+            _currentFrameIndex = 0;
+            _isAnimating = false;
 
-        /// <summary>
-        /// Start the sprite animation loop.
-        /// </summary>
-        private void StartAnimation(RewardItemData item)
-        {
-            StopAnimation();
-
-            if (item.AnimationFrames == null || item.AnimationFrames.Count == 0)
+            if (itemImage != null)
             {
-                // No frames - use icon or clear
-                if (itemImage != null)
+                if (item.AnimationFrames != null && item.AnimationFrames.Count > 0)
+                {
+                    itemImage.sprite = item.AnimationFrames[0];
+                    itemImage.enabled = true;
+                    
+                    if (item.AnimationFrames.Count > 1)
+                    {
+                        _isAnimating = true;
+                        float frameDelay = 1f / Mathf.Max(1f, item.FramesPerSecond);
+                        _nextFrameTime = Time.unscaledTime + frameDelay;
+                    }
+                }
+                else
                 {
                     itemImage.sprite = item.Icon;
                     itemImage.enabled = item.Icon != null;
                 }
-                return;
-            }
-
-            if (item.AnimationFrames.Count == 1)
-            {
-                // Single frame - no animation needed
-                if (itemImage != null)
-                {
-                    itemImage.sprite = item.AnimationFrames[0];
-                    itemImage.enabled = true;
-                }
-                return;
-            }
-
-            // Multiple frames - start cycling
-            _currentFrameIndex = 0;
-            if (itemImage != null)
-            {
-                itemImage.sprite = item.AnimationFrames[0];
-                itemImage.enabled = true;
-            }
-
-            _animationCoroutine = StartCoroutine(AnimationLoop(item));
-        }
-
-        /// <summary>
-        /// Animation coroutine that cycles through sprite frames.
-        /// Uses unscaled time to work while game is paused.
-        /// </summary>
-        private IEnumerator AnimationLoop(RewardItemData item)
-        {
-            float frameDelay = 1f / Mathf.Max(1f, item.FramesPerSecond);
-
-            while (true)
-            {
-                yield return new WaitForSecondsRealtime(frameDelay);
-
-                _currentFrameIndex = (_currentFrameIndex + 1) % item.AnimationFrames.Count;
-
-                if (itemImage != null && item.AnimationFrames[_currentFrameIndex] != null)
-                {
-                    itemImage.sprite = item.AnimationFrames[_currentFrameIndex];
-                }
             }
         }
 
         /// <summary>
-        /// Stop the animation coroutine.
+        /// Stop the animation.
         /// </summary>
         public void StopAnimation()
         {
-            if (_animationCoroutine != null)
-            {
-                StopCoroutine(_animationCoroutine);
-                _animationCoroutine = null;
-            }
+            _isAnimating = false;
         }
 
         private void OnButtonClicked()

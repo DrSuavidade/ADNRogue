@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using UnityEngine;
 using UnityEngine.Events;
 using Geneforge.Gameplay.Progression;
+using Geneforge.Gameplay.Items;
 
 namespace Geneforge.Gameplay.Map
 {
@@ -98,6 +99,9 @@ namespace Geneforge.Gameplay.Map
             {
                 return;
             }
+
+            var items = GetAvailableItemsForCurrentTimeline();
+            Debug.Log($"[DungeonMapManager] Floor {currentFloorIndex} in {currentTimeline} generated. Available reward items: {items.Count}");
 
             floorsInThisTimeline = overrideFloors > 0 ? overrideFloors : Mathf.Max(1, set.floors);
             currentFloorIndex = 0;
@@ -325,6 +329,53 @@ namespace Geneforge.Gameplay.Map
                 if (list[i].prefab != null) return list[i].prefab;
             }
             return null;
+        }
+
+        /// <summary>
+        /// Returns a list of items from the global pool that are allowed in the current timeline 
+        /// based on their rarity (progression logic).
+        /// </summary>
+        public List<Geneforge.Gameplay.Items.RewardItemData> GetAvailableItemsForCurrentTimeline()
+        {
+            if (dungeonConfig == null || dungeonConfig.GlobalRewardItemPool == null) return new List<Geneforge.Gameplay.Items.RewardItemData>();
+
+            List<Geneforge.Gameplay.Items.RewardItemData> filtered = new List<Geneforge.Gameplay.Items.RewardItemData>();
+            
+            // Progression logic:
+            // Prehistoric (0) -> Common, Rare
+            // Roman (1)       -> Common, Rare, Epic
+            // Present (2)     -> Common, Rare, Epic, Legendary
+            // Future (3)      -> Common, Rare, Epic, Legendary, Mythic
+
+            int timelineIndex = (int)currentTimeline;
+
+            foreach (var item in dungeonConfig.GlobalRewardItemPool)
+            {
+                if (item == null) continue;
+
+                bool allowed = false;
+                switch (item.Rarity)
+                {
+                    case ItemRarity.Common:
+                    case ItemRarity.Rare:
+                        allowed = true; // Always allowed from world 1
+                        break;
+                    case ItemRarity.Epic:
+                        if (timelineIndex >= 1) allowed = true;
+                        break;
+                    case ItemRarity.Legendary:
+                        if (timelineIndex >= 2) allowed = true;
+                        break;
+                    case ItemRarity.Mythic:
+                        if (timelineIndex >= 3) allowed = true;
+                        break;
+                }
+
+                if (allowed)
+                    filtered.Add(item);
+            }
+
+            return filtered;
         }
 
         #endregion

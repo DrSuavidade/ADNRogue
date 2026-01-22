@@ -40,21 +40,46 @@ namespace Geneforge.Gameplay.Items
             if (_hasBeenUsed) return;
             _hasBeenUsed = true;
 
+            Debug.Log($"[RewardChestPickup] Opening chest for {player.name}");
             onChestOpened?.Invoke();
 
             // Get random items from the pool
             List<RewardItemData> offeredItems = GetRandomItems(itemsToOffer);
+            Debug.Log($"[RewardChestPickup] Found {offeredItems.Count} items to offer.");
 
             // Use the service locator to find the UI provider
             var uiProvider = RewardChestUIService.Provider;
-            if (uiProvider != null)
+            
+            // Fallback: Safe way to find the interface without triggering Unity's Object constraint
+            if (uiProvider == null)
+            {
+                // We find all MonoBehaviours and look for one that implements the interface.
+                // This is a bit slower but only happens once if the service locator fails.
+                var allBehaviours = Object.FindObjectsByType<MonoBehaviour>(FindObjectsInactive.Include, FindObjectsSortMode.None);
+                foreach (var b in allBehaviours)
+                {
+                    if (b is IRewardChestUIProvider provider)
+                    {
+                        Debug.Log($"[RewardChestPickup] Found provider in object: {b.name}. Registering now.");
+                        RewardChestUIService.Register(provider);
+                        uiProvider = provider;
+                        break;
+                    }
+                }
+            }
+
+            if (uiProvider != null && offeredItems.Count > 0)
             {
                 uiProvider.ShowRewardSelection(offeredItems, player, OnItemChosen);
             }
             else
             {
-                Debug.LogWarning("[RewardChestPickup] No RewardChestUI provider registered. Cannot display reward selection.");
-                // Fallback: just apply a random item
+                if (uiProvider == null)
+                    Debug.LogWarning("[RewardChestPickup] No RewardChestUI provider found! Did you add the RewardChestUI script to the scene?");
+                if (offeredItems.Count == 0)
+                    Debug.LogWarning("[RewardChestPickup] Item list is empty! Check your DungeonConfig Global Item Pool and Item Rarities.");
+
+                // Fallback: just apply a random item if any
                 if (offeredItems.Count > 0)
                 {
                     offeredItems[0].Apply(player);
@@ -84,12 +109,28 @@ namespace Geneforge.Gameplay.Items
         /// </summary>
         private List<RewardItemData> GetRandomItems(int count)
         {
-            List<RewardItemData> result = new List<RewardItemData>();
-            List<RewardItemData> available = new List<RewardItemData>(itemPool);
+            List<RewardItemData> available = new List<RewardItemData>();
+
+            // GET ITEMS FROM THE GLOBAL POOL MANAGED BY DUNGEON MAP MANAGER
+            if (Map.DungeonMapManager.Instance != null)
+            {
+                available = Map.DungeonMapManager.Instance.GetAvailableItemsForCurrentTimeline();
+            }
+
+            // Fallback to local pool if provided (optional, if you still want some specific chest items)
+            if (itemPool != null && itemPool.Count > 0)
+            {
+                foreach (var item in itemPool)
+                {
+                    if (item != null && !available.Contains(item))
+                        available.Add(item);
+                }
+            }
 
             // Remove null entries
             available.RemoveAll(item => item == null);
 
+            List<RewardItemData> result = new List<RewardItemData>();
             count = Mathf.Min(count, available.Count);
 
             for (int i = 0; i < count; i++)
