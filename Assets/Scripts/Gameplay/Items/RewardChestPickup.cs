@@ -111,20 +111,16 @@ namespace Geneforge.Gameplay.Items
         {
             List<RewardItemData> available = new List<RewardItemData>();
 
-            // GET ITEMS FROM THE GLOBAL POOL MANAGED BY DUNGEON MAP MANAGER
+            // GET ITEMS FROM THE GLOBAL POOL MANAGED BY DUNGEON MAP MANAGER WITH RARITY WEIGHTS
             if (Map.DungeonMapManager.Instance != null)
             {
-                available = Map.DungeonMapManager.Instance.GetAvailableItemsForCurrentTimeline();
+                return Map.DungeonMapManager.Instance.GetWeightedRandomRewardItems(count);
             }
 
-            // Fallback to local pool if provided (optional, if you still want some specific chest items)
+            // Fallback to local pool if provided (only if Map manager is missing)
             if (itemPool != null && itemPool.Count > 0)
             {
-                foreach (var item in itemPool)
-                {
-                    if (item != null && !available.Contains(item))
-                        available.Add(item);
-                }
+                available.AddRange(itemPool);
             }
 
             // Remove null entries

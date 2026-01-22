@@ -56,6 +56,11 @@ MonoBehaviour:
       weight: 1
     - prefab: {fileID: 1153405868413957991, guid: eff61d674c147594093b22794403e8ab, type: 3}
       weight: 1
+    commonRate: 70
+    rareRate: 30
+    epicRate: 0
+    legendaryRate: 0
+    mythicRate: 0
   - timelineId: 1
     floors: 0
     hubPrefab: {fileID: 0}
@@ -65,6 +70,11 @@ MonoBehaviour:
     keyPickupPrefab: {fileID: 0}
     floorRewardPrefabs: []
     enemyPrefabs: []
+    commonRate: 60
+    rareRate: 30
+    epicRate: 10
+    legendaryRate: 0
+    mythicRate: 0
   - timelineId: 2
     floors: 0
     hubPrefab: {fileID: 0}
@@ -74,6 +84,11 @@ MonoBehaviour:
     keyPickupPrefab: {fileID: 0}
     floorRewardPrefabs: []
     enemyPrefabs: []
+    commonRate: 40
+    rareRate: 35
+    epicRate: 20
+    legendaryRate: 5
+    mythicRate: 0
   - timelineId: 3
     floors: 0
     hubPrefab: {fileID: 0}
@@ -83,6 +98,11 @@ MonoBehaviour:
     keyPickupPrefab: {fileID: 0}
     floorRewardPrefabs: []
     enemyPrefabs: []
+    commonRate: 25
+    rareRate: 40
+    epicRate: 20
+    legendaryRate: 10
+    mythicRate: 5
   globalRewardItemPool:
   - {fileID: 11400000, guid: 86eeb4ea088869c4da0e9014bf2facd5, type: 2}
   - {fileID: 11400000, guid: 20ab5b6a8b57b844c8f90f14244d76bb, type: 2}

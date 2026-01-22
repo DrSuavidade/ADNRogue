@@ -42,6 +42,13 @@ namespace Geneforge.Gameplay.Map
         [Header("Enemies")]
         [Tooltip("Weighted enemy prefabs used in combat rooms for this timeline.")]
         public List<WeightedPrefab> enemyPrefabs = new List<WeightedPrefab>();
+
+        [Header("Reward Rarity Rates (%)")]
+        [Range(0, 100)] public float commonRate = 70f;
+        [Range(0, 100)] public float rareRate = 30f;
+        [Range(0, 100)] public float epicRate = 0f;
+        [Range(0, 100)] public float legendaryRate = 0f;
+        [Range(0, 100)] public float mythicRate = 0f;
     }
 
     [CreateAssetMenu(menuName = "Geneforge/Map/DungeonConfig", fileName = "DungeonConfig")]

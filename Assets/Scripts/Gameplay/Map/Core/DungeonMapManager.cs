@@ -378,6 +378,59 @@ namespace Geneforge.Gameplay.Map
             return filtered;
         }
 
+        /// <summary>
+        /// Returns N random items from the global pool using the rarity weights 
+        /// defined for the current timeline in DungeonConfig.
+        /// </summary>
+        public List<RewardItemData> GetWeightedRandomRewardItems(int count)
+        {
+            if (dungeonConfig == null || dungeonConfig.GlobalRewardItemPool == null) 
+                return new List<RewardItemData>();
+
+            var set = dungeonConfig.GetTimeline(currentTimeline);
+            if (set == null) return new List<RewardItemData>();
+
+            // Group available items by rarity for faster picking
+            Dictionary<ItemRarity, List<RewardItemData>> itemsByRarity = new Dictionary<ItemRarity, List<RewardItemData>>();
+            foreach (var item in dungeonConfig.GlobalRewardItemPool)
+            {
+                if (item == null) continue;
+                if (!itemsByRarity.ContainsKey(item.Rarity))
+                    itemsByRarity[item.Rarity] = new List<RewardItemData>();
+                itemsByRarity[item.Rarity].Add(item);
+            }
+
+            List<RewardItemData> result = new List<RewardItemData>();
+            int attempts = 0;
+            int maxAttempts = 100; // Prevent infinite loop
+
+            // Try to pick 'count' unique items
+            while (result.Count < count && attempts < maxAttempts)
+            {
+                attempts++;
+                float totalWeight = set.commonRate + set.rareRate + set.epicRate + set.legendaryRate + set.mythicRate;
+                if (totalWeight <= 0) break;
+
+                float roll = UnityEngine.Random.Range(0, totalWeight);
+                ItemRarity selectedRarity = ItemRarity.Common;
+
+                if (roll < set.commonRate) selectedRarity = ItemRarity.Common;
+                else if (roll < set.commonRate + set.rareRate) selectedRarity = ItemRarity.Rare;
+                else if (roll < set.commonRate + set.rareRate + set.epicRate) selectedRarity = ItemRarity.Epic;
+                else if (roll < set.commonRate + set.rareRate + set.epicRate + set.legendaryRate) selectedRarity = ItemRarity.Legendary;
+                else selectedRarity = ItemRarity.Mythic;
+
+                if (itemsByRarity.ContainsKey(selectedRarity) && itemsByRarity[selectedRarity].Count > 0)
+                {
+                    var pool = itemsByRarity[selectedRarity];
+                    var pickedItem = pool[UnityEngine.Random.Range(0, pool.Count)];
+                    if (!result.Contains(pickedItem)) result.Add(pickedItem);
+                }
+            }
+
+            return result;
+        }
+
         #endregion
 
         #region North exit usage
