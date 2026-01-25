@@ -21,6 +21,15 @@ namespace Geneforge.Core.Stats
         public int BaseStartingLives => startingLives;
         public float CurrentHP { get; private set; }
 
+        public void IncreaseMaxHP(float amount)
+        {
+            if (amount == 0) return;
+            maxHP += amount;
+            // Optionally heal the amount increased so current HP stays proportional or just adds the buffer
+            CurrentHP += amount; 
+            OnHealthChanged?.Invoke(CurrentHP, MaxHP);
+        }
+
         public int Lives
         {
             get => lives;
@@ -178,6 +187,12 @@ namespace Geneforge.Core.Stats
                 return;
             }
             DnaSplices += amount;
+        }
+
+        public void AddRolls(int amount)
+        {
+            if (amount <= 0) return;
+            Rolls += amount;
         }
 
         public bool UseRoll()

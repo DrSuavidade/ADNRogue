@@ -217,6 +217,15 @@ namespace Geneforge.Gameplay.Weapons.Slots
         }
 
 
+        [SerializeField, HideInInspector]
+        private System.Collections.Generic.List<StatModifier> permanentPassives = new System.Collections.Generic.List<StatModifier>();
+
+        public void AddPassive(StatModifier mod)
+        {
+            permanentPassives.Add(mod);
+            RebuildActive();
+        }
+
         public WeaponStats BuildActiveStats(WeaponStats baseStats)
         {
             if (baseStats == null) return null;
@@ -241,6 +250,12 @@ namespace Geneforge.Gameplay.Weapons.Slots
             {
                 var mods = progression.GetActiveStatMods(p);
                 foreach (var m in mods) WeaponStatApplier.Apply(ws, m);
+            }
+
+            // Apply permanent passives (from Reward Items)
+            if (permanentPassives.Count > 0)
+            {
+                WeaponStatApplier.ApplyAll(ws, permanentPassives);
             }
 
             _cachedActive = ws;
