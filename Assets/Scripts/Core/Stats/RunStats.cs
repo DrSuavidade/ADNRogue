@@ -11,7 +11,7 @@ namespace Geneforge.Core.Stats
 
         [Header("Run Currency & Resources")]
         [Tooltip("Spendable during this dive")]
-        [SerializeField] private int startingCurrency = 0;
+        [SerializeField] private int startingGold = 0;
         [Tooltip("DNA Fragments collected this run")]
         [SerializeField] private int startingDnaSplices = 0;
         [Tooltip("Number of rerolls/reshuffles you have this run")]
@@ -69,6 +69,11 @@ namespace Geneforge.Core.Stats
             }
         }
 
+        public int Gold => Currency;
+        public void AddGold(int amount) => AddCurrency(amount);
+        public bool SpendGold(int amount) => SpendCurrency(amount);
+
+
         public event Action<float, float> OnHealthChanged;
         public event Action OnPlayerDeath;
         public event Action<int> OnLivesChanged;
@@ -90,7 +95,7 @@ namespace Geneforge.Core.Stats
         {
             CurrentHP = Mathf.Max(1f, maxHP);
             lives = startingLives;
-            currency = startingCurrency;
+            currency = startingGold;
             dnaSplices = startingDnaSplices;
             rolls = startingRolls;
 

@@ -3,6 +3,7 @@ using UnityEngine.UI;
 using TMPro;
 using System.Collections.Generic;
 using Geneforge.Core.Stats;
+using Geneforge.Gameplay.Progression;
 
 namespace Geneforge.UI
 {
@@ -33,7 +34,8 @@ namespace Geneforge.UI
 
         void Awake()
         {
-            if (runStats == null) runStats = FindAnyObjectByType<RunStats>();
+            if (runStats == null)
+                runStats = RunSession.Instance != null ? RunSession.Instance.Run : FindAnyObjectByType<RunStats>();
             if (metaStats == null) metaStats = FindAnyObjectByType<MetaStats>();
 
             if (runStats == null)
@@ -42,9 +44,14 @@ namespace Geneforge.UI
 
         void Start()
         {
-            if (runStats != null)
-                EnsureLifeIcons(Mathf.Max(0, runStats.BaseStartingLives));
+            int required = 0;
+
+            if (runStats != null) required = Mathf.Max(required, runStats.BaseStartingLives);
+            if (metaStats != null) required = Mathf.Max(required, metaStats.StartingLives);
+
+            EnsureLifeIcons(required);
         }
+
 
         void OnEnable()
         {

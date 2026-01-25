@@ -33,6 +33,9 @@ namespace Geneforge.Core.Stats
         public event Action<int> OnEssenceChanged;
         public event Action<int> OnTotalDnaSplicesChanged;
 
+        public int BankedDnaSplices => TotalDnaSplices;
+
+
         void Awake()
         {
             if (Instance != null && Instance != this)
