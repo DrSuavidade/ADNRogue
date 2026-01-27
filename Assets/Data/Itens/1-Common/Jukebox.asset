@@ -12,8 +12,9 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: d27ff37d6da1fbf469fdc45a989d667f, type: 3}
   m_Name: Jukebox
   m_EditorClassIdentifier: 
-  itemName: Jukebox
-  description: 
+  itemName: Pocket Jukebox
+  description: "A tiny jukebox that plays the perfect tempo for chaos. Your trigger
+    finger finds the beat\u2026 but the bass makes your shots wobble a bit."
   animationFrames:
   - {fileID: 21300000, guid: 5a479893b7bb7e84ca41fd7768a3b517, type: 3}
   - {fileID: 21300000, guid: d58735e502c63034bb3d060b7cca073f, type: 3}
@@ -41,3 +42,15 @@ MonoBehaviour:
   - {fileID: 21300000, guid: 9d87f79c5247670409cfd60d4191f0a9, type: 3}
   framesPerSecond: 12
   rarity: 0
+  statModifiers: []
+  weaponModifiers:
+  - stat: 0
+    kind: 1
+    value: 1.12
+  - stat: 8
+    kind: 1
+    value: 1.1
+  - stat: 15
+    kind: 1
+    value: 1.08
+  customEffects: []

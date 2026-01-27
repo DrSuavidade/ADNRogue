@@ -12,8 +12,9 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: d27ff37d6da1fbf469fdc45a989d667f, type: 3}
   m_Name: Cigarros
   m_EditorClassIdentifier: 
-  itemName: Cigarros
-  description: 
+  itemName: Icy Mints
+  description: "Clears your head and cools your trigger finger. Shots come out cleaner
+    and straighter\u2026 but you hesitate just a bit more between bursts."
   animationFrames:
   - {fileID: 21300000, guid: 65b4e6522c8ce7941a846a142988959c, type: 3}
   - {fileID: 21300000, guid: 8b3cebfaa4510e640838ac6257f758bf, type: 3}
@@ -41,3 +42,15 @@ MonoBehaviour:
   - {fileID: 21300000, guid: 9a6a3d77df31d3e42a67560af79737de, type: 3}
   framesPerSecond: 12
   rarity: 0
+  statModifiers:
+  - stat: 1
+    kind: 1
+    value: 0.85
+  weaponModifiers:
+  - stat: 14
+    kind: 1
+    value: 1.1
+  - stat: 0
+    kind: 1
+    value: 1.06
+  customEffects: []

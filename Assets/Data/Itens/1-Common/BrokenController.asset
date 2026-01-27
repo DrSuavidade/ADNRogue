@@ -12,8 +12,9 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: d27ff37d6da1fbf469fdc45a989d667f, type: 3}
   m_Name: BrokenController
   m_EditorClassIdentifier: 
-  itemName: Beer
-  description: 
+  itemName: Precision Pad
+  description: "A battered old controller that somehow still feels right. Your hands
+    steady up\u2026 but you stop panic-spraying and start taking your time."
   animationFrames:
   - {fileID: 21300000, guid: 1d2e740d70b1a5140abfbe775c69c55b, type: 3}
   - {fileID: 21300000, guid: 4dcb88b4096245c4ebd143f8b5d9d495, type: 3}
@@ -41,3 +42,15 @@ MonoBehaviour:
   - {fileID: 21300000, guid: 73f72688435cb664bbd5e98f8a977308, type: 3}
   framesPerSecond: 12
   rarity: 0
+  statModifiers: []
+  weaponModifiers:
+  - stat: 14
+    kind: 1
+    value: 1.15
+  - stat: 15
+    kind: 1
+    value: 0.88
+  - stat: 0
+    kind: 1
+    value: 0.92
+  customEffects: []

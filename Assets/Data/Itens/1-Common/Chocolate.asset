@@ -12,8 +12,10 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: d27ff37d6da1fbf469fdc45a989d667f, type: 3}
   m_Name: Chocolate
   m_EditorClassIdentifier: 
-  itemName: Chocolate
-  description: 
+  itemName: Gilded Brick
+  description: "A gold-wrapped \u201Ctreasure\u201D that\u2019s basically a chunk
+    of weight. Your shots hit harder, but everything you fire feels a bit heavier
+    and slower."
   animationFrames:
   - {fileID: 21300000, guid: 2898168e4f1fb124bae2a933b1fd8dfb, type: 3}
   - {fileID: 21300000, guid: 83d019040e09b8440ab8ee16524cda20, type: 3}
@@ -41,3 +43,15 @@ MonoBehaviour:
   - {fileID: 21300000, guid: 9ea2e1482572e88459c61221e5a77296, type: 3}
   framesPerSecond: 12
   rarity: 0
+  statModifiers: []
+  weaponModifiers:
+  - stat: 0
+    kind: 1
+    value: 0.92
+  - stat: 2
+    kind: 1
+    value: 1.1
+  - stat: 1
+    kind: 1
+    value: 0.94
+  customEffects: []

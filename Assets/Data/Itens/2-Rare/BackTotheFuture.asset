@@ -12,8 +12,9 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: d27ff37d6da1fbf469fdc45a989d667f, type: 3}
   m_Name: BackTotheFuture
   m_EditorClassIdentifier: 
-  itemName: BackTotheFuture
-  description: 
+  itemName: 88 MPH Coupe
+  description: "A stainless time-machine-on-wheels. Once it hits \u201Cthe number,\u201D
+    everything you fire feels like it\u2019s arriving early\u2026"
   animationFrames:
   - {fileID: 21300000, guid: 4149b32ad7158cc45b40461cfc978da2, type: 3}
   - {fileID: 21300000, guid: 1e16a87df27173f40b519491ed46f109, type: 3}
@@ -41,3 +42,18 @@ MonoBehaviour:
   - {fileID: 21300000, guid: 3fb0792b62497df4290424c5254a2d03, type: 3}
   framesPerSecond: 12
   rarity: 1
+  statModifiers: []
+  weaponModifiers:
+  - stat: 1
+    kind: 1
+    value: 1.22
+  - stat: 0
+    kind: 1
+    value: 1.15
+  - stat: 9
+    kind: 1
+    value: 1.18
+  - stat: 15
+    kind: 1
+    value: 1.12
+  customEffects: []

@@ -12,8 +12,10 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: d27ff37d6da1fbf469fdc45a989d667f, type: 3}
   m_Name: Nemo
   m_EditorClassIdentifier: 
-  itemName: Nemo
-  description: 
+  itemName: Coral Filter Mask
+  description: "A reef-grown respirator that \u201Cbreathes\u201D with you. Your
+    shots bloom a little wider and catch more targets\u2026 but the mask\u2019s humid
+    airflow makes your bullets feel heavier."
   animationFrames:
   - {fileID: 21300000, guid: f78166f8704b7c8479e23694e35a81c4, type: 3}
   - {fileID: 21300000, guid: 53f5311b42517ff42a9e87c61c4f29ea, type: 3}
@@ -41,3 +43,15 @@ MonoBehaviour:
   - {fileID: 21300000, guid: 9ca9670a8033f5c4d9d3549438bdfdd1, type: 3}
   framesPerSecond: 12
   rarity: 0
+  statModifiers: []
+  weaponModifiers:
+  - stat: 3
+    kind: 1
+    value: 1.14
+  - stat: 13
+    kind: 1
+    value: 1.1
+  - stat: 1
+    kind: 1
+    value: 0.92
+  customEffects: []

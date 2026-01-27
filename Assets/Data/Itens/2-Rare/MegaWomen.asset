@@ -12,8 +12,10 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: d27ff37d6da1fbf469fdc45a989d667f, type: 3}
   m_Name: MegaWomen
   m_EditorClassIdentifier: 
-  itemName: MegaWoman
-  description: 
+  itemName: Blue Bomber Arm-Cannon
+  description: A clean, classic upgrade with that retro-hero vibe. Converts your
+    shots into charged plasma bursts, but holding the trigger releases a bigger,
+    nastier blast.
   animationFrames:
   - {fileID: 21300000, guid: 03b605d25b8e0a14e92bb1619e84b5a0, type: 3}
   - {fileID: 21300000, guid: 12cc4a301b01e254e946382014e4c97b, type: 3}
@@ -41,3 +43,18 @@ MonoBehaviour:
   - {fileID: 21300000, guid: af6bcb368096f0a4681e0418dfdb21fd, type: 3}
   framesPerSecond: 12
   rarity: 1
+  statModifiers: []
+  weaponModifiers:
+  - stat: 2
+    kind: 1
+    value: 1.12
+  - stat: 0
+    kind: 1
+    value: 0.85
+  - stat: 1
+    kind: 1
+    value: 1.1
+  - stat: 13
+    kind: 1
+    value: 1.2
+  customEffects: []

@@ -12,8 +12,9 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: d27ff37d6da1fbf469fdc45a989d667f, type: 3}
   m_Name: Rocky
   m_EditorClassIdentifier: 
-  itemName: Rocky
-  description: 
+  itemName: Southpaw Stompers
+  description: "Worn-in fight boots that make you bounce on your toes. You fire quicker
+    and hit harder in bursts\u2026 but the footwork throws off careful lining-up."
   animationFrames:
   - {fileID: 21300000, guid: 112436c655ec0874d9fa86748d3bc187, type: 3}
   - {fileID: 21300000, guid: 0331b8662de122d45bf37a93d9c9b27e, type: 3}
@@ -41,3 +42,18 @@ MonoBehaviour:
   - {fileID: 21300000, guid: 33aace1331520fb4294d3b81686287fe, type: 3}
   framesPerSecond: 12
   rarity: 0
+  statModifiers: []
+  weaponModifiers:
+  - stat: 0
+    kind: 1
+    value: 1.1
+  - stat: 2
+    kind: 1
+    value: 1.08
+  - stat: 14
+    kind: 1
+    value: 0.92
+  - stat: 15
+    kind: 1
+    value: 1.08
+  customEffects: []

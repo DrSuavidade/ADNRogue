@@ -12,8 +12,10 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: d27ff37d6da1fbf469fdc45a989d667f, type: 3}
   m_Name: ChingLing
   m_EditorClassIdentifier: 
-  itemName: ChingLing Helmet
-  description: 
+  itemName: Sunshade Sombrero
+  description: "A wide-brim hat that keeps glare out of your eyes. You line up shots
+    cleaner\u2026 but the ridiculous brim catches air and makes your projectiles
+    feel a bit sluggish."
   animationFrames:
   - {fileID: 21300000, guid: 7e6bf07264ac2f24898b714884b8abe4, type: 3}
   - {fileID: 21300000, guid: 5c423167d0440224cafec4d189415d20, type: 3}
@@ -41,3 +43,12 @@ MonoBehaviour:
   - {fileID: 21300000, guid: a4e5922fee2ea554282ff157ae56b040, type: 3}
   framesPerSecond: 12
   rarity: 0
+  statModifiers: []
+  weaponModifiers:
+  - stat: 14
+    kind: 1
+    value: 0.92
+  - stat: 2
+    kind: 1
+    value: 1.06
+  customEffects: []

@@ -12,8 +12,10 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: d27ff37d6da1fbf469fdc45a989d667f, type: 3}
   m_Name: Glove
   m_EditorClassIdentifier: 
-  itemName: Glove
-  description: 
+  itemName: Gilded Gauntlet
+  description: "A heavy, gold-trimmed relic-hand that turns every shot into a punch.
+    It hits harder and shoves enemies around like ragdolls\u2026 but the extra weight
+    slows your rhythm."
   animationFrames:
   - {fileID: 21300000, guid: 28c749187cfe21c4e8cf7697c7edccb0, type: 3}
   - {fileID: 21300000, guid: f73525a6819ad5046b92a00d38a8209c, type: 3}
@@ -41,3 +43,18 @@ MonoBehaviour:
   - {fileID: 21300000, guid: d24b0b09fe102cd43b1554395778cd4a, type: 3}
   framesPerSecond: 12
   rarity: 1
+  statModifiers: []
+  weaponModifiers:
+  - stat: 2
+    kind: 1
+    value: 1.18
+  - stat: 3
+    kind: 1
+    value: 1.1
+  - stat: 4
+    kind: 1
+    value: 1.22
+  - stat: 0
+    kind: 1
+    value: 0.92
+  customEffects: []

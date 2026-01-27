@@ -12,8 +12,9 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: d27ff37d6da1fbf469fdc45a989d667f, type: 3}
   m_Name: GunKatana
   m_EditorClassIdentifier: 
-  itemName: GunKatana
-  description: 
+  itemName: Bayonet Mod
+  description: A blade bolted to the barrel. Your shots get split by the katana as
+    soon as they are shot.
   animationFrames:
   - {fileID: 21300000, guid: 3c896e9986d4cae43b0ef489d485b284, type: 3}
   - {fileID: 21300000, guid: 40c24706307d44d4cadd28386b448cf1, type: 3}
@@ -41,3 +42,15 @@ MonoBehaviour:
   - {fileID: 21300000, guid: e0b8186b8f3725e4bad6ba1794e33f00, type: 3}
   framesPerSecond: 12
   rarity: 0
+  statModifiers: []
+  weaponModifiers:
+  - stat: 7
+    kind: 0
+    value: 1
+  - stat: 2
+    kind: 1
+    value: 0.8
+  - stat: 0
+    kind: 1
+    value: 0.92
+  customEffects: []

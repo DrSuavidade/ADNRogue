@@ -134,28 +134,90 @@ namespace Geneforge.Gameplay.Items
         private void ApplyStat(RunStats stats, RewardStatModifier mod)
         {
             int intVal = Mathf.RoundToInt(mod.value);
+            
             switch (mod.stat)
             {
                 case StatType.CurrentHealth:
-                    if (mod.value > 0) stats.Heal(mod.value);
-                    else stats.TakeDamage(-mod.value);
+                    if (mod.kind == ModifierKind.Add)
+                    {
+                        if (mod.value > 0) stats.Heal(mod.value);
+                        else stats.TakeDamage(-mod.value);
+                    }
+                    else // Multiply
+                    {
+                        float currentHP = stats.CurrentHP;
+                        float newHP = currentHP * mod.value;
+                        float delta = newHP - currentHP;
+                        if (delta > 0) stats.Heal(delta);
+                        else stats.TakeDamage(-delta);
+                    }
                     break;
+                    
                 case StatType.MaxHealth:
-                    stats.IncreaseMaxHP(mod.value);
+                    if (mod.kind == ModifierKind.Add)
+                    {
+                        stats.IncreaseMaxHP(mod.value);
+                    }
+                    else // Multiply
+                    {
+                        float delta = stats.MaxHP * (mod.value - 1f);
+                        stats.IncreaseMaxHP(delta);
+                    }
                     break;
+                    
                 case StatType.Lives:
-                    stats.Lives += intVal;
+                    if (mod.kind == ModifierKind.Add)
+                    {
+                        stats.Lives += intVal;
+                    }
+                    else // Multiply
+                    {
+                        int newLives = Mathf.RoundToInt(stats.Lives * mod.value);
+                        stats.Lives = newLives;
+                    }
                     break;
+                    
                 case StatType.Currency:
-                    if (intVal > 0) stats.AddCurrency(intVal);
-                    else stats.SpendCurrency(-intVal);
+                    if (mod.kind == ModifierKind.Add)
+                    {
+                        if (intVal > 0) stats.AddCurrency(intVal);
+                        else stats.SpendCurrency(-intVal);
+                    }
+                    else // Multiply
+                    {
+                        int newAmount = Mathf.RoundToInt(stats.Currency * mod.value);
+                        int delta = newAmount - stats.Currency;
+                        if (delta > 0) stats.AddCurrency(delta);
+                        else stats.SpendCurrency(-delta);
+                    }
                     break;
+                    
                 case StatType.DnaSplices:
-                    if (intVal > 0) stats.AddDnaSplices(intVal);
-                    else stats.SpendDnaSplices(-intVal);
+                    if (mod.kind == ModifierKind.Add)
+                    {
+                        if (intVal > 0) stats.AddDnaSplices(intVal);
+                        else stats.SpendDnaSplices(-intVal);
+                    }
+                    else // Multiply
+                    {
+                        int newAmount = Mathf.RoundToInt(stats.DnaSplices * mod.value);
+                        int delta = newAmount - stats.DnaSplices;
+                        if (delta > 0) stats.AddDnaSplices(delta);
+                        else stats.SpendDnaSplices(-delta);
+                    }
                     break;
+                    
                 case StatType.Rolls:
-                    stats.AddRolls(intVal);
+                    if (mod.kind == ModifierKind.Add)
+                    {
+                        stats.AddRolls(intVal);
+                    }
+                    else // Multiply
+                    {
+                        int newAmount = Mathf.RoundToInt(stats.Rolls * mod.value);
+                        int delta = newAmount - stats.Rolls;
+                        stats.AddRolls(delta);
+                    }
                     break;
             }
         }
@@ -165,9 +227,12 @@ namespace Geneforge.Gameplay.Items
     public struct RewardStatModifier
     {
         public StatType stat;
-        [Tooltip("Positive to add/heal, negative to remove/damage.")]
+        public ModifierKind kind;
+        [Tooltip("Add: value is added directly (can be negative). Multiply: use 1.2 for +20%, 0.8 for -20%.")]
         public float value;
     }
+
+    public enum ModifierKind { Add, Multiply }
 
     public enum StatType
     {

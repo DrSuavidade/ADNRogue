@@ -12,8 +12,10 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: d27ff37d6da1fbf469fdc45a989d667f, type: 3}
   m_Name: Tapete
   m_EditorClassIdentifier: 
-  itemName: Tapete
-  description: 
+  itemName: Street-Rat Rug
+  description: "A worn little carpet that almost, almost listens. Your shots travel
+    further and linger like a drifting glide\u2026 but steering your fire gets a
+    bit floaty."
   animationFrames:
   - {fileID: 21300000, guid: 40bfd4019280feb498aca4e8b832a0a2, type: 3}
   - {fileID: 21300000, guid: c6e66473b0272a2419feac113f1e9a8d, type: 3}
@@ -41,3 +43,18 @@ MonoBehaviour:
   - {fileID: 21300000, guid: 8e8490e476fdd084f930f5c1565a315d, type: 3}
   framesPerSecond: 12
   rarity: 0
+  statModifiers: []
+  weaponModifiers:
+  - stat: 9
+    kind: 1
+    value: 1.15
+  - stat: 1
+    kind: 1
+    value: 1.08
+  - stat: 14
+    kind: 1
+    value: 0.92
+  - stat: 15
+    kind: 1
+    value: 1.08
+  customEffects: []

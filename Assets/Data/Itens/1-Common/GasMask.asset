@@ -12,8 +12,10 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: d27ff37d6da1fbf469fdc45a989d667f, type: 3}
   m_Name: GasMask
   m_EditorClassIdentifier: 
-  itemName: GasMask
-  description: 
+  itemName: Huff-Puff Mask
+  description: "A chunky respirator that keeps the nasties out\u2026 and your nerves
+    in. You can take a hit better, but the mask fogs up and makes quick tracking
+    harder."
   animationFrames:
   - {fileID: 21300000, guid: 7f9de81555b9e34449fe4cd84539ed37, type: 3}
   - {fileID: 21300000, guid: 1b4d75023399701459d23293c7fdd2dc, type: 3}
@@ -41,3 +43,18 @@ MonoBehaviour:
   - {fileID: 21300000, guid: 9cfc59ef098c22c4e84bd6947a69241b, type: 3}
   framesPerSecond: 12
   rarity: 0
+  statModifiers:
+  - stat: 1
+    kind: 1
+    value: 1.1
+  weaponModifiers:
+  - stat: 4
+    kind: 1
+    value: 1.12
+  - stat: 14
+    kind: 1
+    value: 0.92
+  - stat: 15
+    kind: 1
+    value: 1.08
+  customEffects: []

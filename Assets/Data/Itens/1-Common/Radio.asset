@@ -12,8 +12,10 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: d27ff37d6da1fbf469fdc45a989d667f, type: 3}
   m_Name: Radio
   m_EditorClassIdentifier: 
-  itemName: Radio
-  description: 
+  itemName: Hotline Box
+  description: "A busted call unit that still gets some signal. Your shots \u201Cconnect\u201D
+    more reliably and even try to correct mid-flight\u2026 but the feedback static
+    makes your firing rhythm uneven."
   animationFrames:
   - {fileID: 21300000, guid: 3a513d9e4d5338f4b95ca2c570a98441, type: 3}
   - {fileID: 21300000, guid: 250922c66993cb045a794fb8b42fa1df, type: 3}
@@ -41,3 +43,15 @@ MonoBehaviour:
   - {fileID: 21300000, guid: e917695662a6fed4b979cf303b8edd22, type: 3}
   framesPerSecond: 12
   rarity: 0
+  statModifiers: []
+  weaponModifiers:
+  - stat: 12
+    kind: 1
+    value: 1.1
+  - stat: 14
+    kind: 1
+    value: 1.08
+  - stat: 0
+    kind: 1
+    value: 0.93
+  customEffects: []
