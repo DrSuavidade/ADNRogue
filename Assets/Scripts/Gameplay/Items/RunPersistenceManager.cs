@@ -10,7 +10,23 @@ namespace Geneforge.Gameplay.Items
     /// </summary>
     public class RunPersistenceManager : MonoBehaviour
     {
-        public static RunPersistenceManager Instance { get; private set; }
+        private static RunPersistenceManager _instance;
+        public static RunPersistenceManager Instance
+        {
+            get
+            {
+                if (_instance == null)
+                {
+                    _instance = FindAnyObjectByType<RunPersistenceManager>();
+                    if (_instance == null)
+                    {
+                        GameObject go = new GameObject("RunPersistenceManager");
+                        _instance = go.AddComponent<RunPersistenceManager>();
+                    }
+                }
+                return _instance;
+            }
+        }
         
         [SerializeField] private GameSaveData currentData = new GameSaveData();
         
@@ -29,13 +45,13 @@ namespace Geneforge.Gameplay.Items
 
         private void Awake()
         {
-            if (Instance != null && Instance != this)
+            if (_instance != null && _instance != this)
             {
                 Destroy(gameObject);
                 return;
             }
 
-            Instance = this;
+            _instance = this;
             DontDestroyOnLoad(gameObject);
 
             if (clearOnStart)

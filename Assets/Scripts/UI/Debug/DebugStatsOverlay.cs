@@ -52,11 +52,32 @@ namespace Geneforge.UI.DebugTools
 
         private void ResetRunAndReload()
         {
-            if (Geneforge.Gameplay.Items.RunPersistenceManager.Instance != null)
+            // 1. Try to use the official Flow Controller (AAA way) - Restarts full run state
+            if (Geneforge.Gameplay.Progression.RunFlowController.Instance != null)
             {
-                Geneforge.Gameplay.Items.RunPersistenceManager.Instance.ClearRun();
-                UnityEngine.SceneManagement.SceneManager.LoadScene(UnityEngine.SceneManagement.SceneManager.GetActiveScene().name);
+                Debug.Log("[DebugStats] Restarting run via RunFlowController.");
+                Geneforge.Gameplay.Progression.RunFlowController.Instance.StartNewRun();
+                return;
             }
+
+            // 2. Fallback for testing/uninitialized scenes
+            Debug.Log("[DebugStats] Fallback restart (Reload Scene + Clear Persistence).");
+            
+            // Clear items/timeline
+            var persistence = Geneforge.Gameplay.Items.RunPersistenceManager.Instance;
+            if (persistence != null)
+            {
+                persistence.ClearRun();
+            }
+
+            // Reset stats (HP, etc) if session exists
+            if (Geneforge.Gameplay.Progression.RunSession.Instance != null)
+            {
+                var meta = FindAnyObjectByType<Geneforge.Core.Stats.MetaStats>();
+                Geneforge.Gameplay.Progression.RunSession.Instance.BeginRun(meta);
+            }
+
+            UnityEngine.SceneManagement.SceneManager.LoadScene(UnityEngine.SceneManagement.SceneManager.GetActiveScene().name);
         }
 
         private void OnGUI()
