@@ -83,15 +83,19 @@ namespace Geneforge.Gameplay.Map
         {
             if (dungeonConfig == null) return;
 
-            if (RunState.HasTimelineOverride)
+            // Determine timeline:
+            // 1. If we are in a proper run (RunSession Active), trust the Persistence Manager.
+            // 2. If we are debug testing (Editor, no run start), use the Inspector 'startingTimeline'.
+            if (RunSession.Instance != null && RunSession.Instance.IsRunActive)
             {
-                currentTimeline = RunState.CurrentTimeline;
+                currentTimeline = RunPersistenceManager.Instance.CurrentTimeline;
             }
             else
             {
                 currentTimeline = startingTimeline;
-                RunState.CurrentTimeline = currentTimeline;
-                RunState.HasTimelineOverride = true;
+                // Update persistence so other systems know we are pretending to be in this timeline
+                if (RunPersistenceManager.Instance != null)
+                   RunPersistenceManager.Instance.CurrentTimeline = currentTimeline;
             }
 
             TimelineRoomSet set = dungeonConfig != null ? dungeonConfig.GetTimeline(currentTimeline) : null;

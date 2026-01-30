@@ -2,6 +2,8 @@ using UnityEngine;
 using UnityEngine.SceneManagement;
 using Geneforge.Gameplay.Map;
 using Geneforge.Core.Stats;
+using Geneforge.Gameplay.Items;
+
 namespace Geneforge.Gameplay.Progression
 {
     public class RunFlowController : MonoBehaviour
@@ -45,8 +47,11 @@ namespace Geneforge.Gameplay.Progression
             RunSession.Ensure();
 
             // Clear any saved items from previous runs
-            if (Geneforge.Gameplay.Items.RunPersistenceManager.Instance != null)
-                Geneforge.Gameplay.Items.RunPersistenceManager.Instance.ClearRun();
+            if (RunPersistenceManager.Instance != null)
+            {
+                RunPersistenceManager.Instance.ClearRun();
+                RunPersistenceManager.Instance.CurrentTimeline = TimelineId.Prehistoric;
+            }
 
             // Begin run BEFORE loading gameplay scenes
             var meta = MetaStats.Instance != null
@@ -55,18 +60,13 @@ namespace Geneforge.Gameplay.Progression
 
             RunSession.Instance.BeginRun(meta);
 
-            // Timeline setup
-            RunState.CurrentTimeline = TimelineId.Prehistoric;
-            RunState.HasTimelineOverride = true;
-
             SafeLoadScene(dungeonSceneName);
         }
 
 
         public void OnBossStairsUsed()
         {
-            var mgr = DungeonMapManager.Instance;
-            TimelineId timeline = mgr != null ? mgr.CurrentTimeline : RunState.CurrentTimeline;
+            TimelineId timeline = RunPersistenceManager.Instance.CurrentTimeline;
 
             string bossScene = GetBossSceneName(timeline);
             if (string.IsNullOrEmpty(bossScene))
@@ -80,8 +80,7 @@ namespace Geneforge.Gameplay.Progression
 
         public void OnBossDefeated()
         {
-            var mgr = DungeonMapManager.Instance;
-            TimelineId current = mgr != null ? mgr.CurrentTimeline : RunState.CurrentTimeline;
+            TimelineId current = RunPersistenceManager.Instance.CurrentTimeline;
 
             // Final boss (Future) completes the run
             if (current == TimelineId.Future)
@@ -96,12 +95,11 @@ namespace Geneforge.Gameplay.Progression
 
         private void GoToNextTimeline()
         {
-            var mgr = DungeonMapManager.Instance;
-            TimelineId current = mgr != null ? mgr.CurrentTimeline : RunState.CurrentTimeline;
+            TimelineId current = RunPersistenceManager.Instance.CurrentTimeline;
             TimelineId next = GetNextTimeline(current);
 
-            RunState.CurrentTimeline = next;
-            RunState.HasTimelineOverride = true;
+            Debug.Log($"[RunFlow] Advancing timeline from {current} to {next}");
+            RunPersistenceManager.Instance.CurrentTimeline = next;
 
             SafeLoadScene(dungeonSceneName);
         }
@@ -125,11 +123,9 @@ namespace Geneforge.Gameplay.Progression
 
         System.Collections.IEnumerator LoadSceneAsync(string sceneName)
         {
-            // TODO: show loading screen UI here if you want
             var op = SceneManager.LoadSceneAsync(sceneName);
             while (!op.isDone)
                 yield return null;
-            // TODO: hide loading UI here
         }
 
         public void EndRun(bool survived)
@@ -142,11 +138,8 @@ namespace Geneforge.Gameplay.Progression
                 RunSession.Instance.EndRun(meta, survived);
             
             // Clear items so they don't carry over to next run
-            if (Geneforge.Gameplay.Items.RunPersistenceManager.Instance != null)
-                Geneforge.Gameplay.Items.RunPersistenceManager.Instance.ClearRun();
-
-            // Clear timeline override so the dungeon doesn't auto-start in editor/etc.
-            RunState.HasTimelineOverride = false;
+            if (RunPersistenceManager.Instance != null)
+                RunPersistenceManager.Instance.ClearRun();
 
             SafeLoadScene(survived ? runCompleteSceneName : runFailedSceneName);
         }
