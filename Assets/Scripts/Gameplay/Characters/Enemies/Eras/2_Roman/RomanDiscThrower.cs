@@ -30,14 +30,17 @@ namespace Geneforge.Gameplay.Characters.Enemies.Eras.Roman
         {
             if (_config == null)
                 _config = GetComponent<EnemyConfigurator>();
+            
+            if (_config == null || _config.Archetype == null) return;
+            var settings = _config.Archetype.projectile;
 
-            var settings = _config.ThrowSettings;
-            // Usa o que estiver no EnemyConfigurator (SpearPrefab = Throw_Disc, ThrowOrigin = ThrowOrigin)
-            if (settings == null || !settings.spearPrefab || !settings.throwOrigin || !target)
+            if (!settings.enabled || settings.projectilePrefab == null || !target)
                 return;
 
-            Transform origin = settings.throwOrigin;
-            GameObject prefab = settings.spearPrefab;
+            Transform origin = transform.Find("ProjectileSpawnPoint");
+            if (origin == null) origin = transform;
+            
+            GameObject prefab = settings.projectilePrefab;
 
             var obj = Instantiate(prefab, origin.position, origin.rotation);
 
@@ -45,7 +48,7 @@ namespace Geneforge.Gameplay.Characters.Enemies.Eras.Roman
             if (rb)
             {
                 Vector3 to = target.position - origin.position;
-                to.y += arcHeight;
+                to.y += settings.arcHeight; // Use arcHeight from config
                 Vector3 vel = to.normalized * throwSpeed;
 
 #if UNITY_6000_0_OR_NEWER

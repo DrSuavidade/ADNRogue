@@ -135,29 +135,50 @@ namespace Geneforge.Gameplay.Characters.Enemies.AI
             if (!IsAttackReady(ref lastAttackTime, attackRate))
                 return;
 
+            // NEW: Use MeleeAttackAbility if available (Professional Hitbox/Timing)
+            var ability = GetComponent<Geneforge.Gameplay.Characters.Enemies.Abilities.MeleeAttackAbility>();
+            if (ability != null)
+            {
+                ability.SetTarget(target);
+                ability.Configure(damagePerHit, attackRange);
+                ability.BeginAttack(); // Starts animation + internal timer or waits for event
+                
+                // Trigger animation
+                TriggerAttackAnim();
+                return;
+            }
+
+            // OLD: Instant damage fallback (Programmer Art style)
             if (animator != null)
             {
-                if (attackVariants <= 1)
-                {
-                    animator.SetTrigger("Attack");
-                }
-                else
-                {
-                    int idx = UnityEngine.Random.Range(0, attackVariants);
-                    switch (idx)
-                    {
-                        default:
-                        case 0: animator.SetTrigger("Attack"); break;
-                        case 1: animator.SetTrigger("AttackB"); break;
-                        case 2: animator.SetTrigger("AttackC"); break;
-                    }
-                }
+                TriggerAttackAnim();
             }
 
             // Optional direct damage (if you don't rely on animation events/hitboxes)
             if (playerHealth != null && DistanceToTargetXZ() <= attackRange + 0.1f)
             {
                 playerHealth.ApplyDamage(damagePerHit);
+            }
+        }
+
+        void TriggerAttackAnim()
+        {
+            if (animator == null) return;
+
+            if (attackVariants <= 1)
+            {
+                animator.SetTrigger("Attack");
+            }
+            else
+            {
+                int idx = UnityEngine.Random.Range(0, attackVariants);
+                switch (idx)
+                {
+                    default:
+                    case 0: animator.SetTrigger("Attack"); break;
+                    case 1: animator.SetTrigger("AttackB"); break;
+                    case 2: animator.SetTrigger("AttackC"); break;
+                }
             }
         }
     }

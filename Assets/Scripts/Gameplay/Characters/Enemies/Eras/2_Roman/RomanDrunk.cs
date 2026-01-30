@@ -31,13 +31,16 @@ namespace Geneforge.Gameplay.Characters.Enemies.Eras.Roman
             if (_config == null)
                 _config = GetComponent<EnemyConfigurator>();
 
-            // Usa as ThrowSettings do EnemyConfigurator (Ranged Visual/Spawn Setup)
-            var settings = _config.ThrowSettings;
-            if (settings == null || !settings.spearPrefab || !settings.throwOrigin || !target)
+            if (_config == null || _config.Archetype == null) return;
+            var settings = _config.Archetype.projectile;
+
+            if (!settings.enabled || settings.projectilePrefab == null || !target)
                 return;
 
-            Transform origin = settings.throwOrigin;
-            GameObject prefab = settings.spearPrefab;
+            Transform origin = transform.Find("ProjectileSpawnPoint");
+            if (origin == null) origin = transform;
+            
+            GameObject prefab = settings.projectilePrefab;
 
             var obj = Instantiate(prefab, origin.position, origin.rotation);
 
