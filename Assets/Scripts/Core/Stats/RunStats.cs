@@ -90,29 +90,71 @@ namespace Geneforge.Core.Stats
         public event Action<int> OnDnaSplicesChanged;
         public event Action<int> OnRollsChanged;
 
+        [Header("Movement & Luck")]
+        [Tooltip("Multiplies base player speed. 1.0 = normal.")]
+        [SerializeField] private float runSpeedMultiplier = 1f;
+        [Tooltip("Luck factor from -1 to 1. 0 = Neutral.")]
+        [Range(-1f, 1f)]
+        [SerializeField] private float startingLuck = 0f;
+
+        public float MoveSpeedMultiplier { get => moveSpeedMultiplier; private set => moveSpeedMultiplier = value; }
+        public float Luck { get => luck; private set => luck = Mathf.Clamp(value, -1f, 1f); }
+
+        public event Action<float> OnSpeedChanged;
+        public event Action<float> OnLuckChanged;
+
         int lives;
         int currency;
         int dnaSplices;
         int rolls;
+        float moveSpeedMultiplier;
+        float luck;
+
+        float _defaultMaxHP;
+        float _defaultSpeed;
+        float _defaultLuck;
 
         void Awake()
         {
+            _defaultMaxHP = maxHP;
+            _defaultSpeed = runSpeedMultiplier;
+            _defaultLuck = startingLuck;
             ResetRunStats();
         }
 
         public void ResetRunStats()
         {
+            maxHP = _defaultMaxHP;
             CurrentHP = Mathf.Max(1f, maxHP);
             lives = startingLives;
             currency = startingGold;
             dnaSplices = startingDnaSplices;
             rolls = startingRolls;
+            moveSpeedMultiplier = _defaultSpeed;
+            luck = _defaultLuck;
 
             OnHealthChanged?.Invoke(CurrentHP, MaxHP);
             OnLivesChanged?.Invoke(lives);
             OnCurrencyChanged?.Invoke(currency);
             OnDnaSplicesChanged?.Invoke(dnaSplices);
             OnRollsChanged?.Invoke(rolls);
+            OnSpeedChanged?.Invoke(moveSpeedMultiplier);
+            OnLuckChanged?.Invoke(luck);
+        }
+
+        public void ModifySpeed(float percent)
+        {
+            // adds raw value to multiplier. e.g. +0.1 for 10% faster
+            moveSpeedMultiplier += percent;
+            if (moveSpeedMultiplier < 0.1f) moveSpeedMultiplier = 0.1f; // min speed cap
+            OnSpeedChanged?.Invoke(moveSpeedMultiplier);
+        }
+
+        public void ModifyLuck(float amount)
+        {
+            luck += amount;
+            luck = Mathf.Clamp(luck, -1f, 1f);
+            OnLuckChanged?.Invoke(luck);
         }
 
         public bool TakeDamage(float dmg)

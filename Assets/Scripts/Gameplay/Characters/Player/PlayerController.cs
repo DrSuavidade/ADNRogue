@@ -163,8 +163,14 @@ namespace Geneforge.Gameplay.Characters.Player
 
             currentMoveWorld = moveWorld;
 
+            float speedMult = 1f;
+            if (Geneforge.Gameplay.Progression.RunSession.Instance != null && Geneforge.Gameplay.Progression.RunSession.Instance.Run != null)
+            {
+                speedMult = Geneforge.Gameplay.Progression.RunSession.Instance.Run.MoveSpeedMultiplier;
+            }
+
             if (moveWorld.sqrMagnitude > 0f)
-                cc.Move(moveWorld * moveSpeed * Time.deltaTime);
+                cc.Move(moveWorld * (moveSpeed * speedMult) * Time.deltaTime);
 
             if (cc.isGrounded)
             {

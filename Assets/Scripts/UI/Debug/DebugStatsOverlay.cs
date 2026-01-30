@@ -185,6 +185,8 @@ namespace Geneforge.UI.DebugTools
                 GUILayout.Label($"Gold: <color=yellow>{stats.Currency}</color>");
                 GUILayout.Label($"DNA: <color=cyan>{stats.DnaSplices}</color>");
                 GUILayout.Label($"Rolls: {stats.Rolls}");
+                GUILayout.Label($"Speed: <color=white>{stats.MoveSpeedMultiplier:F2}x</color>");
+                GUILayout.Label($"Luck: <color=purple>{stats.Luck:F2}</color>");
             }
             else
             {

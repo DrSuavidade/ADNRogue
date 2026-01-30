@@ -211,6 +211,8 @@ namespace Geneforge.Gameplay.Items
                     }
                     break;
                     
+                    break;
+                    
                 case StatType.Rolls:
                     if (mod.kind == ModifierKind.Add)
                     {
@@ -221,6 +223,34 @@ namespace Geneforge.Gameplay.Items
                         int newAmount = Mathf.RoundToInt(stats.Rolls * mod.value);
                         int delta = newAmount - stats.Rolls;
                         stats.AddRolls(delta);
+                    }
+                    break;
+
+                case StatType.Speed:
+                    if (mod.kind == ModifierKind.Add)
+                    {
+                        // Add raw value to multiplier (e.g. 0.1 adds 10%)
+                        stats.ModifySpeed(mod.value);
+                    }
+                    else // Multiply
+                    {
+                        // Multiply the current multiplier (e.g. 1.2 * 1.1 = 1.32)
+                        float currentMove = stats.MoveSpeedMultiplier;
+                        float offset = (currentMove * mod.value) - currentMove;
+                        stats.ModifySpeed(offset);
+                    }
+                    break;
+
+                case StatType.Luck:
+                    if (mod.kind == ModifierKind.Add)
+                    {
+                        stats.ModifyLuck(mod.value);
+                    }
+                    else // Multiply
+                    {
+                        // Scaling luck by multiplication is tricky around 0, but valid for enhancing +/-
+                        float delta = stats.Luck * (mod.value - 1f);
+                        stats.ModifyLuck(delta);
                     }
                     break;
             }
@@ -245,7 +275,9 @@ namespace Geneforge.Gameplay.Items
         Lives,
         Currency,
         DnaSplices,
-        Rolls
+        Rolls,
+        Speed,
+        Luck
     }
 
     public enum ItemRarity
