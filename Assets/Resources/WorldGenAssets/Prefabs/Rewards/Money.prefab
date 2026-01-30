@@ -10,6 +10,8 @@ GameObject:
   m_Component:
   - component: {fileID: 981816450526633551}
   - component: {fileID: 3582995703842483861}
+  - component: {fileID: 9179948478600821594}
+  - component: {fileID: -8014133017186664077}
   m_Layer: 0
   m_Name: Money
   m_TagString: Untagged
@@ -54,6 +56,44 @@ BoxCollider:
   serializedVersion: 3
   m_Size: {x: 0.2552932, y: 0.90919316, z: 1}
   m_Center: {x: -0.013070848, y: 0.688718, z: 0}
+--- !u!114 &9179948478600821594
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 8835146898180081796}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: c6f0a79ad18fbf04f9f22c36ba7709cf, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  rotationSpeed: 75
+  bobbingAmplitude: 0.05
+  bobbingFrequency: 2.5
+  scalingAmplitude: 0.2
+  scalingFrequency: 3
+--- !u!114 &-8014133017186664077
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 8835146898180081796}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 10d77abb830314445830507d0aeb53ba, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  modifiers:
+  - stat: 3
+    kind: 0
+    value: 50
+  onPickup:
+    m_PersistentCalls:
+      m_Calls: []
+  destroyOnPickup: 1
+  pickupTag: Player
 --- !u!1001 &3725004329610131801
 PrefabInstance:
   m_ObjectHideFlags: 0

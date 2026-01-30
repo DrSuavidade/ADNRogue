@@ -49,6 +49,10 @@ namespace Geneforge.Gameplay.Map
         [Range(0, 100)] public float epicRate = 0f;
         [Range(0, 100)] public float legendaryRate = 0f;
         [Range(0, 100)] public float mythicRate = 0f;
+
+        [Header("Economy")]
+        [Tooltip("Multiplier applied to stat pickups (Gold, Health, etc) in this timeline.")]
+        public float statPickupMultiplier = 1f;
     }
 
     [CreateAssetMenu(menuName = "Geneforge/Map/DungeonConfig", fileName = "DungeonConfig")]

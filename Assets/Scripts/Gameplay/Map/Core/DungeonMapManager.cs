@@ -66,6 +66,16 @@ namespace Geneforge.Gameplay.Map
         public float RoomSpacing => roomSpacing;
         public GameObject DefaultKeyPickupPrefab => defaultKeyPickupPrefab;
 
+        public float CurrentStatMultiplier
+        {
+            get
+            {
+                if (dungeonConfig == null) return 1f;
+                var timelineSet = dungeonConfig.GetTimeline(currentTimeline);
+                return timelineSet != null ? timelineSet.statPickupMultiplier : 1f;
+            }
+        }
+
         #endregion
 
 

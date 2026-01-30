@@ -10,6 +10,7 @@ GameObject:
   m_Component:
   - component: {fileID: 4999386798665562583}
   - component: {fileID: 780210285504461187}
+  - component: {fileID: 1741026549754019114}
   m_Layer: 0
   m_Name: Essence
   m_TagString: Untagged
@@ -54,6 +55,23 @@ BoxCollider:
   serializedVersion: 3
   m_Size: {x: 0.60240275, y: 0.9074365, z: 0.6627791}
   m_Center: {x: 0.005393356, y: 0.5720871, z: 0.0034782887}
+--- !u!114 &1741026549754019114
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1714695668134714555}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: c6f0a79ad18fbf04f9f22c36ba7709cf, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  rotationSpeed: 75
+  bobbingAmplitude: 0.05
+  bobbingFrequency: 2.5
+  scalingAmplitude: 0.2
+  scalingFrequency: 3
 --- !u!1001 &162205017956635055
 PrefabInstance:
   m_ObjectHideFlags: 0

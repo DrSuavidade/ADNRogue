@@ -33,16 +33,14 @@ MonoBehaviour:
     eventRoomsSE: []
     keyPickupPrefab: {fileID: 8435360267250068082, guid: 438f9d65be92b23449ffe69fc6d0f25a, type: 3}
     floorRewardPrefabs:
-    - prefab: {fileID: 1714695668134714555, guid: 3467938649e56404a94dff219afe3899, type: 3}
-      weight: 1
     - prefab: {fileID: 1179994856488095173, guid: 14fb7b4e38bc1df4c872ad35a0e6132d, type: 3}
-      weight: 1
+      weight: 5
     - prefab: {fileID: 8835146898180081796, guid: 7201d182e7df0ff4d8dbc8ae77b4eac6, type: 3}
       weight: 1
     - prefab: {fileID: 1548549465973550650, guid: 235decd26f96bd843967b37b47e8ed93, type: 3}
       weight: 1
     - prefab: {fileID: 3127517845568862864, guid: 08e886791beb087418d99ab208bd5bb8, type: 3}
-      weight: 3
+      weight: 1
     enemyPrefabs:
     - prefab: {fileID: 3325723471878475444, guid: 9eb2b3ca70fff9744a5e1060ab33ca5c, type: 3}
       weight: 1
@@ -61,6 +59,7 @@ MonoBehaviour:
     epicRate: 0
     legendaryRate: 0
     mythicRate: 0
+    statPickupMultiplier: 1
   - timelineId: 1
     floors: 0
     hubPrefab: {fileID: 0}
@@ -75,6 +74,7 @@ MonoBehaviour:
     epicRate: 10
     legendaryRate: 0
     mythicRate: 0
+    statPickupMultiplier: 1.5
   - timelineId: 2
     floors: 0
     hubPrefab: {fileID: 0}
@@ -89,6 +89,7 @@ MonoBehaviour:
     epicRate: 20
     legendaryRate: 5
     mythicRate: 0
+    statPickupMultiplier: 2
   - timelineId: 3
     floors: 0
     hubPrefab: {fileID: 0}
@@ -103,6 +104,7 @@ MonoBehaviour:
     epicRate: 20
     legendaryRate: 10
     mythicRate: 5
+    statPickupMultiplier: 2.5
   globalRewardItemPool:
   - {fileID: 11400000, guid: 86eeb4ea088869c4da0e9014bf2facd5, type: 2}
   - {fileID: 11400000, guid: 20ab5b6a8b57b844c8f90f14244d76bb, type: 2}
