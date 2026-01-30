@@ -52,6 +52,19 @@ namespace Geneforge.UI.DebugTools
 
         private void ResetRunAndReload()
         {
+            // 0. Manual Cleanup of stubborn Singletons (Pooling, MetaStats, etc)
+            // This prevents "Duplicate Instance" errors or stale pools on reload.
+            if (Geneforge.Core.Pooling.PoolManager.Instance != null)
+            {
+                Destroy(Geneforge.Core.Pooling.PoolManager.Instance.gameObject);
+            }
+
+            var oldMeta = FindAnyObjectByType<Geneforge.Core.Stats.MetaStats>();
+            if (oldMeta != null)
+            {
+                Destroy(oldMeta.gameObject);
+            }
+
             // 1. Try to use the official Flow Controller (AAA way) - Restarts full run state
             if (Geneforge.Gameplay.Progression.RunFlowController.Instance != null)
             {
