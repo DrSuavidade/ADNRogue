@@ -38,13 +38,17 @@ namespace Geneforge.Gameplay.Characters.Enemies.Eras.Present
         {
             if (_config == null)
                 _config = GetComponent<EnemyConfigurator>();
+            
+            if (_config == null || _config.Archetype == null) return;
+            var settings = _config.Archetype.projectile;
 
-            var settings = _config.ThrowSettings;
-            if (settings == null || !settings.spearPrefab || !settings.throwOrigin || !target)
+            if (!settings.enabled || settings.projectilePrefab == null || !target)
                 return;
 
-            Transform origin = settings.throwOrigin;
-            GameObject prefab = settings.spearPrefab;
+            Transform origin = transform.Find("ProjectileSpawnPoint");
+            if (origin == null) origin = transform;
+            
+            GameObject prefab = settings.projectilePrefab;
 
             var obj = Object.Instantiate(prefab, origin.position, origin.rotation);
 
@@ -60,7 +64,7 @@ namespace Geneforge.Gameplay.Characters.Enemies.Eras.Present
 
                 flat.Normalize();
                 Vector3 vel = flat * throwSpeed;
-                vel.y += arcHeight;
+                vel.y += settings.arcHeight; // Load from config
 
 #if UNITY_6000_0_OR_NEWER
                 rb.linearVelocity = vel;

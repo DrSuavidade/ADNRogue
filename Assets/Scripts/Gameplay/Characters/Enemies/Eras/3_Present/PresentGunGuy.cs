@@ -38,12 +38,17 @@ namespace Geneforge.Gameplay.Characters.Enemies.Eras.Present
         {
             if (_config == null)
                 _config = GetComponent<EnemyConfigurator>();
+            
+            if (_config == null || _config.Archetype == null) return;
+            var settings = _config.Archetype.projectile;
 
-            var shooter = _config.ShooterSettings;
-            if (shooter == null || !shooter.bulletPrefab || !shooter.firePoint || !target)
+            if (!settings.enabled || settings.projectilePrefab == null || !target)
                 return;
+            
+            Transform firePoint = transform.Find("ProjectileSpawnPoint");
+            if (firePoint == null) firePoint = transform;
 
-            SpawnBullet(shooter.firePoint, shooter.bulletPrefab);
+            SpawnBullet(firePoint, settings.projectilePrefab);
         }
 
         void SpawnBullet(Transform firePoint, GameObject bulletPrefab)

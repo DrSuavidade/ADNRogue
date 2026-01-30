@@ -40,11 +40,16 @@ namespace Geneforge.Gameplay.Characters.Enemies.Eras.Future
             if (_config == null)
                 _config = GetComponent<EnemyConfigurator>();
 
-            var shooter = _config.ShooterSettings;
-            if (shooter == null || !shooter.bulletPrefab || !shooter.firePoint || !target)
+            if (_config == null || _config.Archetype == null) return;
+            var settings = _config.Archetype.projectile;
+            
+            if (!settings.enabled || settings.projectilePrefab == null || !target)
                 return;
 
-            SpawnSniperBullet(shooter.firePoint, shooter.bulletPrefab);
+            Transform spawnPoint = transform.Find("ProjectileSpawnPoint");
+            if (spawnPoint == null) spawnPoint = transform;
+
+            SpawnSniperBullet(spawnPoint, settings.projectilePrefab);
         }
 
         void SpawnSniperBullet(Transform firePoint, GameObject bulletPrefab)

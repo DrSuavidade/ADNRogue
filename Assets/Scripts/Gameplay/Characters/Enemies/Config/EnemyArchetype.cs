@@ -84,6 +84,21 @@ namespace Geneforge.Gameplay.Characters.Enemies.Config
         }
 
         [System.Serializable]
+        public struct ProjectileConfig
+        {
+            [Tooltip("If true, this enemy will be given a projectile attack ability.")]
+            public bool enabled;
+            public GameObject projectilePrefab;
+            [Tooltip("Relative position to spawn projectile (e.g. (0, 1.5, 0.5)).")]
+            public Vector3 spawnOffset;
+            public float damage;
+            public float speed;
+            public LayerMask hitMask;
+            [Tooltip("Arc height for thrown objects. 0 = straight shot.")]
+            public float arcHeight;
+        }
+
+        [System.Serializable]
         public struct BossConfig
         {
             [Range(0f, 1f)] public float phase2Threshold;
@@ -101,6 +116,9 @@ namespace Geneforge.Gameplay.Characters.Enemies.Config
         public AnimalConfig animal;
         public FlyingConfig flying;
         public BossConfig boss;
+        
+        [Header("Abilities")]
+        public ProjectileConfig projectile;
 
         // Aqui podes adicionar coisas de abilities específicas se quiseres mais tarde.
     }

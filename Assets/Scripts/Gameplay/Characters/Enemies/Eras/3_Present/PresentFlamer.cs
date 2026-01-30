@@ -32,11 +32,14 @@ namespace Geneforge.Gameplay.Characters.Enemies.Eras.Present
             if (_config == null)
                 _config = GetComponent<EnemyConfigurator>();
 
-            var shooter = _config != null ? _config.ShooterSettings : null;
-            if (shooter != null && shooter.firePoint != null)
-                flameOrigin = shooter.firePoint;
-            else
-                flameOrigin = transform;
+            Transform spawnPoint = null;
+            if (_config != null && _config.Archetype != null && _config.Archetype.projectile.enabled)
+            {
+                // Configurator creates "ProjectileSpawnPoint"
+                spawnPoint = transform.Find("ProjectileSpawnPoint");
+            }
+            
+            flameOrigin = spawnPoint != null ? spawnPoint : transform;
         }
 
         void Update()

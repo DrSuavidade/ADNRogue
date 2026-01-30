@@ -1,6 +1,6 @@
 using UnityEngine;
 
-namespace Geneforge.Gameplay.Characters.Enemies.Habilidades
+namespace Geneforge.Gameplay.Characters.Enemies.Abilities
 {
     public class ShieldFX : MonoBehaviour
     {
