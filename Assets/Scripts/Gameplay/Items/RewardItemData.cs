@@ -95,6 +95,10 @@ namespace Geneforge.Gameplay.Items
             {
                 var gunSlots = player.GetComponent<Geneforge.Gameplay.Weapons.Slots.GunSlots>();
                 if (gunSlots == null) gunSlots = player.GetComponentInChildren<Geneforge.Gameplay.Weapons.Slots.GunSlots>();
+                
+                // Fallback: If not on player, try to find ANY active GunSlots in the scene (since often there is only one player weapon)
+                // This fixes the issue where GunSlots is on an external "WeaponRoot" object not childed to the player.
+                if (gunSlots == null) gunSlots = FindAnyObjectByType<Geneforge.Gameplay.Weapons.Slots.GunSlots>();
 
                 if (gunSlots != null)
                 {
@@ -102,11 +106,11 @@ namespace Geneforge.Gameplay.Items
                     {
                         gunSlots.AddPassive(mod);
                     }
-                    Debug.Log($"[RewardItemData] Added {weaponModifiers.Count} weapon modifiers.");
+                    Debug.Log($"[RewardItemData] Added {weaponModifiers.Count} weapon modifiers to GunSlots on {gunSlots.name}.");
                 }
                 else
                 {
-                    Debug.LogWarning("[RewardItemData] Could not find GunSlots to apply weapon modifiers.");
+                    Debug.LogError($"[RewardItemData] CRITICAL: Could not find GunSlots on player {player.name} or children! Weapon modifiers NOT applied.");
                 }
             }
 

@@ -431,6 +431,12 @@ namespace Geneforge.Gameplay.Map
             return result;
         }
 
+        public RewardItemData GetRewardItemByName(string itemName)
+        {
+            if (dungeonConfig == null || dungeonConfig.GlobalRewardItemPool == null) return null;
+            return dungeonConfig.GlobalRewardItemPool.Find(i => i != null && i.ItemName == itemName);
+        }
+
         #endregion
 
         #region North exit usage

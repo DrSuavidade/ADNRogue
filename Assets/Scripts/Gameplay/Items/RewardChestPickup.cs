@@ -90,9 +90,14 @@ namespace Geneforge.Gameplay.Items
 
         private void OnItemChosen(RewardItemData chosenItem, GameObject player)
         {
+            Debug.Log($"[RewardChestPickup] OnItemChosen called for {chosenItem?.ItemName ?? "NULL"}");
             if (chosenItem != null)
             {
                 chosenItem.Apply(player);
+            }
+            else
+            {
+                Debug.LogError("[RewardChestPickup] Chosen item is NULL!");
             }
 
             onItemSelected?.Invoke();

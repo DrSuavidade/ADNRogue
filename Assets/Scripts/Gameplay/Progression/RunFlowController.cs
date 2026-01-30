@@ -44,6 +44,10 @@ namespace Geneforge.Gameplay.Progression
             // Ensure persistent systems exist
             RunSession.Ensure();
 
+            // Clear any saved items from previous runs
+            if (Geneforge.Gameplay.Items.RunPersistenceManager.Instance != null)
+                Geneforge.Gameplay.Items.RunPersistenceManager.Instance.ClearRun();
+
             // Begin run BEFORE loading gameplay scenes
             var meta = MetaStats.Instance != null
                 ? MetaStats.Instance
@@ -136,6 +140,10 @@ namespace Geneforge.Gameplay.Progression
 
             if (RunSession.Instance != null)
                 RunSession.Instance.EndRun(meta, survived);
+            
+            // Clear items so they don't carry over to next run
+            if (Geneforge.Gameplay.Items.RunPersistenceManager.Instance != null)
+                Geneforge.Gameplay.Items.RunPersistenceManager.Instance.ClearRun();
 
             // Clear timeline override so the dungeon doesn't auto-start in editor/etc.
             RunState.HasTimelineOverride = false;

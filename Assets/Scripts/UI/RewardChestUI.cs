@@ -225,11 +225,29 @@ namespace Geneforge.UI
         /// </summary>
         private void OnSlotClicked(RewardItemData item)
         {
-            if (!_isOpen) return;
+            if (!_isOpen) 
+            {
+                Debug.LogWarning("[RewardChestUI] OnSlotClicked ignored because panel is closed.");
+                return;
+            }
+
+            Debug.Log($"[RewardChestUI] OnSlotClicked: {item?.ItemName ?? "NULL"}");
+
+            // Cache the callback because ClosePanel wipes it
+            var callback = _onSelectionCallback;
+            var player = _playerRef;
 
             ClosePanel();
 
-            _onSelectionCallback?.Invoke(item, _playerRef);
+            if (callback != null)
+            {
+                Debug.Log("[RewardChestUI] Invoking selection callback.");
+                callback.Invoke(item, player);
+            }
+            else
+            {
+                Debug.LogError("Callback is null in OnSlotClicked!!");
+            }
         }
 
         /// <summary>
