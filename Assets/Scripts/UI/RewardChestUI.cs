@@ -21,6 +21,9 @@ namespace Geneforge.UI
         [Tooltip("The item slot components (should have exactly 3).")]
         [SerializeField] private List<RewardChestSlot> itemSlots = new List<RewardChestSlot>();
 
+        [Header("Stat Config")]
+        [SerializeField] private RewardStatConfig statConfig;
+
         [Header("Settings")]
         [Tooltip("Pause the game while the panel is open.")]
         [SerializeField] private bool pauseGameOnOpen = true;
@@ -117,7 +120,7 @@ namespace Geneforge.UI
                 {
                     Debug.Log($"[RewardChestUI] Setting up slot {i} with item {items[i].ItemName}");
                     itemSlots[i].gameObject.SetActive(true);
-                    itemSlots[i].Setup(items[i], OnSlotClicked);
+                    itemSlots[i].Setup(items[i], OnSlotClicked, statConfig);
                 }
                 else
                 {

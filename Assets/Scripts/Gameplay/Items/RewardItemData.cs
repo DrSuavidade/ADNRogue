@@ -52,6 +52,8 @@ namespace Geneforge.Gameplay.Items
         public IReadOnlyList<Sprite> AnimationFrames => animationFrames;
         public float FramesPerSecond => framesPerSecond;
         public ItemRarity Rarity => rarity;
+        public IReadOnlyList<RewardStatModifier> StatModifiers => statModifiers;
+        public IReadOnlyList<StatModifier> WeaponModifiers => weaponModifiers;
 
         /// <summary>
         /// Returns the first frame as a static icon fallback.

@@ -34,13 +34,13 @@ MonoBehaviour:
     keyPickupPrefab: {fileID: 8435360267250068082, guid: 438f9d65be92b23449ffe69fc6d0f25a, type: 3}
     floorRewardPrefabs:
     - prefab: {fileID: 1179994856488095173, guid: 14fb7b4e38bc1df4c872ad35a0e6132d, type: 3}
-      weight: 5
+      weight: 1
     - prefab: {fileID: 8835146898180081796, guid: 7201d182e7df0ff4d8dbc8ae77b4eac6, type: 3}
       weight: 1
     - prefab: {fileID: 1548549465973550650, guid: 235decd26f96bd843967b37b47e8ed93, type: 3}
       weight: 1
     - prefab: {fileID: 3127517845568862864, guid: 08e886791beb087418d99ab208bd5bb8, type: 3}
-      weight: 1
+      weight: 6
     enemyPrefabs:
     - prefab: {fileID: 3325723471878475444, guid: 9eb2b3ca70fff9744a5e1060ab33ca5c, type: 3}
       weight: 1

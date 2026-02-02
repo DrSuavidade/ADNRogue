@@ -4,6 +4,9 @@ using UnityEngine;
 using UnityEngine.UI;
 using TMPro;
 using Geneforge.Gameplay.Items;
+using Geneforge.Gameplay.Abilities; // For WeaponStatId and existing types
+using System.Collections.Generic; // Ensure List is available
+using System.Linq; // For easier icon lookup
 
 namespace Geneforge.UI
 {
@@ -37,9 +40,14 @@ namespace Geneforge.UI
         [Tooltip("Optional glow/border image that changes color based on rarity.")]
         [SerializeField] private Image rarityBorder;
 
+        [Header("Stats Visualization")]
+        [SerializeField] private Transform statsContainer;
+        [SerializeField] private RewardChestStatRow statRowPrefab;
+
         // Runtime state
         private RewardItemData _currentItem;
         private Action<RewardItemData> _onClickCallback;
+        private RewardStatConfig _statConfig;
         private int _currentFrameIndex;
         private float _nextFrameTime;
         private bool _isAnimating = false;
@@ -83,16 +91,24 @@ namespace Geneforge.UI
         /// <summary>
         /// Setup the slot with an item.
         /// </summary>
-        public void Setup(RewardItemData item, Action<RewardItemData> onClick)
+        public void Setup(RewardItemData item, Action<RewardItemData> onClick, RewardStatConfig config)
         {
             _currentItem = item;
             _onClickCallback = onClick;
+            _statConfig = config;
 
             // Set name
             if (itemNameText != null) itemNameText.text = item.ItemName;
 
-            // Set description
-            if (itemDescriptionText != null) itemDescriptionText.text = item.Description;
+            // Set description (Disabled in favor of Stats, but kept for fallback if desired)
+            if (itemDescriptionText != null) 
+            {
+                itemDescriptionText.gameObject.SetActive(false); // Hide description
+                // itemDescriptionText.text = item.Description; 
+            }
+
+            // Setup Stats Visualization
+            SetupStats(item);
 
             // Set rarity color
             Color rarityColor = GetRarityColor(item.Rarity);
@@ -148,6 +164,108 @@ namespace Geneforge.UI
                 case ItemRarity.Legendary: return legendaryColor;
                 case ItemRarity.Mythic: return mythicColor;
                 default: return commonColor;
+            }
+        }
+
+        private void SetupStats(RewardItemData item)
+        {
+            // Clear existing stats
+            if (statsContainer != null)
+            {
+                foreach (Transform child in statsContainer)
+                {
+                    Destroy(child.gameObject);
+                }
+            }
+            else
+            {
+                return; // No container to spawn into
+            }
+
+            if (statRowPrefab == null) return;
+
+            // 1. Run Modifiers
+            // Note: RewardItemData uses Geneforge.Gameplay.Items.RewardStatModifier
+            // and Geneforge.Gameplay.Items.ModifierKind
+            foreach (var mod in item.StatModifiers)
+            {
+                 // Check if it effectively changes anything
+                 if (Mathf.Abs(mod.value) < 0.0001f && mod.kind == Geneforge.Gameplay.Items.ModifierKind.Add) continue;
+                 if (Mathf.Abs(mod.value - 1f) < 0.0001f && mod.kind == Geneforge.Gameplay.Items.ModifierKind.Multiply) continue;
+
+                 SpawnStatRow(
+                     GetRunStatIcon(mod.stat),
+                     IsRunStatUpgrade(mod.stat, mod.value, mod.kind)
+                 );
+            }
+
+            // 2. Weapon Modifiers
+            // Note: RewardItemData uses Geneforge.Gameplay.Abilities.StatModifier (implied by previous context)
+            // and Geneforge.Gameplay.Abilities.ModifierKind
+            foreach (var mod in item.WeaponModifiers)
+            {
+                 // Check if it effectively changes anything
+                 if (Mathf.Abs(mod.value) < 0.0001f && mod.kind == Geneforge.Gameplay.Abilities.ModifierKind.Add) continue;
+                 if (Mathf.Abs(mod.value - 1f) < 0.0001f && mod.kind == Geneforge.Gameplay.Abilities.ModifierKind.Multiply) continue;
+
+                 SpawnStatRow(
+                     GetWeaponStatIcon(mod.stat),
+                     IsWeaponStatUpgrade(mod.stat, mod.value, mod.kind)
+                 );
+            }
+        }
+
+        private void SpawnStatRow(Sprite icon, bool isUpgrade)
+        {
+            if (icon == null || _statConfig == null) return; // Don't show if no icon
+            
+            var rowObj = Instantiate(statRowPrefab, statsContainer);
+            rowObj.Setup(icon, isUpgrade ? _statConfig.UpgradeArrow : _statConfig.DowngradeArrow, isUpgrade);
+        }
+
+        private Sprite GetRunStatIcon(Geneforge.Gameplay.Items.StatType stat)
+        {
+            if (_statConfig == null) return null;
+            return _statConfig.GetRunStatIcon(stat);
+        }
+
+        private Sprite GetWeaponStatIcon(Geneforge.Gameplay.Abilities.WeaponStatId stat)
+        {
+             if (_statConfig == null) return null;
+            return _statConfig.GetWeaponStatIcon(stat);
+        }
+
+        private bool IsRunStatUpgrade(Geneforge.Gameplay.Items.StatType stat, float value, Geneforge.Gameplay.Items.ModifierKind kind)
+        {
+             // For Run Stats, almost everything is "Higher = Better".
+             // Logic:
+             // Add: value > 0 is Upgrade.
+             // Mult: value > 1 is Upgrade.
+             
+             bool increases = (kind == Geneforge.Gameplay.Items.ModifierKind.Add && value > 0) ||
+                              (kind == Geneforge.Gameplay.Items.ModifierKind.Multiply && value > 1f);
+
+             // Are there any Run Stats where "Lower is Better"?
+             // Health, Lives, Currency, Dna, Rolls, Speed, Luck -> All Good if Increased.
+             // So 'increases' == Upgrade.
+
+             return increases;
+        }
+
+        private bool IsWeaponStatUpgrade(Geneforge.Gameplay.Abilities.WeaponStatId stat, float value, Geneforge.Gameplay.Abilities.ModifierKind kind)
+        {
+            bool increases = (kind == Geneforge.Gameplay.Abilities.ModifierKind.Add && value > 0) ||
+                             (kind == Geneforge.Gameplay.Abilities.ModifierKind.Multiply && value > 1f);
+
+            // Handle "Lower is Better" stats
+            switch (stat)
+            {
+                case Geneforge.Gameplay.Abilities.WeaponStatId.FireRate:
+                case Geneforge.Gameplay.Abilities.WeaponStatId.InaccuracyHalfAngle:
+                    return !increases; // Decrease is Upgrade
+                
+                default:
+                    return increases; // Increase is Upgrade
             }
         }
     }

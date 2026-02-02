@@ -1,0 +1,66 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: a3f7010908135984e951d33538562339, type: 3}
+  m_Name: RewardStatConfig
+  m_EditorClassIdentifier: 
+  upgradeArrow: {fileID: 21300000, guid: a9e8aac1efb882a448699468d8b78748, type: 3}
+  downgradeArrow: {fileID: 21300000, guid: 065f8f19bcd5bab4b9bd40a412cfd64b, type: 3}
+  runStatIcons:
+  - stat: 0
+    icon: {fileID: 21300000, guid: 1e452a034dc03464f936b17f23d4d32a, type: 3}
+  - stat: 1
+    icon: {fileID: 21300000, guid: 1e452a034dc03464f936b17f23d4d32a, type: 3}
+  - stat: 2
+    icon: {fileID: 21300000, guid: 7aec815e08f928d4fb97841d9286cf34, type: 3}
+  - stat: 3
+    icon: {fileID: 21300000, guid: 162f9b00e0c45524981cbb634c345941, type: 3}
+  - stat: 4
+    icon: {fileID: 21300000, guid: ca58bccbd37430441952bb443cdf1b1b, type: 3}
+  - stat: 5
+    icon: {fileID: 21300000, guid: d21838ce9f7253043bd69b6808d31dfb, type: 3}
+  - stat: 6
+    icon: {fileID: 21300000, guid: fd6e4d58b6d23654bbfe8a91b815bd06, type: 3}
+  - stat: 7
+    icon: {fileID: 21300000, guid: 3ae842a5bd92b7a489dc0c33a752bf30, type: 3}
+  weaponStatIcons:
+  - stat: 0
+    icon: {fileID: 21300000, guid: 10d3c40c2dd07c14f8e5f1333cbfe800, type: 3}
+  - stat: 1
+    icon: {fileID: 21300000, guid: 3bcf24beb3fa94b41832998774a9f285, type: 3}
+  - stat: 2
+    icon: {fileID: 21300000, guid: 26b9c1b4f17a6a34f9da1ea6c7fa9bac, type: 3}
+  - stat: 3
+    icon: {fileID: 21300000, guid: 3bcf24beb3fa94b41832998774a9f285, type: 3}
+  - stat: 4
+    icon: {fileID: 21300000, guid: 3bcf24beb3fa94b41832998774a9f285, type: 3}
+  - stat: 5
+    icon: {fileID: 21300000, guid: 2c5c46b9e89d9fb44ab0fcb97b99b4a0, type: 3}
+  - stat: 6
+    icon: {fileID: 21300000, guid: 2c5c46b9e89d9fb44ab0fcb97b99b4a0, type: 3}
+  - stat: 7
+    icon: {fileID: 21300000, guid: e555c5fcc73250249b1c951175c80331, type: 3}
+  - stat: 8
+    icon: {fileID: 21300000, guid: 6c852e5b95c365b4a9f44c5595c8e3af, type: 3}
+  - stat: 9
+    icon: {fileID: 21300000, guid: 3bcf24beb3fa94b41832998774a9f285, type: 3}
+  - stat: 10
+    icon: {fileID: 21300000, guid: 3bcf24beb3fa94b41832998774a9f285, type: 3}
+  - stat: 11
+    icon: {fileID: 21300000, guid: 3bcf24beb3fa94b41832998774a9f285, type: 3}
+  - stat: 12
+    icon: {fileID: 21300000, guid: 3bcf24beb3fa94b41832998774a9f285, type: 3}
+  - stat: 13
+    icon: {fileID: 21300000, guid: 3bcf24beb3fa94b41832998774a9f285, type: 3}
+  - stat: 14
+    icon: {fileID: 21300000, guid: 6c852e5b95c365b4a9f44c5595c8e3af, type: 3}
+  - stat: 15
+    icon: {fileID: 21300000, guid: 6c852e5b95c365b4a9f44c5595c8e3af, type: 3}
