@@ -11,6 +11,7 @@ namespace Geneforge.Gameplay.Map
     {
         [Header("Static (per prefab)")]
         [SerializeField] private RoomType roomType = RoomType.Combat;
+        [SerializeField] private Sprite minimapIcon; // Ícone específico para esta sala no mini-mapa
 
         [Header("Encounter Setup (combat rooms)")]
         [SerializeField] private bool autoStartEncounterOnEnter = true;
@@ -45,6 +46,7 @@ namespace Geneforge.Gameplay.Map
         public bool IsKeyRoom => isKeyRoom;
         public bool EncounterStarted => encounterStarted;
         public bool AutoStartEncounterOnEnter => autoStartEncounterOnEnter;
+        public Sprite MinimapIcon => minimapIcon;
         public EnemySpawner[] EnemySpawners => enemySpawners;
         public RewardSpawner[] RewardSpawners => rewardSpawners;
 

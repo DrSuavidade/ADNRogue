@@ -164,10 +164,22 @@ namespace Geneforge.Gameplay.Map
             }
             currentHub.Initialize(currentTimeline, currentFloorIndex, RoomDirection.South, RoomType.Hub);
 
+            // Notify Minimap of Hub Discovery
+            if (MinimapManager.Instance != null)
+            {
+                MinimapManager.Instance.ReportRoomDiscovery(currentHub);
+            }
+
             if (player != null && currentHub.SouthEntrySpawn != null)
             {
                 player.position = currentHub.SouthEntrySpawn.position;
                 player.rotation = currentHub.SouthEntrySpawn.rotation;
+            }
+
+            // Hub is visited immediately
+            if (MinimapManager.Instance != null)
+            {
+                MinimapManager.Instance.ReportRoomVisit(currentHub);
             }
 
             // Diagonal combat rooms
@@ -209,6 +221,12 @@ namespace Geneforge.Gameplay.Map
 
             room.Initialize(currentTimeline, currentFloorIndex, dir, RoomType.Combat);
             currentRoomsByDirection[dir] = room;
+
+            // Notify Minimap of Diagonal Room Discovery
+            if (MinimapManager.Instance != null)
+            {
+                MinimapManager.Instance.ReportRoomDiscovery(room);
+            }
         }
 
         private void ConfigureNorthExit()
@@ -240,6 +258,11 @@ namespace Geneforge.Gameplay.Map
             currentFloorRewardPool = null;
             currentFloorEnemyPool = null;
             currentFloorKeyPrefab = null;
+
+            if (MinimapManager.Instance != null)
+            {
+                MinimapManager.Instance.ClearData();
+            }
         }
 
         #endregion
@@ -254,6 +277,12 @@ namespace Geneforge.Gameplay.Map
             {
                 globalVisitCounter++;
                 room.VisitOrderGlobal = globalVisitCounter;
+            }
+
+            // Notify Minimap
+            if (MinimapManager.Instance != null)
+            {
+                MinimapManager.Instance.ReportRoomVisit(room);
             }
 
             if (room.RoomType == RoomType.Combat && room.DirectionFromHub.IsDiagonal())
