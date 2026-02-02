@@ -46,6 +46,9 @@ MonoBehaviour:
   - stat: 1
     kind: 1
     value: 0.85
+  - stat: 6
+    kind: 1
+    value: 1.1
   weaponModifiers:
   - stat: 14
     kind: 1

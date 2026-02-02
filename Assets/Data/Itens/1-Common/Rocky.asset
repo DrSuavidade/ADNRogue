@@ -42,7 +42,10 @@ MonoBehaviour:
   - {fileID: 21300000, guid: 33aace1331520fb4294d3b81686287fe, type: 3}
   framesPerSecond: 12
   rarity: 0
-  statModifiers: []
+  statModifiers:
+  - stat: 6
+    kind: 1
+    value: 1.1
   weaponModifiers:
   - stat: 0
     kind: 1
