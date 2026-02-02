@@ -377,7 +377,7 @@ RectTransform:
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
   m_AnchorMin: {x: 0.5, y: 0.5}
   m_AnchorMax: {x: 0.5, y: 0.5}
-  m_AnchoredPosition: {x: 0, y: 0.000013351}
+  m_AnchoredPosition: {x: 0, y: 0}
   m_SizeDelta: {x: 1512, y: 737.325}
   m_Pivot: {x: 0.5, y: 0.5}
 --- !u!114 &219044534
@@ -2644,7 +2644,7 @@ RectTransform:
   m_AnchorMax: {x: 1, y: 1}
   m_AnchoredPosition: {x: 0, y: 0}
   m_SizeDelta: {x: 0, y: 0}
-  m_Pivot: {x: 0.5, y: 0.5}
+  m_Pivot: {x: 0, y: 0}
 --- !u!114 &1894422670
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -2830,7 +2830,8 @@ MonoBehaviour:
   roomIconPrefab: {fileID: 2439731397257753854, guid: 051dad32b94f7404d9ea0d702eddb4e3, type: 3}
   iconsContainer: {fileID: 933174798}
   playerMarker: {fileID: 1326731793}
-  spacing: 100
+  spacing: 80
+  mapCenterOffset: {x: 0, y: 0}
   iconHub: {fileID: 0}
   iconCombat: {fileID: 0}
   iconShop: {fileID: 0}

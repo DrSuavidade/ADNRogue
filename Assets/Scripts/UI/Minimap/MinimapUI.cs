@@ -15,6 +15,8 @@ namespace Geneforge.UI.Minimap
 
         [Header("Layout Settings")]
         [SerializeField] private float spacing = 100f;
+        [Tooltip("Use this to manually align the map under the player icon.")]
+        [SerializeField] private Vector2 mapCenterOffset;
 
         [Header("Room Icons (Backup)")]
         [SerializeField] private Sprite iconHub;
@@ -71,20 +73,61 @@ namespace Geneforge.UI.Minimap
                     playerMarker.localRotation = Quaternion.Euler(0, 0, -playerTransform.eulerAngles.y);
                 }
 
-                // 3. MOVIMENTO CONTÍNUO DO PLAYER (Enquanto caminha)
-                if (playerMarker != null && DungeonMapManager.Instance != null)
+                if (playerMarker != null)
                 {
+                    playerMarker.SetAsLastSibling();
+                }
+
+                // 3. POSICIONAMENTO FINAL
+                if (playerMarker != null && DungeonMapManager.Instance != null && DungeonMapManager.Instance.CurrentHub != null)
+                {
+                    // --- GARANTIR QUE O PLAYER ESTÁ SEMPRE POR CIMA ---
+                    // Se o playerMarker e o iconsContainer estiverem no mesmo pai (ex: dentro da Mask),
+                    // o playerMarker tem de ser o último para ser desenhado por cima.
+                    playerMarker.SetAsLastSibling();
+
                     float worldUnitsPerRoom = DungeonMapManager.Instance.RoomSpacing;
                     float scale = spacing / worldUnitsPerRoom;
                     
-                    Vector3 worldPos = playerTransform.position;
-                    
-                    // Atualiza a posição continuamente (será sobrescrita pelo snap quando entrar numa sala)
-                    playerMarker.anchoredPosition = new Vector2(worldPos.x * scale, worldPos.z * scale);
-                }
+                    Vector3 hubPos = DungeonMapManager.Instance.CurrentHub.transform.position;
+                    Vector3 worldPosRelToHub = playerTransform.position - hubPos;
 
-                // 4. MAPA ESTÁTICO (Não desliza)
-                iconsContainer.anchoredPosition = Vector2.zero;
+                    // --- DETECÇÃO AUTOMÁTICA DE SAÍDA DE SALA ---
+                    if (currentRoom != null)
+                    {
+                        Vector2Int gridPos = currentRoom.DirectionFromHub.ToGridOffset();
+                        Vector3 roomWorldCenter = hubPos + new Vector3(gridPos.x, 0, gridPos.y) * worldUnitsPerRoom;
+                        float dist = Vector3.Distance(playerTransform.position, roomWorldCenter);
+                        
+                        // Se estivermos longe demais do centro, saímos do modo snap
+                        if (dist > worldUnitsPerRoom * 0.55f) 
+                        {
+                            currentRoom = null;
+                        }
+                    }
+
+                    if (currentRoom != null)
+                    {
+                        // --- MODO SALA (ESTÁTICO TOTAL) ---
+                        // 1. O ícone do jogador fica "colado" no centro absoluto da máscara
+                        playerMarker.anchoredPosition = Vector2.zero;
+
+                        // 2. O mapa faz snap para que a sala fique exatamente sob o ícone do player
+                        Vector2Int gridPos = currentRoom.DirectionFromHub.ToGridOffset();
+                        Vector2 roomCenterMinimapPos = new Vector2(gridPos.x * spacing, gridPos.y * spacing);
+                        iconsContainer.anchoredPosition = -roomCenterMinimapPos + mapCenterOffset;
+                    }
+                    else
+                    {
+                        // --- MODO CORREDOR (POSIÇÃO LIVRE) ---
+                        // 1. O mapa segue a posição real do jogador para manter o player no centro
+                        Vector2 playerPosOnMap = new Vector2(worldPosRelToHub.x * scale, worldPosRelToHub.z * scale);
+                        iconsContainer.anchoredPosition = -playerPosOnMap + mapCenterOffset;
+
+                        // 2. O ícone do jogador fica no centro
+                        playerMarker.anchoredPosition = Vector2.zero;
+                    }
+                }
             }
         }
 
