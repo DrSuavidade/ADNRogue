@@ -13,10 +13,14 @@ namespace Geneforge.UI.Minimap
         [SerializeField] private RectTransform iconsContainer;
         [SerializeField] private RectTransform playerMarker; 
 
-        [Header("Layout Settings")]
-        [SerializeField] private float spacing = 100f;
-        [Tooltip("Use this to manually align the map under the player icon.")]
-        [SerializeField] private Vector2 mapCenterOffset;
+        [Header("Zoom & Calibration")]
+        [SerializeField] private float spacing = 150f;
+        [SerializeField] private float normalScale = 1.0f;     
+        [SerializeField] private float roomZoomScale = 3.0f;   
+        [SerializeField] private float smoothTime = 0.2f;
+        
+        [Tooltip("Calibração: Quanto mede a 'área verde' do desenho em metros do jogo? Aumenta este valor se o player sair do desenho cedo demais.")]
+        [SerializeField] private float roomVisualSize = 25f;   
 
         [Header("Room Icons (Backup)")]
         [SerializeField] private Sprite iconHub;
@@ -27,6 +31,9 @@ namespace Geneforge.UI.Minimap
         private Dictionary<System.Guid, MinimapRoomIcon> spawnedIcons = new Dictionary<System.Guid, MinimapRoomIcon>();
         private RoomInstance currentRoom;
         private Transform playerTransform;
+        private Vector2 currentVelocity;
+        
+        private bool isFocusMode = false;
 
         private void Awake()
         {
@@ -62,98 +69,99 @@ namespace Geneforge.UI.Minimap
             if (playerTransform == null && DungeonMapManager.Instance != null)
                 playerTransform = DungeonMapManager.Instance.Player;
 
-            if (playerTransform != null)
+            if (playerTransform != null && playerMarker != null && DungeonMapManager.Instance != null && DungeonMapManager.Instance.CurrentHub != null)
             {
-                // 1. O MAPA É ESTÁTICO: O iconsContainer não roda.
-                iconsContainer.localRotation = Quaternion.identity;
+                playerMarker.SetAsLastSibling();
 
-                // 2. ROTAÇÃO DO PLAYER (Mostra direção)
-                if (playerMarker != null)
+                float worldSpacing = DungeonMapManager.Instance.RoomSpacing;
+                float normalMapScale = spacing / worldSpacing; 
+                Vector3 hubPos = DungeonMapManager.Instance.CurrentHub.transform.position;
+
+                UpdateRoomDetection(hubPos, worldSpacing);
+
+                Vector2 targetContainerPos;
+                Vector2 targetPlayerIconPos;
+                float targetScale;
+
+                if (isFocusMode && currentRoom != null)
                 {
-                    playerMarker.localRotation = Quaternion.Euler(0, 0, -playerTransform.eulerAngles.y);
+                    targetScale = roomZoomScale;
+                    Vector2Int gridPos = currentRoom.DirectionFromHub.ToGridOffset();
+                    Vector2 roomCenterMapPos = new Vector2(gridPos.x * spacing, gridPos.y * spacing);
+                    targetContainerPos = -roomCenterMapPos; 
+
+                    Vector3 roomWorldPos = hubPos + new Vector3(gridPos.x, 0, gridPos.y) * worldSpacing;
+                    Vector3 playerRelToRoom = playerTransform.position - roomWorldPos;
+
+                    float zoomPixelFactor = (spacing / roomVisualSize); 
+                    targetPlayerIconPos = new Vector2(playerRelToRoom.x * zoomPixelFactor * roomZoomScale, playerRelToRoom.z * zoomPixelFactor * roomZoomScale);
+
+                    float maxRadius = 100f; 
+                    targetPlayerIconPos = Vector2.ClampMagnitude(targetPlayerIconPos, maxRadius);
+                }
+                else
+                {
+                    targetScale = normalScale;
+                    Vector3 relWorldPos = playerTransform.position - hubPos;
+                    Vector2 playerMapPos = new Vector2(relWorldPos.x * normalMapScale, relWorldPos.z * normalMapScale);
+                    targetContainerPos = -playerMapPos;
+                    targetPlayerIconPos = Vector2.zero;
                 }
 
-                if (playerMarker != null)
+                iconsContainer.anchoredPosition = Vector2.SmoothDamp(iconsContainer.anchoredPosition, targetContainerPos, ref currentVelocity, smoothTime);
+                
+                float currentScale = iconsContainer.localScale.x;
+                float newScale = Mathf.Lerp(currentScale, targetScale, Time.deltaTime * 5f);
+                iconsContainer.localScale = new Vector3(newScale, newScale, 1f);
+
+                playerMarker.anchoredPosition = targetPlayerIconPos;
+                playerMarker.localRotation = Quaternion.Euler(0, 0, -playerTransform.eulerAngles.y);
+            }
+        }
+
+        private void UpdateRoomDetection(Vector3 hubPos, float worldSpacing)
+        {
+            if (isFocusMode && currentRoom != null)
+            {
+                Vector2Int gridPos = currentRoom.DirectionFromHub.ToGridOffset();
+                Vector3 roomCenter = hubPos + new Vector3(gridPos.x, 0, gridPos.y) * worldSpacing;
+                
+                if (Vector3.Distance(playerTransform.position, roomCenter) > roomVisualSize * 0.7f) 
                 {
-                    playerMarker.SetAsLastSibling();
+                    isFocusMode = false;
+                    currentRoom = null;
                 }
+            }
+            else
+            {
+                if (CheckRoomEntry(DungeonMapManager.Instance.CurrentHub, hubPos, worldSpacing)) return;
 
-                // 3. POSICIONAMENTO FINAL
-                if (playerMarker != null && DungeonMapManager.Instance != null && DungeonMapManager.Instance.CurrentHub != null)
+                foreach (var kvp in DungeonMapManager.Instance.RoomsByDirection)
                 {
-                    // --- GARANTIR QUE O PLAYER ESTÁ SEMPRE POR CIMA ---
-                    // Se o playerMarker e o iconsContainer estiverem no mesmo pai (ex: dentro da Mask),
-                    // o playerMarker tem de ser o último para ser desenhado por cima.
-                    playerMarker.SetAsLastSibling();
-
-                    float worldUnitsPerRoom = DungeonMapManager.Instance.RoomSpacing;
-                    float scale = spacing / worldUnitsPerRoom;
-                    
-                    Vector3 hubPos = DungeonMapManager.Instance.CurrentHub.transform.position;
-                    Vector3 worldPosRelToHub = playerTransform.position - hubPos;
-
-                    // --- DETECÇÃO AUTOMÁTICA DE SAÍDA DE SALA ---
-                    if (currentRoom != null)
-                    {
-                        Vector2Int gridPos = currentRoom.DirectionFromHub.ToGridOffset();
-                        Vector3 roomWorldCenter = hubPos + new Vector3(gridPos.x, 0, gridPos.y) * worldUnitsPerRoom;
-                        float dist = Vector3.Distance(playerTransform.position, roomWorldCenter);
-                        
-                        // Se estivermos longe demais do centro, saímos do modo snap
-                        if (dist > worldUnitsPerRoom * 0.55f) 
-                        {
-                            currentRoom = null;
-                        }
-                    }
-
-                    if (currentRoom != null)
-                    {
-                        // --- MODO SALA (ESTÁTICO TOTAL) ---
-                        // 1. O ícone do jogador fica "colado" no centro absoluto da máscara
-                        playerMarker.anchoredPosition = Vector2.zero;
-
-                        // 2. O mapa faz snap para que a sala fique exatamente sob o ícone do player
-                        Vector2Int gridPos = currentRoom.DirectionFromHub.ToGridOffset();
-                        Vector2 roomCenterMinimapPos = new Vector2(gridPos.x * spacing, gridPos.y * spacing);
-                        iconsContainer.anchoredPosition = -roomCenterMinimapPos + mapCenterOffset;
-                    }
-                    else
-                    {
-                        // --- MODO CORREDOR (POSIÇÃO LIVRE) ---
-                        // 1. O mapa segue a posição real do jogador para manter o player no centro
-                        Vector2 playerPosOnMap = new Vector2(worldPosRelToHub.x * scale, worldPosRelToHub.z * scale);
-                        iconsContainer.anchoredPosition = -playerPosOnMap + mapCenterOffset;
-
-                        // 2. O ícone do jogador fica no centro
-                        playerMarker.anchoredPosition = Vector2.zero;
-                    }
+                    if (CheckRoomEntry(kvp.Value, hubPos, worldSpacing)) return;
                 }
             }
         }
 
+        private bool CheckRoomEntry(RoomInstance room, Vector3 hubPos, float worldSpacing)
+        {
+            if (room == null) return false;
+            Vector2Int gridPos = room.DirectionFromHub.ToGridOffset();
+            Vector3 roomCenter = hubPos + new Vector3(gridPos.x, 0, gridPos.y) * worldSpacing;
+
+            if (Vector3.Distance(playerTransform.position, roomCenter) < roomVisualSize * 0.5f)
+            {
+                currentRoom = room;
+                isFocusMode = true;
+                return true;
+            }
+            return false;
+        }
+
         public void RefreshMap()
         {
-            Debug.Log("[MinimapUI] RefreshMap called");
-            
-            if (DungeonMapManager.Instance == null)
-            {
-                Debug.LogWarning("[MinimapUI] DungeonMapManager.Instance is NULL!");
-                return;
-            }
-
-            // 1. Force Discovery of Hub
-            if (DungeonMapManager.Instance.CurrentHub != null)
-            {
-                Debug.Log("[MinimapUI] Found Hub, calling HandleRoomDiscovered");
-                HandleRoomDiscovered(DungeonMapManager.Instance.CurrentHub);
-            }
-            else
-            {
-                Debug.LogWarning("[MinimapUI] CurrentHub is NULL!");
-            }
-
-            // 2. Force Discovery of all generated diagonal rooms
-            Debug.Log($"[MinimapUI] Found {DungeonMapManager.Instance.RoomsByDirection.Count} diagonal rooms");
+            if (DungeonMapManager.Instance == null) return;
+            if (DungeonMapManager.Instance.CurrentHub != null) HandleRoomDiscovered(DungeonMapManager.Instance.CurrentHub);
             foreach (var kvp in DungeonMapManager.Instance.RoomsByDirection)
                 if (kvp.Value != null) HandleRoomDiscovered(kvp.Value);
         }
@@ -162,34 +170,14 @@ namespace Geneforge.UI.Minimap
         {
             if (room == null || spawnedIcons.ContainsKey(room.RoomGuid)) return;
             
-            if (iconsContainer.Find($"Icon_{room.DirectionFromHub}_{room.RoomType}")) return;
-
             GameObject iconGO = Instantiate(roomIconPrefab, iconsContainer);
             iconGO.name = $"Icon_{room.DirectionFromHub}_{room.RoomType}"; 
             
-            // Ordem: Hub atrás, Combate à frente, Player sempre no topo (na hierarquia do painel)
-            if (room.RoomType == RoomType.Hub) iconGO.transform.SetAsFirstSibling();
-            else iconGO.transform.SetAsLastSibling();
-
             MinimapRoomIcon icon = iconGO.GetComponent<MinimapRoomIcon>();
             RectTransform rect = iconGO.GetComponent<RectTransform>();
             
-            // FORÇAR TAMANHO (Caso o prefab esteja a 0,0)
-            if (rect.sizeDelta.x < 5) rect.sizeDelta = new Vector2(spacing, spacing);
-            
-            rect.localScale = Vector3.one;
-            rect.localPosition = Vector3.zero; 
-            
-            // POSICIONAMENTO
-            if (room.RoomType != RoomType.Hub)
-            {
-                Vector2Int gridPos = room.DirectionFromHub.ToGridOffset();
-                rect.anchoredPosition = new Vector2(gridPos.x * spacing, gridPos.y * spacing);
-            }
-            else
-            {
-                rect.anchoredPosition = Vector2.zero;
-            }
+            Vector2Int gridPos = room.DirectionFromHub.ToGridOffset();
+            rect.anchoredPosition = new Vector2(gridPos.x * spacing, gridPos.y * spacing);
 
             icon.Initialize(room);
             spawnedIcons[room.RoomGuid] = icon;
@@ -200,13 +188,6 @@ namespace Geneforge.UI.Minimap
         {
             currentRoom = room;
             UpdateIconStates();
-
-            // SNAP DO PLAYER PARA A SALA ATIVA
-            if (playerMarker != null && spawnedIcons.ContainsKey(room.RoomGuid))
-            {
-                MinimapRoomIcon roomIcon = spawnedIcons[room.RoomGuid];
-                playerMarker.anchoredPosition = roomIcon.rectTransform.anchoredPosition;
-            }
         }
 
         private void UpdateIconStates()
