@@ -2806,8 +2806,8 @@ RectTransform:
   m_LocalScale: {x: 0.90000004, y: 0.90000004, z: 0.90000004}
   m_ConstrainProportionsScale: 1
   m_Children:
-  - {fileID: 1326731793}
   - {fileID: 933174798}
+  - {fileID: 1326731793}
   m_Father: {fileID: 1128289376}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
   m_AnchorMin: {x: 1, y: 1}
@@ -2830,12 +2830,13 @@ MonoBehaviour:
   roomIconPrefab: {fileID: 2439731397257753854, guid: 051dad32b94f7404d9ea0d702eddb4e3, type: 3}
   iconsContainer: {fileID: 933174798}
   playerMarker: {fileID: 1326731793}
-  spacing: 80
-  mapCenterOffset: {x: 0, y: 0}
-  iconHub: {fileID: 0}
-  iconCombat: {fileID: 0}
-  iconShop: {fileID: 0}
-  iconBoss: {fileID: 0}
+  worldToUIScale: 3
+  smoothTime: 0.2
+  showDebugLogs: 1
+  iconHub: {fileID: 21300000, guid: 604b3c019d510e74eaf91071e6ce398e, type: 3}
+  iconCombat: {fileID: 21300000, guid: bcec670ac8bbac640aaf0f0137784c55, type: 3}
+  iconShop: {fileID: 21300000, guid: 5c455787aa3119c458869bb9ce15d53e, type: 3}
+  iconBoss: {fileID: 21300000, guid: 786576b0ea3f8dd4daee7be0abf938df, type: 3}
 --- !u!114 &2117821634
 MonoBehaviour:
   m_ObjectHideFlags: 0
