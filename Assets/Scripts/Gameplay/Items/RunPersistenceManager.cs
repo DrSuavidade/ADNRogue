@@ -89,6 +89,22 @@ namespace Geneforge.Gameplay.Items
             Debug.Log($"[RunPersistenceManager] Loaded {currentData.collectedItemNames.Count} items. Timeline: {CurrentTimeline}");
         }
 
+        public void UnlockEssence(string essenceName)
+        {
+            if (string.IsNullOrEmpty(essenceName)) return;
+            if (!currentData.unlockedEssenceIDs.Contains(essenceName))
+            {
+                currentData.unlockedEssenceIDs.Add(essenceName);
+                SaveRun();
+                Debug.Log($"[Persistence] Unlocked Essence: {essenceName}");
+            }
+        }
+
+        public bool IsEssenceUnlocked(string essenceName)
+        {
+            return currentData.unlockedEssenceIDs.Contains(essenceName);
+        }
+
         public void ClearRun()
         {
             currentData.Clear();

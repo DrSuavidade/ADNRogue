@@ -92,5 +92,19 @@ namespace Geneforge.Core.Stats
 
             return true;
         }
+
+        public bool SpendDnaSplices(int amount)
+        {
+            if (amount <= 0) return false;
+            if (TotalDnaSplices < amount) return false;
+
+            int oldTotal = totalDnaSplices;
+            totalDnaSplices -= amount;
+
+            if (totalDnaSplices != oldTotal)
+                OnTotalDnaSplicesChanged?.Invoke(TotalDnaSplices);
+            
+            return true;
+        }
     }
 }

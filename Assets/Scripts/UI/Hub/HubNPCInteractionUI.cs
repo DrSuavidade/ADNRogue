@@ -20,7 +20,7 @@ namespace Geneforge.UI.Hub
         [Header("NPC Display")]
         [SerializeField] private Image npcPortraitImage;
         [SerializeField] private TMP_Text npcNameText;
-        [SerializeField] private GameObject portraitContainer; // Parent object of the portrait to hide if null
+        [SerializeField] private GameObject portraitContainer;
 
         [Header("Confirmation Panel")]
         [SerializeField] private GameObject confirmationPanel;
@@ -31,15 +31,19 @@ namespace Geneforge.UI.Hub
         [Header("Shop Panel")]
         [SerializeField] private HubShopUI shopPanel;
 
+        [Header("Incubator Panel")]
+        [SerializeField] private HubIncubatorUI incubatorPanel;
+
+        [Header("Library Panel")]
+        [SerializeField] private EssenceLibraryUI libraryPanel;
+
         [Header("Settings")]
         [SerializeField] private string targetSceneName = "WorldGen1";
 
         private GameObject playerRef;
-        private MonoBehaviour[] disabledComponents;
-        
-        // State to know what the 'Next' button should open
-        private enum NextAction { OpenConfirmation, OpenShop }
+        private enum NextAction { OpenConfirmation, OpenShop, OpenIncubator, OpenLibrary }
         private NextAction nextAction;
+        private IncubatorMachine activeIncubatorMachine;
 
 #if ENABLE_INPUT_SYSTEM
         private PlayerInput playerInput;
@@ -68,24 +72,43 @@ namespace Geneforge.UI.Hub
             ShowDialog(text, npcName, portrait);
         }
 
+        public void StartIncubatorInteraction(GameObject player, string text, string npcName, Sprite portrait, IncubatorMachine machine)
+        {
+            PrepareInteraction(player);
+            nextAction = NextAction.OpenIncubator;
+            activeIncubatorMachine = machine;
+            ShowDialog(text, npcName, portrait);
+        }
+
+        public void StartLibraryInteraction(GameObject player, string text, string npcName, Sprite portrait)
+        {
+            PrepareInteraction(player);
+            nextAction = NextAction.OpenLibrary;
+            ShowDialog(text, npcName, portrait);
+        }
+
         private void PrepareInteraction(GameObject player)
         {
             playerRef = player;
             TogglePlayerInput(player, false);
             
-            // Show Cursor
             Cursor.visible = true;
             Cursor.lockState = CursorLockMode.None;
         }
 
         private void ShowDialog(string text, string name, Sprite portrait)
         {
+            // Close other panels first
+            if (confirmationPanel) confirmationPanel.SetActive(false);
+            if (shopPanel) shopPanel.Hide();
+            if (incubatorPanel) incubatorPanel.Hide();
+            if (libraryPanel) libraryPanel.Hide();
+
             if (dialogPanel)
             {
                 dialogPanel.SetActive(true);
                 if (dialogText) dialogText.text = text;
                 
-                // Set NPC Details
                 if (npcNameText) npcNameText.text = name;
                 
                 if (portraitContainer) portraitContainer.SetActive(portrait != null);
@@ -95,21 +118,23 @@ namespace Geneforge.UI.Hub
                     npcPortraitImage.enabled = portrait != null;
                 }
             }
-            if (confirmationPanel) confirmationPanel.SetActive(false);
-            if (shopPanel) shopPanel.Hide();
         }
 
         private void OnContinueClicked()
         {
-            // Close the dialog panel regardless of the next action
             if (dialogPanel) dialogPanel.SetActive(false);
 
             if (nextAction == NextAction.OpenShop)
             {
-                if (shopPanel) 
-                {
-                   shopPanel.Show(EndInteraction); 
-                }
+                if (shopPanel) shopPanel.Show(EndInteraction); 
+            }
+            else if (nextAction == NextAction.OpenIncubator)
+            {
+                if (incubatorPanel) incubatorPanel.Show(activeIncubatorMachine, EndInteraction);
+            }
+            else if (nextAction == NextAction.OpenLibrary)
+            {
+                if (libraryPanel) libraryPanel.Show(EndInteraction);
             }
             else
             {
@@ -128,7 +153,6 @@ namespace Geneforge.UI.Hub
 
         private void OnYesClicked()
         {
-            // Restore time/input just in case, though we are loading away
             Time.timeScale = 1f;
             SceneManager.LoadScene(targetSceneName);
         }
@@ -143,9 +167,8 @@ namespace Geneforge.UI.Hub
             HideAll();
             TogglePlayerInput(playerRef, true);
             
-            // Hide Cursor usually
-             Cursor.visible = false;
-             Cursor.lockState = CursorLockMode.Locked;
+            Cursor.visible = false;
+            Cursor.lockState = CursorLockMode.Locked;
         }
 
         private void HideAll()
@@ -153,6 +176,8 @@ namespace Geneforge.UI.Hub
             if (dialogPanel) dialogPanel.SetActive(false);
             if (confirmationPanel) confirmationPanel.SetActive(false);
             if (shopPanel) shopPanel.Hide();
+            if (incubatorPanel) incubatorPanel.Hide();
+            if (libraryPanel) libraryPanel.Hide();
         }
 
         private void TogglePlayerInput(GameObject player, bool enabled)
@@ -161,7 +186,6 @@ namespace Geneforge.UI.Hub
 
             if (!enabled)
             {
-                // Disable Input
 #if ENABLE_INPUT_SYSTEM
                 playerInput = player.GetComponent<PlayerInput>();
                 if (playerInput != null) playerInput.enabled = false;
@@ -171,7 +195,6 @@ namespace Geneforge.UI.Hub
             }
             else
             {
-                // Enable Input
 #if ENABLE_INPUT_SYSTEM
                 if (playerInput != null) playerInput.enabled = true;
 #endif

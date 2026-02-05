@@ -8,6 +8,7 @@ namespace Geneforge.Core.Persistence
     {
         // Run State
         public List<string> collectedItemNames = new List<string>();
+        public List<string> unlockedEssenceIDs = new List<string>();
         public int currentTimelineId;
         
         // You can add more here like Seed, Health, etc. for a full run restore
