@@ -153,8 +153,15 @@ namespace Geneforge.UI.Hub
 
         private void OnYesClicked()
         {
+            // Visual feedback so the player knows it's working
+            if (yesButton) yesButton.interactable = false;
+            if (noButton) noButton.interactable = false;
+            if (confirmationText) confirmationText.text = "A gerar mundo... Por favor aguarde.";
+
             Time.timeScale = 1f;
-            SceneManager.LoadScene(targetSceneName);
+            
+            // Use Async loading so the game doesn't freeze
+            SceneManager.LoadSceneAsync(targetSceneName);
         }
 
         private void OnNoClicked()
