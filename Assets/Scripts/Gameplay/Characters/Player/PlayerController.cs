@@ -125,6 +125,16 @@ namespace Geneforge.Gameplay.Characters.Player
             attackAction?.Disable();
             rollAction?.Disable();
             moveAction?.Disable();
+
+            // Reset movement state to stop displacement
+            currentMoveWorld = Vector3.zero;
+            verticalVelocityY = 0f;
+
+            // Stop rolling if we were mid-roll
+            if (isRolling) EndRoll();
+
+            // Reset animator parameters to Idle state
+            UpdateAnimator();
         }
 
         void Update()

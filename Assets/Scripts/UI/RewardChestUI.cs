@@ -171,6 +171,9 @@ namespace Geneforge.UI
 
                 // 2. Disable PlayerController component (stops movement/shooting)
                 var pc = player.GetComponent<PlayerController>();
+                if (pc == null) pc = player.GetComponentInParent<PlayerController>();
+                if (pc == null) pc = player.GetComponentInChildren<PlayerController>();
+                
                 if (pc != null)
                 {
                     pc.enabled = false;

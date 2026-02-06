@@ -5,6 +5,7 @@ using TMPro;
 using Geneforge.Gameplay.Characters.Player;
 using Geneforge.Gameplay.Hub;
 using Geneforge.Gameplay.Progression;
+using Geneforge.Gameplay.Cameras;
 #if ENABLE_INPUT_SYSTEM
 using UnityEngine.InputSystem;
 #endif
@@ -45,6 +46,7 @@ namespace Geneforge.UI.Hub
         private enum NextAction { OpenConfirmation, OpenShop, OpenIncubator, OpenLibrary }
         private NextAction nextAction;
         private IncubatorMachine activeIncubatorMachine;
+        private OrbitCamera cachedOrbitCamera;
 
 #if ENABLE_INPUT_SYSTEM
         private PlayerInput playerInput;
@@ -204,10 +206,23 @@ namespace Geneforge.UI.Hub
             {
 #if ENABLE_INPUT_SYSTEM
                 playerInput = player.GetComponent<PlayerInput>();
+                if (playerInput == null) playerInput = player.GetComponentInParent<PlayerInput>();
+                if (playerInput == null) playerInput = player.GetComponentInChildren<PlayerInput>();
                 if (playerInput != null) playerInput.enabled = false;
 #endif
                 var pc = player.GetComponent<PlayerController>();
+                if (pc == null) pc = player.GetComponentInParent<PlayerController>();
+                if (pc == null) pc = player.GetComponentInChildren<PlayerController>();
                 if (pc != null) pc.enabled = false;
+
+                // Disable Camera
+                if (Camera.main != null)
+                {
+                    cachedOrbitCamera = Camera.main.GetComponent<OrbitCamera>();
+                    if (cachedOrbitCamera == null) cachedOrbitCamera = Camera.main.GetComponentInParent<OrbitCamera>();
+                    
+                    if (cachedOrbitCamera != null) cachedOrbitCamera.enabled = false;
+                }
             }
             else
             {
@@ -216,6 +231,12 @@ namespace Geneforge.UI.Hub
 #endif
                 var pc = player.GetComponent<PlayerController>();
                 if (pc != null) pc.enabled = true;
+
+                if (cachedOrbitCamera != null)
+                {
+                    cachedOrbitCamera.enabled = true;
+                    cachedOrbitCamera = null;
+                }
             }
         }
     }

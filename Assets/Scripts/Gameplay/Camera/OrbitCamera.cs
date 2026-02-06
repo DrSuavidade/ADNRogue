@@ -57,6 +57,10 @@ namespace Geneforge.Gameplay.Cameras
 
             if (orbiting)
             {
+                // Prevent rotation if cursor is unlocked (e.g. interacting with UI)
+                if (lockCursor && Cursor.lockState != CursorLockMode.Locked) 
+                    return;
+
                 Vector2 delta = Mouse.current.delta.ReadValue();
                 float dt = Time.unscaledDeltaTime;
 
