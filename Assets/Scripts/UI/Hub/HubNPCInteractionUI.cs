@@ -4,6 +4,7 @@ using UnityEngine.SceneManagement;
 using TMPro;
 using Geneforge.Gameplay.Characters.Player;
 using Geneforge.Gameplay.Hub;
+using Geneforge.Gameplay.Progression;
 #if ENABLE_INPUT_SYSTEM
 using UnityEngine.InputSystem;
 #endif
@@ -160,8 +161,16 @@ namespace Geneforge.UI.Hub
 
             Time.timeScale = 1f;
             
-            // Use Async loading so the game doesn't freeze
-            SceneManager.LoadSceneAsync(targetSceneName);
+            // Try to use the flow controller to properly reset/sync resources
+            if (RunFlowController.Instance != null)
+            {
+                RunFlowController.Instance.StartNewRun();
+            }
+            else
+            {
+                // Fallback for direct testing
+                SceneManager.LoadSceneAsync(targetSceneName);
+            }
         }
 
         private void OnNoClicked()

@@ -27,11 +27,22 @@ namespace Geneforge.Core.Stats
         int essence;
         int totalDnaSplices;
 
-        public int StartingLives => startingLives;
+        public int StartingLives 
+        { 
+            get => startingLives;
+            set 
+            {
+                if (startingLives == value) return;
+                startingLives = value;
+                OnStartingLivesChanged?.Invoke(startingLives);
+            }
+        }
         public int Essence => essence;
         public int TotalDnaSplices => totalDnaSplices;
+        
         public event Action<int> OnEssenceChanged;
         public event Action<int> OnTotalDnaSplicesChanged;
+        public event Action<int> OnStartingLivesChanged;
 
         public int BankedDnaSplices => TotalDnaSplices;
 
@@ -57,7 +68,11 @@ namespace Geneforge.Core.Stats
         public void OnRunStart(RunStats run)
         {
             if (run == null) return;
-            run.Lives = Mathf.Max(run.Lives, StartingLives);
+            
+            // Sync values to run: Start the run with the current meta-stats as copies
+            run.Lives = StartingLives;
+            run.DnaSplices = TotalDnaSplices;
+            run.Essence = Essence;
         }
 
         public void OnRunEnd(RunStats run, bool survived)
@@ -69,8 +84,10 @@ namespace Geneforge.Core.Stats
                 int oldEssence = essence;
                 int oldTotal = totalDnaSplices;
 
-                essence += Mathf.Max(0, run.Currency);
-                totalDnaSplices += Mathf.Max(0, run.DnaSplices);
+                // Gold (run.Currency) is converted to essence at the end of the run
+                // We overwrite with the run values to persist any changes (spending/earning) made during the run
+                essence = run.Essence + Mathf.Max(0, run.Currency);
+                totalDnaSplices = run.DnaSplices;
 
                 if (essence != oldEssence)
                     OnEssenceChanged?.Invoke(Essence);
@@ -105,6 +122,20 @@ namespace Geneforge.Core.Stats
                 OnTotalDnaSplicesChanged?.Invoke(TotalDnaSplices);
             
             return true;
+        }
+
+        public void AddEssence(int amount)
+        {
+            if (amount <= 0) return;
+            essence += amount;
+            OnEssenceChanged?.Invoke(essence);
+        }
+
+        public void AddDnaSplices(int amount)
+        {
+            if (amount <= 0) return;
+            totalDnaSplices += amount;
+            OnTotalDnaSplicesChanged?.Invoke(totalDnaSplices);
         }
     }
 }

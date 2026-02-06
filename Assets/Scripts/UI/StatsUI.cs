@@ -75,6 +75,7 @@ namespace Geneforge.UI
                 runStats.OnCurrencyChanged += HandleCurrencyChanged;
                 runStats.OnDnaSplicesChanged += HandleDnaSplicesChanged;
                 runStats.OnRollsChanged += HandleRollsChanged;
+                runStats.OnEssenceChanged += HandleEssenceChanged;
             }
 
             if (metaStats != null)
@@ -97,6 +98,7 @@ namespace Geneforge.UI
                 runStats.OnCurrencyChanged -= HandleCurrencyChanged;
                 runStats.OnDnaSplicesChanged -= HandleDnaSplicesChanged;
                 runStats.OnRollsChanged -= HandleRollsChanged;
+                runStats.OnEssenceChanged -= HandleEssenceChanged;
             }
 
             if (metaStats != null)
@@ -120,6 +122,7 @@ namespace Geneforge.UI
                 HandleCurrencyChanged(runStats.Currency);
                 HandleDnaSplicesChanged(runStats.DnaSplices);
                 HandleRollsChanged(runStats.Rolls);
+                HandleEssenceChanged(runStats.Essence);
             }
 
             if (metaStats != null)

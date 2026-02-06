@@ -16,6 +16,8 @@ namespace Geneforge.Core.Stats
         [SerializeField] private int startingDnaSplices = 0;
         [Tooltip("Number of rerolls/reshuffles you have this run")]
         [SerializeField] private int startingRolls = 1;
+        [Tooltip("Essence carried into the run")]
+        [SerializeField] private int startingEssence = 0;
 
         public float MaxHP => maxHP;
         public int BaseStartingLives => startingLives;
@@ -57,12 +59,24 @@ namespace Geneforge.Core.Stats
         public int DnaSplices
         {
             get => dnaSplices;
-            private set
+            set
             {
                 int clamped = Mathf.Max(0, value);
                 if (dnaSplices == clamped) return;
                 dnaSplices = clamped;
                 OnDnaSplicesChanged?.Invoke(dnaSplices);
+            }
+        }
+
+        public int Essence
+        {
+            get => essence;
+            set
+            {
+                int clamped = Mathf.Max(0, value);
+                if (essence == clamped) return;
+                essence = clamped;
+                OnEssenceChanged?.Invoke(essence);
             }
         }
 
@@ -88,6 +102,7 @@ namespace Geneforge.Core.Stats
         public event Action<int> OnLivesChanged;
         public event Action<int> OnCurrencyChanged;
         public event Action<int> OnDnaSplicesChanged;
+        public event Action<int> OnEssenceChanged;
         public event Action<int> OnRollsChanged;
 
         [Header("Movement & Luck")]
@@ -106,6 +121,7 @@ namespace Geneforge.Core.Stats
         int lives;
         int currency;
         int dnaSplices;
+        int essence;
         int rolls;
         float moveSpeedMultiplier;
         float luck;
@@ -126,9 +142,23 @@ namespace Geneforge.Core.Stats
         {
             maxHP = _defaultMaxHP;
             CurrentHP = Mathf.Max(1f, maxHP);
-            lives = startingLives;
+            
+            // Priority: Use MetaStats as the source of truth if available
+            var meta = MetaStats.Instance;
+            if (meta != null)
+            {
+                lives = meta.StartingLives;
+                dnaSplices = meta.TotalDnaSplices;
+                essence = meta.Essence;
+            }
+            else
+            {
+                lives = startingLives;
+                dnaSplices = startingDnaSplices;
+                essence = startingEssence;
+            }
+
             currency = startingGold;
-            dnaSplices = startingDnaSplices;
             rolls = startingRolls;
             moveSpeedMultiplier = _defaultSpeed;
             luck = _defaultLuck;
@@ -137,6 +167,7 @@ namespace Geneforge.Core.Stats
             OnLivesChanged?.Invoke(lives);
             OnCurrencyChanged?.Invoke(currency);
             OnDnaSplicesChanged?.Invoke(dnaSplices);
+            OnEssenceChanged?.Invoke(essence);
             OnRollsChanged?.Invoke(rolls);
             OnSpeedChanged?.Invoke(moveSpeedMultiplier);
             OnLuckChanged?.Invoke(luck);
@@ -247,6 +278,31 @@ namespace Geneforge.Core.Stats
             if (Rolls <= 0) return false;
             Rolls--;
             return true;
+        }
+
+        public bool SpendEssence(int amount)
+        {
+            if (amount == 0) return true;
+            if (amount < 0)
+            {
+                Debug.LogError($"SpendEssence called with negative amount {amount}.", this);
+                return false;
+            }
+            if (Essence < amount) return false;
+
+            Essence -= amount;
+            return true;
+        }
+
+        public void AddEssence(int amount)
+        {
+            if (amount == 0) return;
+            if (amount < 0)
+            {
+                Debug.LogError($"AddEssence called with negative amount {amount}. Use SpendEssence instead.", this);
+                return;
+            }
+            Essence += amount;
         }
     }
 }

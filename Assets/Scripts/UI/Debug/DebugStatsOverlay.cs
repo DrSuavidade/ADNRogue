@@ -108,9 +108,9 @@ namespace Geneforge.UI.DebugTools
             GUI.skin.button.fontSize = 18;
             GUI.skin.label.richText = true;
 
-            // Wider window for 3 columns
-            float width = 1200;
-            float height = 600;
+            // Wider window for 4 columns
+            float width = 1400;
+            float height = 650;
             
             // Center the window horizontally at the top of the screen
             float xPos = ((Screen.width / scale) - width) / 2f;
@@ -141,8 +141,15 @@ namespace Geneforge.UI.DebugTools
             GUILayout.Space(20);
 
             // --- Column 3: Inventory ---
-            GUILayout.BeginVertical(); // Takes remaining space
+            GUILayout.BeginVertical(GUILayout.Width(350));
             DrawInventory();
+            GUILayout.EndVertical();
+
+            GUILayout.Space(20);
+
+            // --- Column 4: Meta Stats ---
+            GUILayout.BeginVertical(); // Takes remaining space
+            DrawMetaStats();
             GUILayout.EndVertical();
 
             GUILayout.EndHorizontal();
@@ -254,6 +261,29 @@ namespace Geneforge.UI.DebugTools
             else
             {
                 GUILayout.Label("<color=grey>No RunInventory</color>");
+            }
+        }
+
+        private void DrawMetaStats()
+        {
+            GUILayout.Label("<size=22><b>Meta Stats</b></size>");
+            GUILayout.Space(10);
+
+            var meta = MetaStats.Instance != null ? MetaStats.Instance : FindAnyObjectByType<MetaStats>();
+
+            if (meta != null)
+            {
+                GUILayout.Label($"Banked DNA: <color=cyan>{meta.TotalDnaSplices}</color>");
+                GUILayout.Label($"Banked Essence: <color=yellow>{meta.Essence}</color>");
+                GUILayout.Label($"Starting Lives: {meta.StartingLives}");
+                
+                GUILayout.Space(10);
+                if (GUILayout.Button("Add 10 DNA")) meta.AddDnaSplices(10);
+                if (GUILayout.Button("Add 100 Essence")) meta.AddEssence(100);
+            }
+            else
+            {
+                GUILayout.Label("<color=red>MetaStats not found</color>");
             }
         }
 

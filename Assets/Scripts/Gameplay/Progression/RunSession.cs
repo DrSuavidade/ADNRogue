@@ -44,6 +44,26 @@ namespace Geneforge.Gameplay.Progression
             if (EssenceProgression == null) EssenceProgression = gameObject.AddComponent<EssenceProgression>();
         }
 
+        void Start()
+        {
+            // Initial sync: Ensure RunStats starts as a copy of MetaStats even in the Hub
+            var meta = MetaStats.Instance != null ? MetaStats.Instance : FindAnyObjectByType<MetaStats>();
+            if (meta != null)
+            {
+                // 1) Active copy of Meta-values at start
+                meta.OnRunStart(Run);
+
+                // 2) Subscribe for real-time sync (whenever Meta values change, update the Run copy)
+                meta.OnEssenceChanged += (val) => Run.Essence = val;
+                meta.OnTotalDnaSplicesChanged += (val) => {
+                    // Only sync if we're not in the middle of a run (or based on your preference)
+                    // For now, keeping them bit-perfect as requested.
+                    Run.DnaSplices = val;
+                };
+                meta.OnStartingLivesChanged += (val) => Run.Lives = val;
+            }
+        }
+
         public void BeginRun(MetaStats meta)
         {
             IsRunActive = true;
