@@ -1,5 +1,6 @@
 using UnityEngine;
 using UnityEngine.InputSystem;
+using System.Collections;
 
 namespace Geneforge.Gameplay.Hub
 {
@@ -10,6 +11,11 @@ namespace Geneforge.Gameplay.Hub
         [SerializeField] private Sprite portrait;
         [TextArea]
         [SerializeField] private string welcomeText = "Welcome to the Archive. Here you can see all known DNA strains.";
+
+        [Header("Camera & Positioning")]
+        [SerializeField] private Cameras.FocusCamera focusCam;
+        [SerializeField] private Transform playerInteractionPoint;
+        [SerializeField] private float positioningSpeed = 5f;
 
         [Header("References")]
         [SerializeField] private GameObject interactionUIObject; // NPC Manager
@@ -23,19 +29,63 @@ namespace Geneforge.Gameplay.Hub
             if (interactionUIObject) interactionUI = interactionUIObject.GetComponent<IHubInteractionUI>();
         }
         
-        // Simple Interaction Logic (Trigger Enter/Exit/Update)
-        private void OnTriggerEnter(Collider other) { if (other.CompareTag("Player")) { playerInRange = true; currentPlayer = other.gameObject; } }
-        private void OnTriggerExit(Collider other) { if (other.CompareTag("Player")) { playerInRange = false; currentPlayer = null; } }
-        private void Update() { if (playerInRange && Keyboard.current != null && Keyboard.current.eKey.wasPressedThisFrame) Interact(); }
+        private void OnTriggerEnter(Collider other) 
+        { 
+            if (other.CompareTag("Player")) 
+            { 
+                playerInRange = true; 
+                currentPlayer = other.gameObject; 
+            } 
+        }
+
+        private void OnTriggerExit(Collider other) 
+        { 
+            if (other.CompareTag("Player")) 
+            { 
+                playerInRange = false; 
+                currentPlayer = null; 
+                // Do NOT deactivate camera here, let the UI handle it when closed
+            } 
+        }
+
+        private void Update() 
+        { 
+            if (playerInRange && Keyboard.current != null && Keyboard.current.eKey.wasPressedThisFrame) 
+                Interact(); 
+        }
 
         private void Interact()
         {
-            if (interactionUI != null)
+            if (interactionUI != null && currentPlayer != null)
             {
-                // We need a strictly "Open Library" method, or reuse a generic one
-                // Since IHubInteractionUI may not have it yet, we add it!
+                // Activate Focus Camera
+                if (focusCam != null) focusCam.Activate(currentPlayer.transform);
+
+                // Smoothly reposition player if a point is assigned
+                if (playerInteractionPoint != null)
+                {
+                    StartCoroutine(MovePlayerToPoint(currentPlayer.transform, playerInteractionPoint.position));
+                }
+
                 interactionUI.StartLibraryInteraction(currentPlayer, welcomeText, machineName, portrait);
             }
+        }
+
+        private IEnumerator MovePlayerToPoint(Transform player, Vector3 targetPos)
+        {
+            float elapsed = 0;
+            Vector3 startPos = player.position;
+            // Keep player on ground, only move in X and Z
+            targetPos.y = startPos.y; 
+
+            while (elapsed < 0.3f)
+            {
+                if (player == null) yield break;
+                player.position = Vector3.Lerp(player.position, targetPos, positioningSpeed * Time.deltaTime);
+                elapsed += Time.deltaTime;
+                yield return null;
+            }
+            if (player != null) player.position = targetPos;
         }
     }
 }

@@ -27,6 +27,9 @@ namespace Geneforge.Gameplay.Hub
         [TextArea(3, 5)]
         [SerializeField] private string welcomeText = "Olá como é que estás?. Pronto para mais uma corridinha? HAHAHAH";
 
+        [Header("Camera")]
+        [SerializeField] private Cameras.FocusCamera focusCam;
+
         private bool playerInRange;
         private GameObject currentPlayer;
 
@@ -57,6 +60,7 @@ namespace Geneforge.Gameplay.Hub
             {
                 playerInRange = false;
                 currentPlayer = null;
+                // Deactivation is handled by HubNPCInteractionUI when the dialogue finishes
             }
         }
 
@@ -76,6 +80,9 @@ namespace Geneforge.Gameplay.Hub
         {
             if (_interactionUI != null)
             {
+                // Activate Focus Camera
+                if (focusCam != null) focusCam.Activate(currentPlayer.transform);
+
                 if (interactionType == InteractionType.Shop)
                 {
                      _interactionUI.StartShopInteraction(currentPlayer, welcomeText, npcName, portrait);
@@ -89,6 +96,11 @@ namespace Geneforge.Gameplay.Hub
             {
                 Debug.LogError("Interaction UI not assigned or valid on Hub NPC.");
             }
+        }
+
+        public void OnInteractionEnded()
+        {
+            if (focusCam != null) focusCam.Deactivate();
         }
     }
 }

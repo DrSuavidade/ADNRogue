@@ -187,6 +187,13 @@ namespace Geneforge.UI.Hub
             
             Cursor.visible = false;
             Cursor.lockState = CursorLockMode.Locked;
+
+            // Deactivate any focus cameras in the scene
+            var focusCameras = Object.FindObjectsByType<FocusCamera>(FindObjectsSortMode.None);
+            foreach (var fc in focusCameras)
+            {
+                fc.Deactivate();
+            }
         }
 
         private void HideAll()
