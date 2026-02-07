@@ -75,15 +75,65 @@ namespace Geneforge.Gameplay.Weapons.Slots
         }
 
 
+        [Header("Persistence")]
+        [SerializeField] private bool persistChanges = true;
+
+        public void LoadFromPersistence()
+        {
+            var manager = Geneforge.Gameplay.Items.RunPersistenceManager.Instance;
+            if (manager == null) return;
+
+            // Load Primary
+            string primaryName = manager.EquippedPrimary;
+            if (!string.IsNullOrEmpty(primaryName))
+            {
+                var essence = manager.GetEssenceByName(primaryName);
+                if (essence != null) TrySetPrimary(essence);
+            }
+
+            // Load Secondaries
+            var secondariesData = manager.EquippedSecondaries;
+            for (int i = 0; i < secondariesData.Count; i++)
+            {
+                if (i >= secondaries.Length) break;
+                string secName = secondariesData[i];
+                if (!string.IsNullOrEmpty(secName))
+                {
+                    var essence = manager.GetEssenceByName(secName);
+                    if (essence != null) TrySetSecondary(i, essence);
+                }
+            }
+        }
+
+        private void Start()
+        {
+            if (persistChanges) LoadFromPersistence();
+        }
+
         // --- Assign/Clear ---
         public bool TrySetPrimary(AnimalEssence e)
         {
             if (primary.Essence == e) return false;
+
+            if (e != null)
+            {
+                // Check if this essence is already in a secondary slot
+                var (foundKind, foundIdx) = Find(e);
+                if (foundKind == SlotKind.Secondary && foundIdx != -1)
+                {
+                    ClearSecondary(foundIdx);
+                }
+            }
+
             var nextAbility = e ? e.specialAbility : null;
             primary.Set(e);
             RebuildActive();
             WirePrimary(nextAbility);
             OnPrimaryChanged?.Invoke(e);
+            
+            if (persistChanges && Geneforge.Gameplay.Items.RunPersistenceManager.Instance != null)
+                Geneforge.Gameplay.Items.RunPersistenceManager.Instance.SetEquippedPrimary(e != null ? e.name : "");
+
             return true;
         }
 
@@ -94,6 +144,10 @@ namespace Geneforge.Gameplay.Weapons.Slots
             RebuildActive();
             WirePrimary(null);
             OnPrimaryChanged?.Invoke(null);
+
+            if (persistChanges && Geneforge.Gameplay.Items.RunPersistenceManager.Instance != null)
+                Geneforge.Gameplay.Items.RunPersistenceManager.Instance.SetEquippedPrimary("");
+
             return true;
         }
 
@@ -101,9 +155,28 @@ namespace Geneforge.Gameplay.Weapons.Slots
         {
             if (!IsValidIndex(index)) return false;
             if (secondaries[index].Essence == e) return false;
+
+            if (e != null)
+            {
+                // Check for duplicates
+                var (foundKind, foundIdx) = Find(e);
+                if (foundKind == SlotKind.Primary)
+                {
+                    ClearPrimary();
+                }
+                else if (foundKind == SlotKind.Secondary && foundIdx != index && foundIdx != -1)
+                {
+                    ClearSecondary(foundIdx);
+                }
+            }
+
             secondaries[index].Set(e);
             RebuildActive();
             OnSecondariesChanged?.Invoke();
+
+            if (persistChanges && Geneforge.Gameplay.Items.RunPersistenceManager.Instance != null)
+                Geneforge.Gameplay.Items.RunPersistenceManager.Instance.SetEquippedSecondary(index, e != null ? e.name : "");
+
             return true;
         }
 
@@ -113,6 +186,10 @@ namespace Geneforge.Gameplay.Weapons.Slots
             secondaries[index].Clear();
             RebuildActive();
             OnSecondariesChanged?.Invoke();
+
+            if (persistChanges && Geneforge.Gameplay.Items.RunPersistenceManager.Instance != null)
+                Geneforge.Gameplay.Items.RunPersistenceManager.Instance.SetEquippedSecondary(index, "");
+
             return true;
         }
 

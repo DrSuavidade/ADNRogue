@@ -623,7 +623,7 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   primary:
     kind: 0
-    essence: {fileID: 11400000, guid: ec7d75390876be34f82c4368b7022e2c, type: 2}
+    essence: {fileID: 0}
   secondaries:
   - kind: 1
     essence: {fileID: 0}
@@ -634,6 +634,7 @@ MonoBehaviour:
   progression: {fileID: 0}
   abilityOwnerOverride: {fileID: 1294635891}
   baseStatsAsset: {fileID: 11400000, guid: b993c60a887b3e1448a63320306fb7a3, type: 2}
+  persistChanges: 1
   permanentPassives: []
 --- !u!4 &391336601
 Transform:

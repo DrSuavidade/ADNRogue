@@ -19,7 +19,56 @@ namespace Geneforge.UI
 
         void Awake()
         {
-            if (gunSlots == null) gunSlots = FindAnyObjectByType<GunSlots>();
+            if (gunSlots == null) FindGunSlots();
+            SetupDropTargets();
+        }
+
+        private void FindGunSlots()
+        {
+            // 1. Try finding via PlayerController (most reliable)
+            var player = FindFirstObjectByType<Geneforge.Gameplay.Characters.Player.PlayerController>();
+            if (player != null)
+            {
+                gunSlots = player.GetComponentInChildren<GunSlots>();
+                if (gunSlots != null) return;
+            }
+
+            // 2. Try global search including inactive
+            var all = Resources.FindObjectsOfTypeAll<GunSlots>();
+            if (all != null)
+            {
+                foreach (var g in all)
+                {
+                    if (g.gameObject.scene.IsValid())
+                    {
+                        gunSlots = g;
+                        return;
+                    }
+                }
+            }
+        }
+
+        void SetupDropTargets()
+        {
+            // If we still don't have gunSlots, we can't initialize targets properly yet
+            // But dragging won't work without it anyway.
+            
+            SetupDropTarget(primaryIcon, SlotKind.Primary, -1);
+            if (secondaryIcons != null)
+            {
+                for (int i = 0; i < secondaryIcons.Length; i++)
+                {
+                    SetupDropTarget(secondaryIcons[i], SlotKind.Secondary, i);
+                }
+            }
+        }
+
+        void SetupDropTarget(Image img, SlotKind kind, int index)
+        {
+            if (img == null) return;
+            var target = img.GetComponent<GunSlotDropTarget>();
+            if (target == null) target = img.gameObject.AddComponent<GunSlotDropTarget>();
+            target.Initialize(gunSlots, kind, index);
         }
 
         void OnEnable()

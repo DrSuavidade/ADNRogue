@@ -30,6 +30,9 @@ namespace Geneforge.Gameplay.Items
         
         [SerializeField] private GameSaveData currentData = new GameSaveData();
         
+        [Header("Essence Registry")]
+        [SerializeField] private List<Geneforge.Gameplay.Abilities.AnimalEssence> allEssences;
+
         [Header("Debug")]
         [SerializeField] private bool clearOnStart = false; 
 
@@ -41,6 +44,28 @@ namespace Geneforge.Gameplay.Items
                 currentData.currentTimelineId = (int)value;
                 SaveRun();
             }
+        }
+
+        public string EquippedPrimary => currentData.equippedPrimaryEssence;
+        public List<string> EquippedSecondaries => currentData.equippedSecondaryEssences;
+
+        public void SetEquippedPrimary(string essenceName)
+        {
+            currentData.equippedPrimaryEssence = essenceName;
+            SaveRun();
+        }
+
+        public void SetEquippedSecondary(int index, string essenceName)
+        {
+            if (index < 0 || index >= currentData.equippedSecondaryEssences.Count) return;
+            currentData.equippedSecondaryEssences[index] = essenceName;
+            SaveRun();
+        }
+
+        public Geneforge.Gameplay.Abilities.AnimalEssence GetEssenceByName(string name)
+        {
+            if (string.IsNullOrEmpty(name)) return null;
+            return allEssences.Find(e => e.name == name || e.displayName == name);
         }
 
         private void Awake()
