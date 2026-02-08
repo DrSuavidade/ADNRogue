@@ -18,17 +18,21 @@ MonoBehaviour:
     hubPrefab: {fileID: 7832423919791031066, guid: 86afca2c8ad159848a25948fd07ab13b, type: 3}
     combatRoomsSE:
     - prefab: {fileID: 1946875364467675688, guid: 5e6748d1b2c13294d869262939233cbe, type: 3}
-      weight: 2
+      weight: 1
     - prefab: {fileID: 7252525873038237485, guid: fb958005200bcb3478052e070347d070, type: 3}
-      weight: 2
+      weight: 1
     - prefab: {fileID: 2214833083107177488, guid: d10c884af618eb54098eb2e07ec3844d, type: 3}
       weight: 1
-    - prefab: {fileID: 4956762915531176615, guid: 852d224eeb2ad7e49bb1fae5f422b009, type: 3}
-      weight: 3
-    - prefab: {fileID: 8891846385303532220, guid: b203cf46e1d6d5940a7b517773f13d88, type: 3}
-      weight: 3
     - prefab: {fileID: 746481366048017339, guid: 44f78d313bd85384eae0c624109c5b5e, type: 3}
-      weight: 4
+      weight: 1
+    - prefab: {fileID: 8891846385303532220, guid: b203cf46e1d6d5940a7b517773f13d88, type: 3}
+      weight: 1
+    - prefab: {fileID: 4956762915531176615, guid: 852d224eeb2ad7e49bb1fae5f422b009, type: 3}
+      weight: 1
+    - prefab: {fileID: 4956762915531176615, guid: 201062fda92c20b4e979242a36f8e800, type: 3}
+      weight: 1
+    - prefab: {fileID: 4956762915531176615, guid: 8c357aa55edf802469c6e60b7a240c2f, type: 3}
+      weight: 1
     shopRoomsSE: []
     eventRoomsSE: []
     keyPickupPrefab: {fileID: 8435360267250068082, guid: 438f9d65be92b23449ffe69fc6d0f25a, type: 3}
