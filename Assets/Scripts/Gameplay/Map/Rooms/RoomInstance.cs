@@ -13,6 +13,10 @@ namespace Geneforge.Gameplay.Map
         [SerializeField] private RoomType roomType = RoomType.Combat;
         [SerializeField] private Sprite minimapIcon; // Ícone específico para esta sala no mini-mapa
 
+        [Header("Tunnel Connection")]
+        [Tooltip("The tunnel used to connect this room to the hub. Will be aligned to the hub's tunnel.")]
+        [SerializeField] private Transform tunnelR;
+
         [Header("Encounter Setup (combat rooms)")]
         [SerializeField] private bool autoStartEncounterOnEnter = true;
 
@@ -49,6 +53,7 @@ namespace Geneforge.Gameplay.Map
         public Sprite MinimapIcon => minimapIcon;
         public EnemySpawner[] EnemySpawners => enemySpawners;
         public RewardSpawner[] RewardSpawners => rewardSpawners;
+        public Transform TunnelR => tunnelR;
 
 
         #endregion

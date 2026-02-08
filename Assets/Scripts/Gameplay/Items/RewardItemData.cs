@@ -213,8 +213,6 @@ namespace Geneforge.Gameplay.Items
                     }
                     break;
                     
-                    break;
-                    
                 case StatType.Rolls:
                     if (mod.kind == ModifierKind.Add)
                     {

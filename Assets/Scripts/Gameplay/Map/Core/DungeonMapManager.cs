@@ -208,17 +208,45 @@ namespace Geneforge.Gameplay.Map
                 return;
             }
 
-            Vector2Int offset = dir.ToGridOffset();
-            Vector3 worldPos = currentHub.transform.position + new Vector3(offset.x, 0f, offset.y) * roomSpacing;
+            // Get the hub's tunnel for this direction
+            Transform hubTunnel = currentHub.GetTunnelForDirection(dir);
+            
+            // Calculate rotation for the room (from SE base orientation to target direction)
             Quaternion rot = dir.RotationFromSE();
 
-            GameObject roomGO = Instantiate(prefab, worldPos, rot);
+            // Spawn the room at a temporary position first
+            GameObject roomGO = Instantiate(prefab, Vector3.zero, rot);
             RoomInstance room = roomGO.GetComponent<RoomInstance>();
             if (room == null)
             {
+                Destroy(roomGO);
                 return;
             }
 
+            // Calculate position based on tunnel alignment
+            Vector3 worldPos;
+            if (hubTunnel != null && room.TunnelR != null)
+            {
+                // Calculate offset: we want room.TunnelR.position to equal hubTunnel.position
+                // Since the room has been rotated, TunnelR's local position is now in the rotated space
+                // The room's current world position is (0,0,0), so TunnelR's world position = TunnelR's local-to-world offset
+                Vector3 tunnelRWorldOffset = room.TunnelR.position - roomGO.transform.position;
+                
+                // Move room so that its TunnelR overlaps with hubTunnel
+                worldPos = hubTunnel.position - tunnelRWorldOffset;
+                
+                // Disable the room's tunnel since it overlaps with the hub's tunnel
+                room.TunnelR.gameObject.SetActive(false);
+            }
+            else
+            {
+                // Fallback to the old offset-based positioning if tunnels aren't configured
+                Vector2Int offset = dir.ToGridOffset();
+                worldPos = currentHub.transform.position + new Vector3(offset.x, 0f, offset.y) * roomSpacing;
+                Debug.LogWarning($"[DungeonMapManager] Tunnel not configured for direction {dir}. Using fallback positioning.");
+            }
+
+            roomGO.transform.position = worldPos;
             room.Initialize(currentTimeline, currentFloorIndex, dir, RoomType.Combat);
             currentRoomsByDirection[dir] = room;
 

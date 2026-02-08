@@ -182,6 +182,7 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   roomType: 1
   minimapIcon: {fileID: 21300000, guid: 7bfa578d44a4e5641acebe5cbd9ce596, type: 3}
+  tunnelR: {fileID: 4760477421700305810}
   autoStartEncounterOnEnter: 1
   enemySpawners:
   - {fileID: 1779653841768799954}
@@ -438,8 +439,38 @@ PrefabInstance:
     m_RemovedComponents: []
     m_RemovedGameObjects: []
     m_AddedGameObjects: []
-    m_AddedComponents: []
+    m_AddedComponents:
+    - targetCorrespondingSourceObject: {fileID: 919132149155446097, guid: b75e977e514453a43b9bbcef107e7e5d, type: 3}
+      insertIndex: -1
+      addedObject: {fileID: 6337826461408968599}
   m_SourcePrefab: {fileID: 100100000, guid: b75e977e514453a43b9bbcef107e7e5d, type: 3}
+--- !u!1 &1322439845255976908 stripped
+GameObject:
+  m_CorrespondingSourceObject: {fileID: 919132149155446097, guid: b75e977e514453a43b9bbcef107e7e5d, type: 3}
+  m_PrefabInstance: {fileID: 2205402457620818589}
+  m_PrefabAsset: {fileID: 0}
+--- !u!64 &6337826461408968599
+MeshCollider:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1322439845255976908}
+  m_Material: {fileID: 0}
+  m_IncludeLayers:
+    serializedVersion: 2
+    m_Bits: 0
+  m_ExcludeLayers:
+    serializedVersion: 2
+    m_Bits: 0
+  m_LayerOverridePriority: 0
+  m_IsTrigger: 0
+  m_ProvidesContacts: 0
+  m_Enabled: 1
+  serializedVersion: 5
+  m_Convex: 0
+  m_CookingOptions: 30
+  m_Mesh: {fileID: 1888393442419387999, guid: b75e977e514453a43b9bbcef107e7e5d, type: 3}
 --- !u!4 &1806383962956647798 stripped
 Transform:
   m_CorrespondingSourceObject: {fileID: -8679921383154817045, guid: b75e977e514453a43b9bbcef107e7e5d, type: 3}
