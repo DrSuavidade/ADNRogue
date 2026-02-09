@@ -404,7 +404,17 @@ PrefabInstance:
       value: RoomR1
       objectReference: {fileID: 0}
     m_RemovedComponents: []
-    m_RemovedGameObjects: []
+    m_RemovedGameObjects:
+    - {fileID: -6162248518895568598, guid: 5ac17a43cef632e45a219f066fc7ebf0, type: 3}
+    - {fileID: -8068073526183931155, guid: 5ac17a43cef632e45a219f066fc7ebf0, type: 3}
+    - {fileID: -3355754687478756420, guid: 5ac17a43cef632e45a219f066fc7ebf0, type: 3}
+    - {fileID: 9042143933385784180, guid: 5ac17a43cef632e45a219f066fc7ebf0, type: 3}
+    - {fileID: 3952621336044583152, guid: 5ac17a43cef632e45a219f066fc7ebf0, type: 3}
+    - {fileID: 5986043266196004469, guid: 5ac17a43cef632e45a219f066fc7ebf0, type: 3}
+    - {fileID: 4086053844505881136, guid: 5ac17a43cef632e45a219f066fc7ebf0, type: 3}
+    - {fileID: 2654772883429350201, guid: 5ac17a43cef632e45a219f066fc7ebf0, type: 3}
+    - {fileID: -3449315069582321317, guid: 5ac17a43cef632e45a219f066fc7ebf0, type: 3}
+    - {fileID: 4756878978518612140, guid: 5ac17a43cef632e45a219f066fc7ebf0, type: 3}
     m_AddedGameObjects: []
     m_AddedComponents:
     - targetCorrespondingSourceObject: {fileID: 919132149155446097, guid: 5ac17a43cef632e45a219f066fc7ebf0, type: 3}
