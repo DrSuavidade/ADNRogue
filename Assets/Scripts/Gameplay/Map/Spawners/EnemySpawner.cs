@@ -65,7 +65,12 @@ namespace Geneforge.Gameplay.Map
                 if (point == null) continue;
 
                 GameObject enemy = Instantiate(enemyPrefab, point.position, point.rotation);
-                var notifier = enemy.AddComponent<EnemyDeathNotifier>();
+                var notifier = enemy.GetComponent<EnemyDeathNotifier>();
+                if (notifier == null)
+                {
+                    notifier = enemy.AddComponent<EnemyDeathNotifier>();
+                }
+                
                 notifier.OwnerSpawner = this;
 
                 spawned++;

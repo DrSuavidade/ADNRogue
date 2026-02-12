@@ -13,6 +13,12 @@ Shader "Custom/LocalizedFog"
         _InnerRadius ("Player Clear Radius", Float) = 8.0
         _OuterRadius ("Player Fade Radius", Float) = 20.0
         _HeightFade ("Height Visibility Limit", Float) = 10.0
+        
+        [Header(Curve Settings)]
+        _GradientThreshold ("Shadow Threshold (Levels)", Range(0, 1)) = 0.0
+        _GradientSoftness ("Shadow Softness (Curve)", Range(0.01, 2.0)) = 1.0
+        _NoiseMin ("Noise Black Point", Range(0, 1)) = 0.1
+        _NoiseMax ("Noise White Point", Range(0, 1)) = 0.8
 
         [Header(Atmosphere)]
         _DepthFadeDistance ("Geometry Softness", Range(0.01, 10)) = 2.0
@@ -63,6 +69,10 @@ Shader "Custom/LocalizedFog"
                 float _InnerRadius;
                 float _OuterRadius;
                 float _HeightFade;
+                float _GradientThreshold;
+                float _GradientSoftness;
+                float _NoiseMin;
+                float _NoiseMax;
                 float _DepthFadeDistance;
                 float _CameraFade;
             CBUFFER_END
@@ -114,12 +124,18 @@ Shader "Custom/LocalizedFog"
                         mask = min(mask, extraMask);
                     }
                 }
+                
+                // NEW: Photoshop-style Levels/Curve on the mask
+                // Replaces simple 'pow' with a full SmoothStep curve for better control
+                mask = smoothstep(_GradientThreshold, _GradientThreshold + _GradientSoftness, mask);
 
                 // 2. Noise & Texture
                 float2 uv1 = input.positionWS.xz * 0.1 * _NoiseScale + _Speed * _Time.y;
                 float2 uv2 = input.positionWS.xz * 0.25 * _NoiseScale - _Speed * _Time.y * 0.4;
                 float noise = (tex2D(_MainTex, uv1).r + tex2D(_MainTex, uv2).r) * 0.5;
-                noise = smoothstep(0.1, 0.8, noise);
+                
+                // Use the exposed Levels properties for noise
+                noise = smoothstep(_NoiseMin, _NoiseMax, noise);
                 
                 float noiseWithMin = lerp(_MinOpacity, 1.0, noise);
 

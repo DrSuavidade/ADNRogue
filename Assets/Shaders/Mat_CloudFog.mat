@@ -98,7 +98,7 @@ Material:
     - _ClearCoatSmoothness: 0
     - _Cull: 2
     - _Cutoff: 0.5
-    - _Density: 7
+    - _Density: 8
     - _DepthFadeDistance: 1
     - _DetailAlbedoMapScale: 1
     - _DetailNormalMapScale: 1
@@ -109,16 +109,21 @@ Material:
     - _GlossMapScale: 0
     - _Glossiness: 0
     - _GlossyReflections: 0
-    - _HeightFade: 4.11
-    - _InnerRadius: 12
+    - _GradientSoftness: 0.259
+    - _GradientThreshold: 0.05
+    - _HeightFade: 12.45
+    - _InnerRadius: 9
     - _Metallic: 0
-    - _MinOpacity: 0.8
+    - _MinOpacity: 1
+    - _NoiseMax: 0.6
+    - _NoiseMin: 0.4
     - _NoiseScale: 0.8
     - _OcclusionStrength: 1
     - _OuterRadius: 2
     - _Parallax: 0.005
     - _QueueOffset: 0
     - _ReceiveShadows: 1
+    - _ShadowHardness: 3
     - _Smoothness: 0.5
     - _SmoothnessTextureChannel: 0
     - _SpecularHighlights: 1
