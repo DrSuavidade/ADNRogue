@@ -8,7 +8,9 @@ namespace Geneforge.Gameplay.Hub
     {
         [Header("Configuration")]
         [SerializeField] private string machineName = "DNA Archive";
-        [SerializeField] private Sprite portrait;
+        [SerializeField] private Sprite mouthClosed;
+        [SerializeField] private Sprite mouthHalf;
+        [SerializeField] private Sprite mouthOpen;
         [TextArea]
         [SerializeField] private string welcomeText = "Welcome to the Archive. Here you can see all known DNA strains.";
 
@@ -67,7 +69,7 @@ namespace Geneforge.Gameplay.Hub
                     StartCoroutine(MovePlayerToPoint(currentPlayer.transform, playerInteractionPoint.position));
                 }
 
-                interactionUI.StartLibraryInteraction(currentPlayer, welcomeText, machineName, portrait);
+                interactionUI.StartLibraryInteraction(currentPlayer, welcomeText, machineName, mouthClosed, mouthHalf, mouthOpen);
             }
         }
 

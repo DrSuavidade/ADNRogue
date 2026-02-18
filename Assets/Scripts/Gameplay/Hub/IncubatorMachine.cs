@@ -11,7 +11,9 @@ namespace Geneforge.Gameplay.Hub
     {
         [Header("Configuration")]
         [SerializeField] private string machineName = "DNA Incubator";
-        [SerializeField] private Sprite portrait;
+        [SerializeField] private Sprite mouthClosed;
+        [SerializeField] private Sprite mouthHalf;
+        [SerializeField] private Sprite mouthOpen;
         [TextArea(3, 5)]
         [SerializeField] private string welcomeText = "Olá, bem vindo à parte do DNA! Vamos incubar o teu DNA.";
         [SerializeField] private int incubationCost = 5;
@@ -74,7 +76,7 @@ namespace Geneforge.Gameplay.Hub
         {
             if (interactionUI != null)
             {
-                interactionUI.StartIncubatorInteraction(currentPlayer, welcomeText, machineName, portrait, this);
+                interactionUI.StartIncubatorInteraction(currentPlayer, welcomeText, machineName, mouthClosed, mouthHalf, mouthOpen, this);
             }
         }
 

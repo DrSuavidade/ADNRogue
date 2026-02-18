@@ -241,7 +241,9 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   machineName: DNA Incubator
-  portrait: {fileID: 21300000, guid: d5a92c4c59facf941bddeaa58f26afce, type: 3}
+  mouthClosed: {fileID: 21300000, guid: 1960d57ca7a51c148a0d9f946afb4840, type: 3}
+  mouthHalf: {fileID: 21300000, guid: d90d30a106e47aa4386515ebd5890299, type: 3}
+  mouthOpen: {fileID: 21300000, guid: 48f7a07d80e295946b82a57d8f0bb580, type: 3}
   welcomeText: "Ol\xE1, bem vindo \xE0 parte do DNA! Vamos incubar o teu DNA."
   incubationCost: 5
   incubationTimeMinutes: 0.1
@@ -427,6 +429,7 @@ MonoBehaviour:
   incubatorPanel: {fileID: 15606314}
   libraryPanel: {fileID: 244298508}
   targetSceneName: WorldGen1
+  mouthAnimSpeed: 0.15
 --- !u!4 &85462828
 Transform:
   m_ObjectHideFlags: 0
@@ -1152,7 +1155,9 @@ MonoBehaviour:
   interactionUIReference: {fileID: 85462827}
   interactionType: 1
   npcName: Lars
-  portrait: {fileID: 21300000, guid: d5a92c4c59facf941bddeaa58f26afce, type: 3}
+  mouthClosed: {fileID: 21300000, guid: 1960d57ca7a51c148a0d9f946afb4840, type: 3}
+  mouthHalf: {fileID: 21300000, guid: 48f7a07d80e295946b82a57d8f0bb580, type: 3}
+  mouthOpen: {fileID: 21300000, guid: 48f7a07d80e295946b82a57d8f0bb580, type: 3}
   welcomeText: "Bem vindo a sec\xE7\xE3o de compras! Deseja comprar que itens?"
   focusCam: {fileID: 0}
 --- !u!65 &374979888
@@ -1824,7 +1829,9 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   machineName: DNA Archive
-  portrait: {fileID: 21300000, guid: d5a92c4c59facf941bddeaa58f26afce, type: 3}
+  mouthClosed: {fileID: 0}
+  mouthHalf: {fileID: 0}
+  mouthOpen: {fileID: 0}
   welcomeText: Welcome to the Archive. Here you can see all known DNA strains.
   focusCam: {fileID: 734349649}
   playerInteractionPoint: {fileID: 2019253613}
@@ -5114,7 +5121,9 @@ MonoBehaviour:
   interactionUIReference: {fileID: 85462827}
   interactionType: 0
   npcName: Lars
-  portrait: {fileID: 21300000, guid: d5a92c4c59facf941bddeaa58f26afce, type: 3}
+  mouthClosed: {fileID: 21300000, guid: 1960d57ca7a51c148a0d9f946afb4840, type: 3}
+  mouthHalf: {fileID: 21300000, guid: d90d30a106e47aa4386515ebd5890299, type: 3}
+  mouthOpen: {fileID: 21300000, guid: 48f7a07d80e295946b82a57d8f0bb580, type: 3}
   welcomeText: "Ol\xE1 como \xE9 que est\xE1s?. Pronto para mais uma corridinha?
     HAHAHAH"
   focusCam: {fileID: 0}

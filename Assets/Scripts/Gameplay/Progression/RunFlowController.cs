@@ -38,6 +38,7 @@ namespace Geneforge.Gameplay.Progression
             }
             Instance = this;
             RunSession.Ensure();
+            Geneforge.Core.UI.SceneTransitionManager.Ensure();
             DontDestroyOnLoad(gameObject);
         }
 
@@ -104,6 +105,19 @@ namespace Geneforge.Gameplay.Progression
             SafeLoadScene(dungeonSceneName);
         }
 
+        private AsyncOperation preloadedOperation;
+        private string preloadedSceneName;
+
+        public void PreloadScene(string sceneName)
+        {
+            if (preloadedSceneName == sceneName && preloadedOperation != null) return;
+            
+            preloadedSceneName = sceneName;
+            preloadedOperation = SceneManager.LoadSceneAsync(sceneName);
+            preloadedOperation.allowSceneActivation = false;
+            Debug.Log($"[RunFlow] Preloading scene: {sceneName}");
+        }
+
         private void SafeLoadScene(string sceneName)
         {
             if (string.IsNullOrEmpty(sceneName))
@@ -118,14 +132,39 @@ namespace Geneforge.Gameplay.Progression
                 return;
             }
 
-            StartCoroutine(LoadSceneAsync(sceneName));
+            StartCoroutine(LoadSceneSequence(sceneName));
         }
 
-        System.Collections.IEnumerator LoadSceneAsync(string sceneName)
+        private System.Collections.IEnumerator LoadSceneSequence(string sceneName)
         {
-            var op = SceneManager.LoadSceneAsync(sceneName);
-            while (!op.isDone)
-                yield return null;
+            if (Geneforge.Core.UI.SceneTransitionManager.Instance != null)
+            {
+                yield return Geneforge.Core.UI.SceneTransitionManager.Instance.FadeOut(0.2f);
+            }
+
+            if (preloadedOperation != null && preloadedSceneName == sceneName)
+            {
+                preloadedOperation.allowSceneActivation = true;
+                while (!preloadedOperation.isDone)
+                    yield return null;
+                
+                preloadedOperation = null;
+                preloadedSceneName = null;
+            }
+            else
+            {
+                var op = SceneManager.LoadSceneAsync(sceneName);
+                while (!op.isDone)
+                    yield return null;
+            }
+
+            // Small delay to allow new scene's Start() and Awake() to run or initialize
+            yield return null;
+
+            if (Geneforge.Core.UI.SceneTransitionManager.Instance != null)
+            {
+                yield return Geneforge.Core.UI.SceneTransitionManager.Instance.FadeIn(0.2f);
+            }
         }
 
         public void EndRun(bool survived)

@@ -127,12 +127,17 @@ namespace Geneforge.Gameplay.Map
 
         private void GenerateFloor()
         {
+            StartCoroutine(GenerateFloorRoutine());
+        }
+
+        private System.Collections.IEnumerator GenerateFloorRoutine()
+        {
             ClearCurrentFloor();
 
             TimelineRoomSet set = dungeonConfig.GetTimeline(currentTimeline);
             if (set == null || set.hubPrefab == null)
             {
-                return;
+                yield break;
             }
 
             // Per-floor pools
@@ -156,13 +161,21 @@ namespace Geneforge.Gameplay.Map
             RaiseKeyStateChanged();
 
             // Hub
-            GameObject hubGO = Instantiate(set.hubPrefab, Vector3.zero, Quaternion.identity);
+            GameObject hubGO;
+            if (Geneforge.Core.Pooling.PoolManager.Instance != null)
+                hubGO = Geneforge.Core.Pooling.PoolManager.Instance.Spawn(set.hubPrefab, Vector3.zero, Quaternion.identity);
+            else
+                hubGO = Instantiate(set.hubPrefab, Vector3.zero, Quaternion.identity);
+
             currentHub = hubGO.GetComponent<HubRoom>();
             if (currentHub == null)
             {
-                return;
+                yield break;
             }
             currentHub.Initialize(currentTimeline, currentFloorIndex, RoomDirection.South, RoomType.Hub);
+
+            // Yield after heavy hub instantiation
+            yield return null;
 
             // Notify Minimap of Hub Discovery
             if (MinimapManager.Instance != null)
@@ -190,9 +203,13 @@ namespace Geneforge.Gameplay.Map
             else
             {
                 SpawnDiagonalCombatRoom(RoomDirection.NorthEast, set);
+                yield return null; // Spread spawning over frames
                 SpawnDiagonalCombatRoom(RoomDirection.SouthEast, set);
+                yield return null;
                 SpawnDiagonalCombatRoom(RoomDirection.SouthWest, set);
+                yield return null;
                 SpawnDiagonalCombatRoom(RoomDirection.NorthWest, set);
+                yield return null;
             }
 
             ConfigureNorthExit();
@@ -214,11 +231,17 @@ namespace Geneforge.Gameplay.Map
             // Calculate rotation for the room (from SE base orientation to target direction)
             Quaternion rot = dir.RotationFromSE();
 
-            // Spawn the room at a temporary position first
-            GameObject roomGO = Instantiate(prefab, Vector3.zero, rot);
+            // Spawn the room (from pool or instantiate)
+            GameObject roomGO;
+            if (Geneforge.Core.Pooling.PoolManager.Instance != null)
+                roomGO = Geneforge.Core.Pooling.PoolManager.Instance.Spawn(prefab, Vector3.zero, rot);
+            else
+                roomGO = Instantiate(prefab, Vector3.zero, rot);
+
             RoomInstance room = roomGO.GetComponent<RoomInstance>();
             if (room == null)
             {
+                // If it was pooled, we should reclaim it, but for simplicity:
                 Destroy(roomGO);
                 return;
             }
@@ -227,30 +250,22 @@ namespace Geneforge.Gameplay.Map
             Vector3 worldPos;
             if (hubTunnel != null && room.TunnelR != null)
             {
-                // Calculate offset: we want room.TunnelR.position to equal hubTunnel.position
-                // Since the room has been rotated, TunnelR's local position is now in the rotated space
-                // The room's current world position is (0,0,0), so TunnelR's world position = TunnelR's local-to-world offset
+                // Calculate offset
                 Vector3 tunnelRWorldOffset = room.TunnelR.position - roomGO.transform.position;
-                
-                // Move room so that its TunnelR overlaps with hubTunnel
                 worldPos = hubTunnel.position - tunnelRWorldOffset;
-                
-                // Disable the room's tunnel since it overlaps with the hub's tunnel
                 room.TunnelR.gameObject.SetActive(false);
             }
             else
             {
-                // Fallback to the old offset-based positioning if tunnels aren't configured
                 Vector2Int offset = dir.ToGridOffset();
                 worldPos = currentHub.transform.position + new Vector3(offset.x, 0f, offset.y) * roomSpacing;
-                Debug.LogWarning($"[DungeonMapManager] Tunnel not configured for direction {dir}. Using fallback positioning.");
             }
 
             roomGO.transform.position = worldPos;
             room.Initialize(currentTimeline, currentFloorIndex, dir, RoomType.Combat);
             currentRoomsByDirection[dir] = room;
 
-            // Notify Minimap of Diagonal Room Discovery
+            // Notify Minimap
             if (MinimapManager.Instance != null)
             {
                 MinimapManager.Instance.ReportRoomDiscovery(room);
@@ -270,7 +285,11 @@ namespace Geneforge.Gameplay.Map
         {
             if (currentHub != null)
             {
-                Destroy(currentHub.gameObject);
+                if (Geneforge.Core.Pooling.PoolManager.Instance != null)
+                    Geneforge.Core.Pooling.PoolManager.Instance.Reclaim(currentHub.gameObject);
+                else
+                    Destroy(currentHub.gameObject);
+                
                 currentHub = null;
             }
 
@@ -278,7 +297,10 @@ namespace Geneforge.Gameplay.Map
             {
                 if (kvp.Value != null)
                 {
-                    Destroy(kvp.Value.gameObject);
+                    if (Geneforge.Core.Pooling.PoolManager.Instance != null)
+                        Geneforge.Core.Pooling.PoolManager.Instance.Reclaim(kvp.Value.gameObject);
+                    else
+                        Destroy(kvp.Value.gameObject);
                 }
             }
             currentRoomsByDirection.Clear();

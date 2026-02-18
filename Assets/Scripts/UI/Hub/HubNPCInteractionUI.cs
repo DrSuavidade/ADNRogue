@@ -41,12 +41,17 @@ namespace Geneforge.UI.Hub
 
         [Header("Settings")]
         [SerializeField] private string targetSceneName = "WorldGen1";
+        [Tooltip("Slower is better. Try 0.2 or 0.3 for a more natural look.")]
+        [SerializeField] private float mouthAnimSpeed = 0.25f;
 
         private GameObject playerRef;
         private enum NextAction { OpenConfirmation, OpenShop, OpenIncubator, OpenLibrary }
         private NextAction nextAction;
         private IncubatorMachine activeIncubatorMachine;
         private OrbitCamera cachedOrbitCamera;
+        
+        private Coroutine mouthAnimationCoroutine;
+        private Sprite[] currentMouthFrames; // [0]=Closed, [1]=Half, [2]=Open
 
 #if ENABLE_INPUT_SYSTEM
         private PlayerInput playerInput;
@@ -61,33 +66,33 @@ namespace Geneforge.UI.Hub
             HideAll();
         }
 
-        public void StartInteraction(GameObject player, string text, string npcName, Sprite portrait)
+        public void StartInteraction(GameObject player, string text, string npcName, Sprite mouthClosed, Sprite mouthHalf, Sprite mouthOpen)
         {
             PrepareInteraction(player);
             nextAction = NextAction.OpenConfirmation;
-            ShowDialog(text, npcName, portrait);
+            ShowDialog(text, npcName, mouthClosed, mouthHalf, mouthOpen);
         }
 
-        public void StartShopInteraction(GameObject player, string text, string npcName, Sprite portrait)
+        public void StartShopInteraction(GameObject player, string text, string npcName, Sprite mouthClosed, Sprite mouthHalf, Sprite mouthOpen)
         {
             PrepareInteraction(player);
             nextAction = NextAction.OpenShop;
-            ShowDialog(text, npcName, portrait);
+            ShowDialog(text, npcName, mouthClosed, mouthHalf, mouthOpen);
         }
 
-        public void StartIncubatorInteraction(GameObject player, string text, string npcName, Sprite portrait, IncubatorMachine machine)
+        public void StartIncubatorInteraction(GameObject player, string text, string npcName, Sprite mouthClosed, Sprite mouthHalf, Sprite mouthOpen, IncubatorMachine machine)
         {
             PrepareInteraction(player);
             nextAction = NextAction.OpenIncubator;
             activeIncubatorMachine = machine;
-            ShowDialog(text, npcName, portrait);
+            ShowDialog(text, npcName, mouthClosed, mouthHalf, mouthOpen);
         }
 
-        public void StartLibraryInteraction(GameObject player, string text, string npcName, Sprite portrait)
+        public void StartLibraryInteraction(GameObject player, string text, string npcName, Sprite mouthClosed, Sprite mouthHalf, Sprite mouthOpen)
         {
             PrepareInteraction(player);
             nextAction = NextAction.OpenLibrary;
-            ShowDialog(text, npcName, portrait);
+            ShowDialog(text, npcName, mouthClosed, mouthHalf, mouthOpen);
         }
 
         private void PrepareInteraction(GameObject player)
@@ -97,10 +102,20 @@ namespace Geneforge.UI.Hub
             
             Cursor.visible = true;
             Cursor.lockState = CursorLockMode.None;
+
+            // PRELOAD: Start loading the run scene in the background as soon as we start talking
+            if (RunFlowController.Instance != null && !string.IsNullOrEmpty(targetSceneName))
+            {
+                RunFlowController.Instance.PreloadScene(targetSceneName);
+            }
         }
 
-        private void ShowDialog(string text, string name, Sprite portrait)
+        private void ShowDialog(string text, string name, Sprite mouthClosed, Sprite mouthHalf, Sprite mouthOpen)
         {
+            // Reset and stop previous animation
+            if (mouthAnimationCoroutine != null) StopCoroutine(mouthAnimationCoroutine);
+            currentMouthFrames = null;
+
             // Close other panels first
             if (confirmationPanel) confirmationPanel.SetActive(false);
             if (shopPanel) shopPanel.Hide();
@@ -110,16 +125,80 @@ namespace Geneforge.UI.Hub
             if (dialogPanel)
             {
                 dialogPanel.SetActive(true);
-                if (dialogText) dialogText.text = text;
+                if (dialogText) dialogText.text = ""; // Start empty for typewriter
                 
                 if (npcNameText) npcNameText.text = name;
                 
-                if (portraitContainer) portraitContainer.SetActive(portrait != null);
+                if (portraitContainer) portraitContainer.SetActive(mouthClosed != null);
                 if (npcPortraitImage)
                 {
-                    npcPortraitImage.sprite = portrait;
-                    npcPortraitImage.enabled = portrait != null;
+                    npcPortraitImage.sprite = mouthClosed;
+                    npcPortraitImage.enabled = mouthClosed != null;
+
+                    // Setup animation with the provided text
+                    if (mouthClosed != null && mouthHalf != null && mouthOpen != null)
+                    {
+                        currentMouthFrames = new Sprite[] { mouthClosed, mouthHalf, mouthOpen };
+                        mouthAnimationCoroutine = StartCoroutine(AnimateMouth(text));
+                    }
+                    else if (dialogText != null)
+                    {
+                        dialogText.text = text; // Fallback if no anim
+                    }
                 }
+            }
+        }
+
+        private System.Collections.IEnumerator AnimateMouth(string text)
+        {
+            // Frame timing for 4-step sequence to match ~0.45s per word
+            // 0.45 / 4 steps = 0.1125s
+            float syllableSpeed = 0.11f; 
+            int[] sequence = { 0, 1, 2, 1 };
+            int step = 0;
+
+            // Calculation based on user metrics
+            string[] words = text.Split(' ', System.StringSplitOptions.RemoveEmptyEntries);
+            float talkingDuration = words.Length * 0.45f;
+            if (talkingDuration < 0.5f) talkingDuration = 0.5f; // Minimum for short text
+
+            while (true)
+            {
+                // --- TALKING PHASE ---
+                float elapsed = 0;
+                int charIndex = 0;
+
+                while (elapsed < talkingDuration)
+                {
+                    // Update Mouth
+                    if (npcPortraitImage != null && currentMouthFrames != null)
+                    {
+                        npcPortraitImage.sprite = currentMouthFrames[sequence[step]];
+                    }
+                    step = (step + 1) % sequence.Length;
+
+                    // Update Typewriter Text
+                    if (dialogText != null)
+                    {
+                        float progress = elapsed / talkingDuration;
+                        charIndex = Mathf.FloorToInt(progress * text.Length);
+                        dialogText.text = text.Substring(0, Mathf.Min(charIndex + 1, text.Length));
+                    }
+
+                    elapsed += syllableSpeed;
+                    yield return new WaitForSecondsRealtime(syllableSpeed);
+                }
+
+                // --- FINISH PHASE ---
+                if (dialogText != null) dialogText.text = text; // Ensure total text is visible
+                if (npcPortraitImage != null && currentMouthFrames != null)
+                {
+                    npcPortraitImage.sprite = currentMouthFrames[0]; // Fixed Closed Mouth
+                }
+
+                // --- IDLE PHASE ---
+                // Wait 5 seconds as requested before repeating the sequence
+                yield return new WaitForSecondsRealtime(5.0f);
             }
         }
 
@@ -198,6 +277,9 @@ namespace Geneforge.UI.Hub
 
         private void HideAll()
         {
+            if (mouthAnimationCoroutine != null) StopCoroutine(mouthAnimationCoroutine);
+            mouthAnimationCoroutine = null;
+
             if (dialogPanel) dialogPanel.SetActive(false);
             if (confirmationPanel) confirmationPanel.SetActive(false);
             if (shopPanel) shopPanel.Hide();

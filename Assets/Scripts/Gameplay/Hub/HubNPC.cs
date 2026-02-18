@@ -23,7 +23,12 @@ namespace Geneforge.Gameplay.Hub
         [Header("Configuration")]
         [SerializeField] private InteractionType interactionType = InteractionType.StartRun;
         [SerializeField] private string npcName = "Guide";
-        [SerializeField] private Sprite portrait;
+        
+        [Header("Portrait & Animation")]
+        [SerializeField] private Sprite mouthClosed;
+        [SerializeField] private Sprite mouthHalf;
+        [SerializeField] private Sprite mouthOpen;
+
         [TextArea(3, 5)]
         [SerializeField] private string welcomeText = "Olá como é que estás?. Pronto para mais uma corridinha? HAHAHAH";
 
@@ -85,11 +90,11 @@ namespace Geneforge.Gameplay.Hub
 
                 if (interactionType == InteractionType.Shop)
                 {
-                     _interactionUI.StartShopInteraction(currentPlayer, welcomeText, npcName, portrait);
+                     _interactionUI.StartShopInteraction(currentPlayer, welcomeText, npcName, mouthClosed, mouthHalf, mouthOpen);
                 }
                 else
                 {
-                     _interactionUI.StartInteraction(currentPlayer, welcomeText, npcName, portrait);
+                     _interactionUI.StartInteraction(currentPlayer, welcomeText, npcName, mouthClosed, mouthHalf, mouthOpen);
                 }
             }
             else
