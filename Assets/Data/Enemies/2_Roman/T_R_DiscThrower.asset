@@ -15,7 +15,7 @@ MonoBehaviour:
   displayName: Disc Thrower
   maxHealth: 150
   baseMoveSpeed: 3
-  animatorController: {fileID: 9100000, guid: dbb79b3672a780c428403b3535bef49a, type: 2}
+  animatorController: {fileID: 9100000, guid: 626c163dd9f8f7240aef540bdbd5e636, type: 2}
   melee:
     detectionRadius: 0
     chaseSpeed: 0
@@ -61,3 +61,13 @@ MonoBehaviour:
     phase1AttackRate: 0
     phase2AttackRate: 0
     phase3AttackRate: 0
+  projectile:
+    enabled: 0
+    projectilePrefab: {fileID: 0}
+    spawnOffset: {x: 0, y: 0, z: 0}
+    damage: 0
+    speed: 0
+    hitMask:
+      serializedVersion: 2
+      m_Bits: 0
+    arcHeight: 0
