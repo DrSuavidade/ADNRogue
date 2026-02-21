@@ -22,9 +22,9 @@ namespace Geneforge.Gameplay.Characters.Enemies.AI
         public float damagePerHit = 10f;
 
         [Header("Attack Variants")]
-        [Tooltip("1 = Attack | 2 = Attack/AttackB | 3 = Attack/AttackB/AttackC")]
-        [Range(1, 3)]
-        public int attackVariants = 3;
+        [Tooltip("1 = Attack | 2 = Attack/Attack2")]
+        [Range(1, 2)]
+        public int attackVariants = 2;
 
         [Header("Damage Pause")]
         public float damagePauseDuration = 0.5f;
@@ -176,8 +176,7 @@ namespace Geneforge.Gameplay.Characters.Enemies.AI
                 {
                     default:
                     case 0: animator.SetTrigger("Attack"); break;
-                    case 1: animator.SetTrigger("AttackB"); break;
-                    case 2: animator.SetTrigger("AttackC"); break;
+                    case 1: animator.SetTrigger("Attack2"); break;
                 }
             }
         }
