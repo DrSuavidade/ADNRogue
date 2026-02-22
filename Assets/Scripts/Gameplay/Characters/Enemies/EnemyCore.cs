@@ -55,7 +55,8 @@ namespace Geneforge.Gameplay.Characters.Enemies
         // Events
         public event Action OnFirstHit;
         public event Action<float> OnDamaged;
-        public event Action OnStaggered;   // NEW: triggered only when poise is broken
+        public event Action OnStaggered;   // triggered only when poise is broken
+        public event Action<Vector3, float> OnKnockback; // NEW: event for brains
         public event Action OnDied;        // NEW: death event for brains / systems
 
         private bool hasBeenHit = false;
@@ -127,6 +128,7 @@ namespace Geneforge.Gameplay.Characters.Enemies
             if (!hasBeenHit)
             {
                 hasBeenHit = true;
+                // Note: No animation on first hit anymore, only pure logic/events
                 OnFirstHit?.Invoke();
             }
 
@@ -134,15 +136,13 @@ namespace Geneforge.Gameplay.Characters.Enemies
             _lastDamageTime = Time.time;
 
             SpawnDamageText(dmg, wasCrit);
-
             OnDamaged?.Invoke(dmg);
 
             // =====================================================
-            // POISE SYSTEM — Only stagger if poise is depleted
+            // PROFESSIONAL POISE SYSTEM 
             // =====================================================
-            if (currentHealth > 0f && animator != null)
+            if (currentHealth > 0f)
             {
-                // check if the brain has hyper armor
                 var brain = GetComponent<EnemyBrainBase>();
                 bool canStagger = brain == null || !brain.HasHyperArmor;
 
@@ -152,9 +152,14 @@ namespace Geneforge.Gameplay.Characters.Enemies
 
                     if (currentPoise <= 0f)
                     {
-                        animator.SetTrigger(damagedTrigger);
-                        currentPoise = maxPoise; // Reset poise after a successful stagger
-                        OnStaggered?.Invoke();  // Notify brain to pause
+                        // THE BIG BREAK: This is where we reward the player
+                        if (animator != null)
+                        {
+                            animator.SetTrigger(damagedTrigger);
+                        }
+
+                        currentPoise = maxPoise; // Reset for next break
+                        OnStaggered?.Invoke(); 
                     }
                 }
             }
@@ -287,28 +292,53 @@ namespace Geneforge.Gameplay.Characters.Enemies
         }
 
 
-        // Smooth knockback slide — sem StopAllCoroutines()
-        public void ApplyKnockback(Vector3 direction, float force, float duration = 0.1f)
+        // Purely additive physical nudge. Very short and subtle for professional feel.
+        public void ApplyKnockback(Vector3 direction, float force, float duration = 0.12f)
         {
-            if (isDead) return;
+            if (isDead || force <= 0f) return;
 
-            float disp = 0.1f * force;
-            Vector3 targetPos = transform.position + direction.normalized * disp;
+            var brain = GetComponent<EnemyBrainBase>();
+            if (brain != null && brain.HasHyperArmor) return;
+
+            // Notify brain (events only, brain shouldn't pause anymore)
+            OnKnockback?.Invoke(direction, duration);
+
+            // Subtle displacement multiplier (0.05 instead of 0.15)
+            float totalDisplacement = 0.05f * force;
+            Vector3 shiftVector = direction.normalized * totalDisplacement;
 
             if (_knockbackCo != null) StopCoroutine(_knockbackCo);
-            _knockbackCo = StartCoroutine(KnockbackRoutine(transform.position, targetPos, duration));
+            _knockbackCo = StartCoroutine(KnockbackRoutine(shiftVector, duration));
         }
 
-        IEnumerator KnockbackRoutine(Vector3 from, Vector3 to, float duration)
+        IEnumerator KnockbackRoutine(Vector3 totalShift, float duration)
         {
             float elapsed = 0f;
+            float lastCurve = 0f;
+            
             while (elapsed < duration)
             {
-                transform.position = Vector3.Lerp(from, to, elapsed / duration);
+                float t = elapsed / duration;
+                // Ease out curve for snappy impact
+                float curve = 1f - Mathf.Pow(1f - t, 3);
+                float deltaCurve = curve - lastCurve;
+                lastCurve = curve;
+
+                Vector3 deltaMove = totalShift * deltaCurve;
+
+                var cc = GetComponent<CharacterController>();
+                if (cc != null && cc.enabled)
+                {
+                    cc.Move(deltaMove);
+                }
+                else
+                {
+                    transform.position += deltaMove;
+                }
+
                 elapsed += Time.deltaTime;
                 yield return null;
             }
-            transform.position = to;
             _knockbackCo = null;
         }
     }

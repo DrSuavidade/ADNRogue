@@ -297,14 +297,14 @@ MonoBehaviour:
   hasHyperArmor: 0
   stayStationary: 0
   rotateInPlace: 1
-  wanderRadius: 5
-  wanderInterval: 3
-  wanderSpeed: 2
+  wanderRadius: 6
+  wanderInterval: 4
+  wanderSpeed: 2.5
   detectionRadius: 20
-  chaseSpeed: 4
-  attackRange: 1.5
+  chaseSpeed: 5.5
+  attackRange: 2.2
   attackRate: 1
-  damagePerHit: 10
+  damagePerHit: 15
   attackVariants: 2
   damagePauseDuration: 0.5
   state: 0

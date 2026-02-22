@@ -14,15 +14,18 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   displayName: Gladiator
   maxHealth: 100
-  baseMoveSpeed: 3
+  baseMoveSpeed: 2.5
+  maxPoise: 20
+  poiseRecoveryRate: 5
+  hasHyperArmor: 0
   animatorController: {fileID: 9100000, guid: ebd6e14a35b2cfb45942277c746ee8a9, type: 2}
   melee:
-    detectionRadius: 12
-    chaseSpeed: 4
-    wanderRadius: 5
-    wanderInterval: 2
-    wanderSpeed: 3
-    attackRange: 1
+    detectionRadius: 20
+    chaseSpeed: 5.5
+    wanderRadius: 6
+    wanderInterval: 4
+    wanderSpeed: 2.5
+    attackRange: 2.2
     attackRate: 1
     damagePerHit: 3
     attackVariants: 2

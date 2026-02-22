@@ -13,18 +13,21 @@ MonoBehaviour:
   m_Name: T_R_MaceMaster
   m_EditorClassIdentifier: 
   displayName: Mace Master
-  maxHealth: 50
-  baseMoveSpeed: 3
+  maxHealth: 275
+  baseMoveSpeed: 2.5
+  maxPoise: 50
+  poiseRecoveryRate: 5
+  hasHyperArmor: 0
   animatorController: {fileID: 9100000, guid: 3b5c707641bd3ae4cb5522828ee96a80, type: 2}
   melee:
-    detectionRadius: 5
-    chaseSpeed: 4
-    wanderRadius: 10
-    wanderInterval: 2
-    wanderSpeed: 2
-    attackRange: 2
-    attackRate: 1
-    damagePerHit: 1
+    detectionRadius: 12
+    chaseSpeed: 2
+    wanderRadius: 2
+    wanderInterval: 6
+    wanderSpeed: 1.2
+    attackRange: 3.5
+    attackRate: 0.6
+    damagePerHit: 35
     attackVariants: 2
   ranged:
     detectionRadius: 0
@@ -41,7 +44,7 @@ MonoBehaviour:
     repositionSpeed: 0
     detectionRadius: 0
     supportInterval: 0
-    attackVariants: 0
+    attackVariants: 1
   animal:
     roamRadius: 0
     roamInterval: 0

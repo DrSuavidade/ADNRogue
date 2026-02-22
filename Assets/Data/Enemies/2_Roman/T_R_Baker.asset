@@ -15,15 +15,18 @@ MonoBehaviour:
   displayName: Baker
   maxHealth: 30
   baseMoveSpeed: 3
+  maxPoise: 20
+  poiseRecoveryRate: 5
+  hasHyperArmor: 0
   animatorController: {fileID: 9100000, guid: 6e3ffb4510a36af4a97e64c7ee06c61f, type: 2}
   melee:
-    detectionRadius: 5
-    chaseSpeed: 4
-    wanderRadius: 10
-    wanderInterval: 2
+    detectionRadius: 15
+    chaseSpeed: 3.5
+    wanderRadius: 4
+    wanderInterval: 3
     wanderSpeed: 2
-    attackRange: 2
-    attackRate: 1
+    attackRange: 1.5
+    attackRate: 1.2
     damagePerHit: 1
     attackVariants: 2
   ranged:

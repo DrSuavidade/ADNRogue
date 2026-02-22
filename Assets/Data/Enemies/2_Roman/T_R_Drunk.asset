@@ -14,7 +14,10 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   displayName: Drunk
   maxHealth: 120
-  baseMoveSpeed: 3
+  baseMoveSpeed: 3.5
+  maxPoise: 20
+  poiseRecoveryRate: 5
+  hasHyperArmor: 0
   animatorController: {fileID: 9100000, guid: 938316e7aa9effe47bb9cd81bd6fb99a, type: 2}
   melee:
     detectionRadius: 0
@@ -27,14 +30,14 @@ MonoBehaviour:
     damagePerHit: 0
     attackVariants: 1
   ranged:
-    detectionRadius: 12
+    detectionRadius: 18
     wanderRadius: 3
-    wanderInterval: 4
-    wanderSpeed: 2
+    wanderInterval: 5
+    wanderSpeed: 1.5
     preferredRange: 9
     minRange: 4
     strafeSpeed: 5
-    attackRate: 1
+    attackRate: 1.5
     attackVariants: 2
   support:
     followRadiusFromSpawn: 0

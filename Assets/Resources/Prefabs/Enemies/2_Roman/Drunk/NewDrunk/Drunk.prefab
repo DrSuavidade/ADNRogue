@@ -198,10 +198,10 @@ MonoBehaviour:
     m_Bits: 8
   lineOfSightPadding: 0.1
   hasHyperArmor: 0
-  wanderRadius: 6
-  wanderInterval: 4
-  wanderSpeed: 2
-  detectionRadius: 25
+  wanderRadius: 3
+  wanderInterval: 5
+  wanderSpeed: 1.5
+  detectionRadius: 18
   preferredRange: 12
   minRange: 6
   strafeSpeed: 3
@@ -225,11 +225,11 @@ MonoBehaviour:
   damagedTrigger: Damaged
   deathTrigger: Death
   deathAnimDuration: 1
-  damageTextPrefab: {fileID: 0}
+  damageTextPrefab: {fileID: 8104875995613135839, guid: 51bfa69456bef62438805f10c2608f9f, type: 3}
   damageTextOffset: {x: 0, y: 2.5, z: 0}
   maxPoise: 25
   poiseRecoveryRate: 4
-  healthBarPrefab: {fileID: 0}
+  healthBarPrefab: {fileID: 7692226100105962595, guid: fbae99ce307c85f42989e3e9d541584f, type: 3}
   healthBarHeightOverride: -1
 --- !u!114 &2759295566357338622
 MonoBehaviour:
@@ -256,9 +256,9 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 696d751c3a2530e42bff48e5a0f50838, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  throwSpeed: 20
+  throwSpeed: 11
   arcHeight: 1.5
-  impactDamage: 6
+  impactDamage: 15
   splashRadius: 1.8
   hitMask:
     serializedVersion: 2

@@ -16,6 +16,14 @@ namespace Geneforge.Gameplay.Characters.Enemies.Config
         [Tooltip("Base move speed used by brains for normalization.")]
         public float baseMoveSpeed = 3f;
 
+        [Header("Stagger / Poise")]
+        [Tooltip("Damage needed to stagger this enemy.")]
+        public float maxPoise = 20f;
+        [Tooltip("How fast poise recovers per second.")]
+        public float poiseRecoveryRate = 5f;
+        [Tooltip("If true, this enemy will never be staggered (Hyper Armor).")]
+        public bool hasHyperArmor = false;
+
         [Header("Visuals")]
         [Tooltip("Optional: animator controller override for this enemy.")]
         public RuntimeAnimatorController animatorController;

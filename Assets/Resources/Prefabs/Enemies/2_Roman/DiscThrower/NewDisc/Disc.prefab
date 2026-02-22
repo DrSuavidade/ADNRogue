@@ -225,11 +225,11 @@ MonoBehaviour:
   damagedTrigger: Damaged
   deathTrigger: Death
   deathAnimDuration: 1
-  damageTextPrefab: {fileID: 0}
+  damageTextPrefab: {fileID: 8104875995613135839, guid: 51bfa69456bef62438805f10c2608f9f, type: 3}
   damageTextOffset: {x: 0, y: 2.5, z: 0}
   maxPoise: 22
   poiseRecoveryRate: 6
-  healthBarPrefab: {fileID: 0}
+  healthBarPrefab: {fileID: 7692226100105962595, guid: fbae99ce307c85f42989e3e9d541584f, type: 3}
   healthBarHeightOverride: -1
 --- !u!114 &6726747360410544517
 MonoBehaviour:

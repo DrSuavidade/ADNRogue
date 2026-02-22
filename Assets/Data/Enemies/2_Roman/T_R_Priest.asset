@@ -15,6 +15,9 @@ MonoBehaviour:
   displayName: Priest
   maxHealth: 50
   baseMoveSpeed: 3
+  maxPoise: 20
+  poiseRecoveryRate: 5
+  hasHyperArmor: 0
   animatorController: {fileID: 9100000, guid: 9d0c8f77aee22a541b10def17961b94f, type: 2}
   melee:
     detectionRadius: 0
@@ -27,21 +30,21 @@ MonoBehaviour:
     damagePerHit: 0
     attackVariants: 1
   ranged:
-    detectionRadius: 15
-    wanderRadius: 4
-    wanderInterval: 3
-    wanderSpeed: 3
-    preferredRange: 13
-    minRange: 2
-    strafeSpeed: 5
-    attackRate: 1.2
-    attackVariants: 2
-  support:
-    followRadiusFromSpawn: 0
-    repositionSpeed: 0
     detectionRadius: 0
-    supportInterval: 0
+    wanderRadius: 0
+    wanderInterval: 0
+    wanderSpeed: 0
+    preferredRange: 0
+    minRange: 0
+    strafeSpeed: 0
+    attackRate: 0
     attackVariants: 1
+  support:
+    followRadiusFromSpawn: 5
+    repositionSpeed: 2.5
+    detectionRadius: 25
+    supportInterval: 6
+    attackVariants: 2
   animal:
     roamRadius: 0
     roamInterval: 0

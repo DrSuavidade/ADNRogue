@@ -111,18 +111,18 @@ namespace Geneforge.Gameplay.Characters.Enemies.AI
             if (isDead || enemy == null || enemy.IsDead) return;
 
             // 👉 LOCK ANIMATION CHECK
-            // Se o Animator estiver numa animação de "Hit" ou "Attack", bloqueamos o cérebro (sem movimento nem rotação involuntária)
+            // Se o Animator estiver numa animação de "Hit" ou "Attack", bloqueamos o cérebro
             if (animator != null)
             {
                 var state = animator.GetCurrentAnimatorStateInfo(0);
                 
-                // Verificamos Tags e Nomes comuns (Attack, Attack2, Attack3, Hit)
+                // Hit/Damaged states are "Hard Stuns" (usually from poise break)
+                // These should indeed pause the brain logic completely.
                 bool isLocked = state.IsTag("Hit") || state.IsName("Hit") || state.IsName("Damaged") ||
                                 state.IsTag("Attack") || state.IsName("Attack") || 
                                 state.IsName("Attack2") || state.IsName("Attack3") ||
                                 state.IsName("AttackB") || state.IsName("AttackC");
 
-                // Também verificamos se estamos a transitar para um destes estados
                 if (animator.IsInTransition(0))
                 {
                     var nextState = animator.GetNextAnimatorStateInfo(0);
@@ -134,7 +134,6 @@ namespace Geneforge.Gameplay.Characters.Enemies.AI
 
                 if (isLocked)
                 {
-                    // Forçamos o Speed a 0 para garantir que as pernas não se mexem
                     animator.SetFloat("Speed", 0f);
                     return;
                 }
@@ -169,39 +168,35 @@ namespace Geneforge.Gameplay.Characters.Enemies.AI
         {
             if (speed <= 0f) return;
 
-            // Nota: O bloqueio de movimento durante Attack/Hit já é tratado no Update() global.
-            // Se chegamos aqui, o cérebro está livre para se mover.
-
             Vector3 pos = transform.position;
-    Vector3 to = worldTarget - pos;
-    to.y = 0f;
+            Vector3 to = worldTarget - pos;
+            to.y = 0f;
 
-    if (to.sqrMagnitude <= 0.0001f)
-    {
-        if (animator != null)
-            animator.SetFloat("Speed", 0f);
-        return;
-    }
+            if (to.sqrMagnitude <= 0.0001f)
+            {
+                if (animator != null) animator.SetFloat("Speed", 0f);
+                return;
+            }
 
-    Vector3 dir = to.normalized;
-    float step = speed * Time.deltaTime;
-    transform.position = pos + dir * step;
+            Vector3 dir = to.normalized;
+            float step = speed * Time.deltaTime;
+            transform.position = pos + dir * step;
 
-    if (faceTargetWhileMoving)
-    {
-        Quaternion targetRot = Quaternion.LookRotation(dir);
-        transform.rotation = Quaternion.RotateTowards(
-            transform.rotation,
-            targetRot,
-            rotationSpeedDegPerSec * Time.deltaTime);
-    }
+            if (faceTargetWhileMoving)
+            {
+                Quaternion targetRot = Quaternion.LookRotation(dir);
+                transform.rotation = Quaternion.RotateTowards(
+                    transform.rotation,
+                    targetRot,
+                    rotationSpeedDegPerSec * Time.deltaTime);
+            }
 
-    if (animator != null && defaultMoveSpeed > 0f)
-    {
-        float normalizedSpeed = Mathf.Clamp01(speed / defaultMoveSpeed);
-        animator.SetFloat("Speed", normalizedSpeed);
-    }
-}
+            if (animator != null && defaultMoveSpeed > 0f)
+            {
+                float normalizedSpeed = Mathf.Clamp01(speed / defaultMoveSpeed);
+                animator.SetFloat("Speed", normalizedSpeed);
+            }
+        }
 
 
         protected void MoveAwayFrom(Vector3 worldTarget, float speed)

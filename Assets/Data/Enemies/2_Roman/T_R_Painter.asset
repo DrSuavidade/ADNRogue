@@ -15,6 +15,9 @@ MonoBehaviour:
   displayName: Painter
   maxHealth: 55
   baseMoveSpeed: 3
+  maxPoise: 20
+  poiseRecoveryRate: 5
+  hasHyperArmor: 0
   animatorController: {fileID: 9100000, guid: d5792cbdff6b62042a79d2c06bc64034, type: 2}
   melee:
     detectionRadius: 0
@@ -27,14 +30,14 @@ MonoBehaviour:
     damagePerHit: 0
     attackVariants: 1
   ranged:
-    detectionRadius: 35
+    detectionRadius: 22
     wanderRadius: 3
     wanderInterval: 4
     wanderSpeed: 2
     preferredRange: 9
     minRange: 4
     strafeSpeed: 5
-    attackRate: 1
+    attackRate: 0.7
     attackVariants: 2
   support:
     followRadiusFromSpawn: 0

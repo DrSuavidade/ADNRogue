@@ -370,11 +370,11 @@ MonoBehaviour:
   wanderRadius: 6
   wanderInterval: 4
   wanderSpeed: 2
-  detectionRadius: 25
-  preferredRange: 12
-  minRange: 6
+  detectionRadius: 22
+  preferredRange: 9
+  minRange: 4
   strafeSpeed: 3
-  attackRate: 1.25
+  attackRate: 0.7
   attackTrigger: Attack
   attackVariants: 2
 --- !u!114 &5627321825977180892

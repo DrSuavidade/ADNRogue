@@ -213,6 +213,8 @@ namespace Geneforge.Gameplay.Weapons.Bullets
         {
             if (ws == null) return;
             lifeTime = ws.ProjectileLifetime;
+            damage = ws.Damage;
+            knockbackForce = ws.KnockbackForce;
             pierceRemaining = ws.PierceCount;
             bounceRemaining = ws.BounceCount;
             homingStrength = Mathf.Clamp01(ws.HomingStrength);
