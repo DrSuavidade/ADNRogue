@@ -56,12 +56,16 @@ namespace Geneforge.Gameplay.Characters.Enemies.Eras.Roman
             if (inkSplashPrefab == null || firePoint == null) return;
 
             GameObject projectile = Instantiate(inkSplashPrefab, firePoint.position, firePoint.rotation);
+            
+            // Sorteamos uma cor base para a poça se o jato bater em algo
+            Color randomColor = paintColors[Random.Range(0, paintColors.Length)];
             ApplyEffects(projectile, Color.white, true);
 
             // Passar o dano
             var projScript = projectile.GetComponent<PaintProjectile>();
             if (projScript == null) projScript = projectile.AddComponent<PaintProjectile>();
             projScript.damage = inkDamage;
+            projScript.myColor = randomColor; // Define a cor da futura poça
 
             Rigidbody rb = projectile.GetComponent<Rigidbody>();
             if (rb != null)
@@ -74,26 +78,34 @@ namespace Geneforge.Gameplay.Characters.Enemies.Eras.Roman
 
         private void LaunchPaintBucket(Color paintColor)
         {
-            if (paintBucketPrefab == null || firePoint == null) return;
+            if (paintBucketPrefab == null || target == null) return;
 
-            GameObject bucket = Instantiate(paintBucketPrefab, firePoint.position, Quaternion.identity);
+            // SPAWN EM CIMA DO PLAYER (3.5 metros acima para ser rápido e visível)
+            Vector3 spawnPos = target.position + Vector3.up * 3.5f;
+            
+            // Instancia o balde virado para baixo e com rotação aleatória
+            GameObject bucket = Instantiate(paintBucketPrefab, spawnPos, Quaternion.Euler(180, Random.Range(0, 360), 0));
+            
             ApplyEffects(bucket, paintColor, false);
 
-            // Passar o dano
             var projScript = bucket.GetComponent<PaintProjectile>();
             if (projScript == null) projScript = bucket.AddComponent<PaintProjectile>();
             projScript.damage = bucketDamage;
+            projScript.myColor = paintColor;
 
             Rigidbody rb = bucket.GetComponent<Rigidbody>();
             if (rb != null)
             {
                 rb.isKinematic = false;
-                Vector3 toTarget = (target.position - firePoint.position);
-                Vector3 horizontalDir = new Vector3(toTarget.x, 0, toTarget.z).normalized;
-                Vector3 launchForce = (horizontalDir * 12f) + (Vector3.up * 5f);
-                rb.AddForce(launchForce, ForceMode.Impulse);
-                rb.AddTorque(Random.insideUnitSphere * 5f, ForceMode.Impulse);
+                rb.useGravity = true;
+                
+                // Forçar a queda vertical
+                rb.linearVelocity = Vector3.down * 5f;
+                // Adicionar um pouco de rotação caótica
+                rb.AddTorque(Random.insideUnitSphere * 4f, ForceMode.Impulse);
             }
+
+            Debug.Log($"<color=#{ColorUtility.ToHtmlStringRGB(paintColor)}><b>[PAINTER]</b> Balde invocado sobre o player!</color>");
         }
 
         private void ApplyEffects(GameObject obj, Color color, bool isRainbow)

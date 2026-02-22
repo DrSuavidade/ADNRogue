@@ -27,7 +27,7 @@ MonoBehaviour:
     damagePerHit: 0
     attackVariants: 1
   ranged:
-    detectionRadius: 12
+    detectionRadius: 35
     wanderRadius: 3
     wanderInterval: 4
     wanderSpeed: 2
