@@ -47,6 +47,8 @@ namespace Geneforge.Gameplay.Characters.Enemies.Eras.Roman
             var rb = obj.GetComponent<Rigidbody>();
             if (rb)
             {
+                rb.isKinematic = false; // Garante que não é cinemático para podermos usar velocidade física
+
                 Vector3 to = target.position - origin.position;
                 to.y += arcHeight;
                 Vector3 vel = to.normalized * throwSpeed;

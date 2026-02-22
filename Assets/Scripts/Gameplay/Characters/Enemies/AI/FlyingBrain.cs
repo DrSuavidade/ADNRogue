@@ -16,6 +16,7 @@ namespace Geneforge.Gameplay.Characters.Enemies.AI
         // continuam a existir porque o EnemyConfigurator/flying archetype os usa
         public float attackRate = 1.5f;
         public float preferredRange = 12f;
+        [Range(1, 3)] public int attackVariants = 1;
 
         float orbitAngle;
         float lastAttackTime;
@@ -47,7 +48,7 @@ namespace Geneforge.Gameplay.Characters.Enemies.AI
                 // Órbita à volta do alvo
                 OrbitTarget(dt);
                 FaceTarget();
-                TryAttack(); // aqui NÃO usamos Animator
+                TryAttack();
             }
         }
 
@@ -78,12 +79,27 @@ namespace Geneforge.Gameplay.Characters.Enemies.AI
             if (!IsAttackReady(ref lastAttackTime, attackRate))
                 return;
 
+            TriggerAttackAnim();
             // Aqui é onde podes:
             // - disparar projéteis
             // - chamar uma ability
             // - ou simplesmente não fazer nada por agora
-            //
-            // NÃO há qualquer chamada a Animator aqui.
+        }
+
+        void TriggerAttackAnim()
+        {
+            if (animator == null) return;
+
+            if (attackVariants <= 1)
+            {
+                animator.SetTrigger("Attack");
+            }
+            else
+            {
+                int idx = UnityEngine.Random.Range(0, attackVariants);
+                string suffix = idx == 0 ? "" : (idx + 1).ToString(); // Attack, Attack2, Attack3
+                animator.SetTrigger("Attack" + suffix);
+            }
         }
     }
 }

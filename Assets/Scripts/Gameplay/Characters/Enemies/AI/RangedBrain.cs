@@ -24,6 +24,7 @@ namespace Geneforge.Gameplay.Characters.Enemies.AI
         [Header("Attack")]
         public float attackRate = 1.25f;
         public string attackTrigger = "Attack";
+        [Range(1, 3)] public int attackVariants = 1;
 
         Vector3 wanderTarget;
         float wanderTimer;
@@ -125,11 +126,28 @@ namespace Geneforge.Gameplay.Characters.Enemies.AI
                 return;
 
             // Disparar animação
-            if (animator != null && !string.IsNullOrEmpty(attackTrigger))
-                animator.SetTrigger(attackTrigger);
+            TriggerAttackAnim();
 
             // A parte de lançar a lança / disparar projétil
             // fica a cargo do Animation Event + RangedAttackExecutor
+        }
+
+        void TriggerAttackAnim()
+        {
+            if (animator == null) return;
+
+            if (attackVariants <= 1)
+            {
+                if (!string.IsNullOrEmpty(attackTrigger))
+                    animator.SetTrigger(attackTrigger);
+            }
+            else
+            {
+                int idx = UnityEngine.Random.Range(0, attackVariants);
+                string suffix = idx == 0 ? "" : (idx + 1).ToString(); // Attack, Attack2, Attack3
+                string triggerName = attackTrigger + suffix;
+                animator.SetTrigger(triggerName);
+            }
         }
 
         // ---------- Reposicionar quando o player está demasiado perto ----------

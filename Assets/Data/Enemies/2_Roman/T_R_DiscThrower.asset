@@ -35,11 +35,13 @@ MonoBehaviour:
     minRange: 4
     strafeSpeed: 5
     attackRate: 1
+    attackVariants: 2
   support:
     followRadiusFromSpawn: 0
     repositionSpeed: 0
     detectionRadius: 0
     supportInterval: 0
+    attackVariants: 0
   animal:
     roamRadius: 0
     roamInterval: 0
@@ -48,6 +50,7 @@ MonoBehaviour:
     pounceRange: 0
     chaseSpeed: 0
     attackRate: 0
+    attackVariants: 0
   flying:
     hoverHeight: 0
     hoverLerpSpeed: 0
@@ -55,12 +58,14 @@ MonoBehaviour:
     orbitAngularSpeedDeg: 0
     attackRate: 0
     preferredRange: 0
+    attackVariants: 0
   boss:
     phase2Threshold: 0
     phase3Threshold: 0
     phase1AttackRate: 0
     phase2AttackRate: 0
     phase3AttackRate: 0
+    attackVariants: 0
   projectile:
     enabled: 0
     projectilePrefab: {fileID: 0}

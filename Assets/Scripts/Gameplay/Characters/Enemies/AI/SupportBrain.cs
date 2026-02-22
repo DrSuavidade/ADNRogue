@@ -12,6 +12,7 @@ namespace Geneforge.Gameplay.Characters.Enemies.AI
         public float detectionRadius = 25f;
         public float supportInterval = 4f;
         public string supportTrigger = "Support";
+        [Range(1, 3)] public int attackVariants = 1;
 
         float supportTimer;
 
@@ -47,8 +48,9 @@ namespace Geneforge.Gameplay.Characters.Enemies.AI
 
         void TriggerSupport()
         {
-            if (animator != null && !string.IsNullOrEmpty(supportTrigger))
-                animator.SetTrigger(supportTrigger);
+            if (animator == null || string.IsNullOrEmpty(supportTrigger)) return;
+
+            animator.SetTrigger(supportTrigger);
 
             // The actual effect (shields, buffs, heals) should live in a
             // separate ability component listening to animation events.

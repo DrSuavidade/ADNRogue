@@ -20,6 +20,7 @@ namespace Geneforge.Gameplay.Characters.Enemies.AI
         public string phase2AttackTrigger = "AttackB";
         public string phase3AttackTrigger = "AttackC";
         public string phaseChangeTrigger = "PhaseChange";
+        [Range(1, 3)] public int attackVariants = 1;
 
         int currentPhase = 1;
         float lastAttackTime;
@@ -85,23 +86,26 @@ namespace Geneforge.Gameplay.Characters.Enemies.AI
         {
             if (animator == null) return;
 
+            string baseTrigger = "";
             switch (currentPhase)
             {
                 default:
-                case 1:
-                    if (!string.IsNullOrEmpty(phase1AttackTrigger))
-                        animator.SetTrigger(phase1AttackTrigger);
-                    break;
+                case 1: baseTrigger = phase1AttackTrigger; break;
+                case 2: baseTrigger = phase2AttackTrigger; break;
+                case 3: baseTrigger = phase3AttackTrigger; break;
+            }
 
-                case 2:
-                    if (!string.IsNullOrEmpty(phase2AttackTrigger))
-                        animator.SetTrigger(phase2AttackTrigger);
-                    break;
+            if (string.IsNullOrEmpty(baseTrigger)) return;
 
-                case 3:
-                    if (!string.IsNullOrEmpty(phase3AttackTrigger))
-                        animator.SetTrigger(phase3AttackTrigger);
-                    break;
+            if (attackVariants <= 1)
+            {
+                animator.SetTrigger(baseTrigger);
+            }
+            else
+            {
+                int idx = UnityEngine.Random.Range(0, attackVariants);
+                string suffix = idx == 0 ? "" : (idx + 1).ToString(); // Attack, Attack2, Attack3
+                animator.SetTrigger(baseTrigger + suffix);
             }
 
             // Actual patterns (AOEs, combos, etc.) should be implemented

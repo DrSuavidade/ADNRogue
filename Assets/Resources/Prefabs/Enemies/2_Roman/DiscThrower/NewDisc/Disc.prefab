@@ -92,6 +92,10 @@ PrefabInstance:
       propertyPath: m_Name
       value: Disc
       objectReference: {fileID: 0}
+    - target: {fileID: 919132149155446097, guid: 178a263da555d1e4e8e203d23b71290a, type: 3}
+      propertyPath: m_TagString
+      value: Enemy
+      objectReference: {fileID: 0}
     m_RemovedComponents: []
     m_RemovedGameObjects: []
     m_AddedGameObjects:
@@ -203,6 +207,7 @@ MonoBehaviour:
   strafeSpeed: 3
   attackRate: 1.25
   attackTrigger: Attack
+  attackVariants: 1
 --- !u!114 &3583735187736026752
 MonoBehaviour:
   m_ObjectHideFlags: 0

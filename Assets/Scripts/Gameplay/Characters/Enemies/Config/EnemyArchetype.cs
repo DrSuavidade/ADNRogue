@@ -49,6 +49,7 @@ namespace Geneforge.Gameplay.Characters.Enemies.Config
             public float minRange;
             public float strafeSpeed;
             public float attackRate;
+            [Range(1, 3)] public int attackVariants;
         }
 
         [System.Serializable]
@@ -58,6 +59,7 @@ namespace Geneforge.Gameplay.Characters.Enemies.Config
             public float repositionSpeed;
             public float detectionRadius;
             public float supportInterval;
+            [Range(1, 3)] public int attackVariants;
         }
 
         [System.Serializable]
@@ -70,6 +72,7 @@ namespace Geneforge.Gameplay.Characters.Enemies.Config
             public float pounceRange;
             public float chaseSpeed;
             public float attackRate;   // <-- cooldown entre ataques dos animais
+            [Range(1, 3)] public int attackVariants;
         }
 
         [System.Serializable]
@@ -81,6 +84,7 @@ namespace Geneforge.Gameplay.Characters.Enemies.Config
             public float orbitAngularSpeedDeg;
             public float attackRate;
             public float preferredRange;
+            [Range(1, 3)] public int attackVariants;
         }
 
         [System.Serializable]
@@ -107,6 +111,7 @@ namespace Geneforge.Gameplay.Characters.Enemies.Config
             public float phase1AttackRate;
             public float phase2AttackRate;
             public float phase3AttackRate;
+            [Range(1, 3)] public int attackVariants;
         }
 
         [Header("Brains")]

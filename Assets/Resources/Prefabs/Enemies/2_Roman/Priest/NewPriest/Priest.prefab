@@ -216,9 +216,10 @@ MonoBehaviour:
   lineOfSightPadding: 0.1
   followRadiusFromSpawn: 3
   repositionSpeed: 2
-  detectionRadius: 25
+  detectionRadius: 20
   supportInterval: 4
-  supportTrigger: Support
+  supportTrigger: Attack
+  attackVariants: 2
 --- !u!114 &9083814411448213436
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -244,13 +245,15 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: a0cd342a82223e846be12e50957667a7, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  novaRadius: 10
-  damage: 5
-  healAllies: 1
-  healPerCast: 4
+  buffRadius: 15
   allyMask:
     serializedVersion: 2
-    m_Bits: 8
+    m_Bits: 4294967295
+  healthThresholdForShield: 0.8
+  allyCountForFury: 3
+  shieldDuration: 4
+  furyDuration: 5
+  attackSpeedMultiplier: 1.4
 --- !u!4 &3782212650392415171 stripped
 Transform:
   m_CorrespondingSourceObject: {fileID: 1852576806548013000, guid: 6cc7968a8db41fd49ba18ffb5a346463, type: 3}

@@ -84,6 +84,7 @@ namespace Geneforge.Gameplay.Characters.Enemies.Config
             brain.minRange        = c.minRange;
             brain.strafeSpeed     = c.strafeSpeed;
             brain.attackRate      = c.attackRate;
+            brain.attackVariants  = c.attackVariants;
         }
 
         void ApplySupportConfig()
@@ -96,6 +97,7 @@ namespace Geneforge.Gameplay.Characters.Enemies.Config
             brain.repositionSpeed       = c.repositionSpeed;
             brain.detectionRadius       = c.detectionRadius;
             brain.supportInterval       = c.supportInterval;
+            brain.attackVariants        = c.attackVariants;
         }
 
         void ApplyAnimalConfig()
@@ -110,6 +112,7 @@ namespace Geneforge.Gameplay.Characters.Enemies.Config
             brain.detectionRadius = c.detectionRadius;
             brain.pounceRange     = c.pounceRange;
             brain.chaseSpeed      = c.chaseSpeed;
+            brain.attackVariants  = c.attackVariants;
         }
 
         void ApplyFlyingConfig()
@@ -124,6 +127,7 @@ namespace Geneforge.Gameplay.Characters.Enemies.Config
             brain.orbitAngularSpeedDeg = c.orbitAngularSpeedDeg;
             brain.attackRate           = c.attackRate;
             brain.preferredRange       = c.preferredRange;
+            brain.attackVariants       = c.attackVariants;
         }
 
         void ApplyBossConfig()
@@ -137,6 +141,7 @@ namespace Geneforge.Gameplay.Characters.Enemies.Config
             brain.phase1AttackRate  = c.phase1AttackRate;
             brain.phase2AttackRate  = c.phase2AttackRate;
             brain.phase3AttackRate  = c.phase3AttackRate;
+            brain.attackVariants    = c.attackVariants;
         }
 
         void ApplyProjectileConfig()

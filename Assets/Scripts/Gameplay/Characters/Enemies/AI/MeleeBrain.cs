@@ -22,9 +22,9 @@ namespace Geneforge.Gameplay.Characters.Enemies.AI
         public float damagePerHit = 10f;
 
         [Header("Attack Variants")]
-        [Tooltip("1 = Attack | 2 = Attack/Attack2")]
-        [Range(1, 2)]
-        public int attackVariants = 2;
+        [Tooltip("1 = Attack | 2 = Attack/Attack2 | 3 = Attack/Attack2/Attack3")]
+        [Range(1, 3)]
+        public int attackVariants = 1;
 
         [Header("Damage Pause")]
         public float damagePauseDuration = 0.5f;
@@ -172,12 +172,8 @@ namespace Geneforge.Gameplay.Characters.Enemies.AI
             else
             {
                 int idx = UnityEngine.Random.Range(0, attackVariants);
-                switch (idx)
-                {
-                    default:
-                    case 0: animator.SetTrigger("Attack"); break;
-                    case 1: animator.SetTrigger("Attack2"); break;
-                }
+                string suffix = idx == 0 ? "" : (idx + 1).ToString(); // Attack, Attack2, Attack3
+                animator.SetTrigger("Attack" + suffix);
             }
         }
     }

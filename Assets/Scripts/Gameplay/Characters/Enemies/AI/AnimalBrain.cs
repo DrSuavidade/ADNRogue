@@ -19,6 +19,7 @@ namespace Geneforge.Gameplay.Characters.Enemies.AI
 
         [Header("Animation")]
         public string attackTrigger = "Attack";  // TEM de existir no Animator
+        [Range(1, 3)] public int attackVariants = 1;
 
         Vector3 roamTarget;
         float roamTimer;
@@ -79,11 +80,26 @@ namespace Geneforge.Gameplay.Characters.Enemies.AI
             if (!IsAttackReady(ref lastAttackTime, attackRate))
                 return;
 
-            if (animator != null && !string.IsNullOrEmpty(attackTrigger))
-            {
-                animator.SetTrigger(attackTrigger);
-            }
+            TriggerAttackAnim();
             // O dano é tratado via Animation Event em PrehistoricTRex.
+        }
+
+        void TriggerAttackAnim()
+        {
+            if (animator == null) return;
+
+            if (attackVariants <= 1)
+            {
+                if (!string.IsNullOrEmpty(attackTrigger))
+                    animator.SetTrigger(attackTrigger);
+            }
+            else
+            {
+                int idx = UnityEngine.Random.Range(0, attackVariants);
+                string suffix = idx == 0 ? "" : (idx + 1).ToString(); // Attack, Attack2, Attack3
+                string triggerName = attackTrigger + suffix;
+                animator.SetTrigger(triggerName);
+            }
         }
     }
 }
