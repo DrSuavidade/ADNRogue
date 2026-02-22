@@ -48,9 +48,8 @@ namespace Geneforge.Gameplay.Characters.Enemies.AI
             PickWanderTarget();
         }
 
-        protected override void HandleDamaged(float dmg)
+        protected override void HandleStaggered()
         {
-            base.HandleDamaged(dmg);
             isDamagePaused = true;
             damagePauseTimer = 0f;
         }
@@ -134,6 +133,18 @@ namespace Geneforge.Gameplay.Characters.Enemies.AI
         {
             if (!IsAttackReady(ref lastAttackTime, attackRate))
                 return;
+
+            // Anti-backfire check
+            if (target != null)
+            {
+                Vector3 toTarget = (target.position - transform.position);
+                toTarget.y = 0;
+                if (toTarget.sqrMagnitude > 0.001f)
+                {
+                    float angle = Vector3.Angle(transform.forward, toTarget.normalized);
+                    if (angle > 45f) return;
+                }
+            }
 
             // NEW: Use MeleeAttackAbility if available (Professional Hitbox/Timing)
             var ability = GetComponent<Geneforge.Gameplay.Characters.Enemies.Abilities.MeleeAttackAbility>();

@@ -13,7 +13,7 @@ MonoBehaviour:
   m_Name: T_R_Painter
   m_EditorClassIdentifier: 
   displayName: Painter
-  maxHealth: 10
+  maxHealth: 55
   baseMoveSpeed: 3
   animatorController: {fileID: 9100000, guid: d5792cbdff6b62042a79d2c06bc64034, type: 2}
   melee:

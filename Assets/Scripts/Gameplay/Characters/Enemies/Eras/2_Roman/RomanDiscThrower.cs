@@ -25,32 +25,50 @@ namespace Geneforge.Gameplay.Characters.Enemies.Eras.Roman
                 _config = GetComponent<EnemyConfigurator>();
         }
 
-        // Chamado pelo Animation Event na animação (ex: AnimEvent_ThrowDisc)
+        // Chamado pelo Animation Event na animação de ataque 1
         public void AnimEvent_ThrowDisc()
         {
-            if (_config == null)
-                _config = GetComponent<EnemyConfigurator>();
-            
-            if (_config == null || _config.Archetype == null) return;
-            var settings = _config.Archetype.projectile;
+            ThrowSingleDisc(0f);
+        }
 
-            if (!settings.enabled || settings.projectilePrefab == null || !target)
-                return;
+        // NOVO: Chamado pelo Animation Event no Attack2
+        // Dispara 3 discos em leque para ser mais difícil mas ainda desviável
+        public void AnimEvent_ThrowDiscVolley()
+        {
+            ThrowSingleDisc(0f);    // Centro
+            ThrowSingleDisc(-18f);  // Esquerda
+            ThrowSingleDisc(18f);   // Direita
+        }
+
+        private void ThrowSingleDisc(float angleOffset)
+        {
+            if (_config == null) _config = GetComponent<EnemyConfigurator>();
+            if (_config == null || _config.Archetype == null) return;
+            
+            var settings = _config.Archetype.projectile;
+            if (!settings.enabled || settings.projectilePrefab == null || !target) return;
 
             Transform origin = transform.Find("ProjectileSpawnPoint");
             if (origin == null) origin = transform;
             
-            GameObject prefab = settings.projectilePrefab;
+            Vector3 to = target.position - origin.position;
+            to.y += settings.arcHeight;
+            Vector3 dir = Quaternion.Euler(0, angleOffset, 0) * to.normalized;
 
-            var obj = Instantiate(prefab, origin.position, origin.rotation);
+            // CORREÇÃO: Pegamos na direção mas "limpamos" a inclinação vertical (Y) 
+            // para que o disco se mantenha horizontal (estilo frisbee) e não aponte para cima.
+            Vector3 flatDir = dir;
+            flatDir.y = 0;
+            if (flatDir.sqrMagnitude < 0.0001f) flatDir = transform.forward;
+            
+            Quaternion spawnRot = Quaternion.LookRotation(flatDir);
+
+            GameObject obj = Instantiate(settings.projectilePrefab, origin.position, spawnRot);
 
             var rb = obj.GetComponent<Rigidbody>();
             if (rb)
             {
-                Vector3 to = target.position - origin.position;
-                to.y += settings.arcHeight; // Use arcHeight from config
-                Vector3 vel = to.normalized * throwSpeed;
-
+                Vector3 vel = dir * throwSpeed;
 #if UNITY_6000_0_OR_NEWER
                 rb.linearVelocity = vel;
 #else
@@ -64,11 +82,12 @@ namespace Geneforge.Gameplay.Characters.Enemies.Eras.Roman
         }
     }
 
-    // Igual ao teu, só deixei completo aqui
+    // Projétil com efeito de rotação (Spin)
     public class RomanDiscProjectile : MonoBehaviour
     {
         float damage;
         LayerMask hitMask;
+        public float rotationSpeed = 1200f; // Velocidade do spin
 
         public void Init(float dmg, LayerMask mask)
         {
@@ -77,9 +96,14 @@ namespace Geneforge.Gameplay.Characters.Enemies.Eras.Roman
             Destroy(gameObject, 8f);
         }
 
+        void Update()
+        {
+            // Faz o disco girar sobre si mesmo enquanto voa
+            transform.Rotate(Vector3.up, rotationSpeed * Time.deltaTime, Space.Self);
+        }
+
         void OnTriggerEnter(Collider other)
         {
-            // filtrar por layer
             if ((hitMask.value & (1 << other.gameObject.layer)) == 0)
                 return;
 

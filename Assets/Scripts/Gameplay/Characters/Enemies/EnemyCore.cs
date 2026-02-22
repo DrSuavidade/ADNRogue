@@ -24,8 +24,12 @@ namespace Geneforge.Gameplay.Characters.Enemies
         [SerializeField] private GameObject damageTextPrefab;
         [SerializeField] private Vector3 damageTextOffset = new Vector3(0, 2.5f, 0);
 
-        [Header("Hit thresholds")]
-        [SerializeField] private float[] hitHealthThresholds = { 0.7f, 0.4f, 0.15f };
+        [Header("Professional Stagger System (Poise)")]
+        [Tooltip("Amount of damage needed to stagger the enemy. Low for small enemies, high for big ones.")]
+        [SerializeField] private float maxPoise = 20f;
+        [Tooltip("How fast poise recovers per second when not taking damage.")]
+        [SerializeField] private float poiseRecoveryRate = 5f;
+        private float currentPoise;
 
         [Header("UI")]
         [Tooltip("Pooled world-space health bar prefab (must have HealthBar + PoolIdentifier).")]
@@ -45,13 +49,13 @@ namespace Geneforge.Gameplay.Characters.Enemies
 
         public GameObject DamageTextPrefab => damageTextPrefab;
         public Vector3 DamageTextOffset => damageTextOffset;
-        public float[] HitHealthThresholds => hitHealthThresholds;
         public float HealthBarHeightOverride => healthBarHeightOverride;
 
 
         // Events
         public event Action OnFirstHit;
         public event Action<float> OnDamaged;
+        public event Action OnStaggered;   // NEW: triggered only when poise is broken
         public event Action OnDied;        // NEW: death event for brains / systems
 
         private bool hasBeenHit = false;
@@ -60,7 +64,7 @@ namespace Geneforge.Gameplay.Characters.Enemies
         public bool HasBeenHit => hasBeenHit; // NEW: in case brains/UI need this
         public bool IsDead => isDead;         // NEW: convenient read for brains
 
-        int _hitReactionIndex = 0;
+        float _lastDamageTime;
 
         // Coroutines
         private Coroutine _despawnCo;
@@ -70,6 +74,7 @@ namespace Geneforge.Gameplay.Characters.Enemies
         void Awake()
         {
             currentHealth = maxHealth;
+            currentPoise = maxPoise;
             SpawnHealthBarIfNeeded();
         }
 
@@ -77,11 +82,22 @@ namespace Geneforge.Gameplay.Characters.Enemies
         {
             // If enemies are reused or enabled/disabled, ensure health and bar are valid
             currentHealth = Mathf.Clamp(currentHealth, 0f, maxHealth);
+            currentPoise = maxPoise;
             isDead = false;
             hasBeenHit = false;
-            _hitReactionIndex = 0;
 
             SpawnHealthBarIfNeeded();
+        }
+
+        void Update()
+        {
+            if (isDead) return;
+
+            // Recover poise over time
+            if (currentPoise < maxPoise && Time.time > _lastDamageTime + 1.5f)
+            {
+                currentPoise = Mathf.MoveTowards(currentPoise, maxPoise, poiseRecoveryRate * Time.deltaTime);
+            }
         }
 
         void OnDisable()
@@ -115,24 +131,30 @@ namespace Geneforge.Gameplay.Characters.Enemies
             }
 
             currentHealth = Mathf.Max(0f, currentHealth - dmg);
+            _lastDamageTime = Time.time;
 
             SpawnDamageText(dmg, wasCrit);
 
             OnDamaged?.Invoke(dmg);
 
             // =====================================================
-            // HIT REACTION — DISPARA SÓ 3 VEZES NO TOTAL
+            // POISE SYSTEM — Only stagger if poise is depleted
             // =====================================================
             if (currentHealth > 0f && animator != null)
             {
-                if (_hitReactionIndex < hitHealthThresholds.Length)
-                {
-                    float thresholdHP = maxHealth * hitHealthThresholds[_hitReactionIndex];
+                // check if the brain has hyper armor
+                var brain = GetComponent<EnemyBrainBase>();
+                bool canStagger = brain == null || !brain.HasHyperArmor;
 
-                    if (currentHealth <= thresholdHP)
+                if (canStagger)
+                {
+                    currentPoise -= dmg;
+
+                    if (currentPoise <= 0f)
                     {
                         animator.SetTrigger(damagedTrigger);
-                        _hitReactionIndex++; // nunca mais repete este marco
+                        currentPoise = maxPoise; // Reset poise after a successful stagger
+                        OnStaggered?.Invoke();  // Notify brain to pause
                     }
                 }
             }

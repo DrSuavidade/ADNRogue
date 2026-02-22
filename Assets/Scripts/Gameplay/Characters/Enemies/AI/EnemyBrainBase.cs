@@ -27,6 +27,12 @@ namespace Geneforge.Gameplay.Characters.Enemies.AI
         [SerializeField] protected LayerMask lineOfSightMask = ~0;
         [SerializeField] protected float lineOfSightPadding = 0.1f;
 
+        [Header("Professional Combat")]
+        [Tooltip("If true, this enemy won't be staggered/interrupted by damage animations (useful for bosses).")]
+        [SerializeField] protected bool hasHyperArmor = false;
+
+        public bool HasHyperArmor => hasHyperArmor;
+
         protected PlayerHealth playerHealth;
 
         protected Vector3 spawnPosition;
@@ -83,6 +89,7 @@ namespace Geneforge.Gameplay.Characters.Enemies.AI
             if (enemy != null)
             {
                 enemy.OnDamaged += HandleDamaged;
+                enemy.OnStaggered += HandleStaggered;
                 enemy.OnFirstHit += HandleFirstHit;
                 enemy.OnDied += HandleOwnerDied;
             }
@@ -93,34 +100,54 @@ namespace Geneforge.Gameplay.Characters.Enemies.AI
             if (enemy != null)
             {
                 enemy.OnDamaged -= HandleDamaged;
+                enemy.OnStaggered -= HandleStaggered;
                 enemy.OnFirstHit -= HandleFirstHit;
                 enemy.OnDied -= HandleOwnerDied;
             }
         }
 
         protected virtual void Update()
-{
-    if (isDead || enemy == null || enemy.IsDead) return;
-
-    // 👉 Se estiver na animação de Hit, não corremos o cérebro (não há movimento)
-    if (animator != null)
-    {
-        var state = animator.GetCurrentAnimatorStateInfo(0);
-
-        // Usa o nome OU a tag "Hit" – ajusta ao que tens no Animator
-        if (state.IsName("Hit") || state.IsTag("Hit"))
         {
-            return;
-        }
-    }
+            if (isDead || enemy == null || enemy.IsDead) return;
 
-    TickBrain(Time.deltaTime);
-}
+            // 👉 LOCK ANIMATION CHECK
+            // Se o Animator estiver numa animação de "Hit" ou "Attack", bloqueamos o cérebro (sem movimento nem rotação involuntária)
+            if (animator != null)
+            {
+                var state = animator.GetCurrentAnimatorStateInfo(0);
+                
+                // Verificamos Tags e Nomes comuns (Attack, Attack2, Attack3, Hit)
+                bool isLocked = state.IsTag("Hit") || state.IsName("Hit") || state.IsName("Damaged") ||
+                                state.IsTag("Attack") || state.IsName("Attack") || 
+                                state.IsName("Attack2") || state.IsName("Attack3") ||
+                                state.IsName("AttackB") || state.IsName("AttackC");
+
+                // Também verificamos se estamos a transitar para um destes estados
+                if (animator.IsInTransition(0))
+                {
+                    var nextState = animator.GetNextAnimatorStateInfo(0);
+                    isLocked |= nextState.IsTag("Hit") || nextState.IsName("Hit") || nextState.IsName("Damaged") ||
+                                nextState.IsTag("Attack") || nextState.IsName("Attack") || 
+                                nextState.IsName("Attack2") || nextState.IsName("Attack3") ||
+                                nextState.IsName("AttackB") || nextState.IsName("AttackC");
+                }
+
+                if (isLocked)
+                {
+                    // Forçamos o Speed a 0 para garantir que as pernas não se mexem
+                    animator.SetFloat("Speed", 0f);
+                    return;
+                }
+            }
+
+            TickBrain(Time.deltaTime);
+        }
 
         protected abstract void TickBrain(float deltaTime);
 
         protected virtual void HandleFirstHit() { }
         protected virtual void HandleDamaged(float dmg) { }
+        protected virtual void HandleStaggered() { }
 
         public virtual void OnOwnerDied()
         {
@@ -138,25 +165,14 @@ namespace Geneforge.Gameplay.Characters.Enemies.AI
         // Helpers
         // --------------------------------------------------------------------
 
-     protected void MoveTowards(Vector3 worldTarget, float speed)
-{
-    if (speed <= 0f) return;
-
-    // ⬇️ NOVO: se o Animator estiver numa animação de ataque, não mexemos o inimigo
-    if (animator != null)
-    {
-        var state = animator.GetCurrentAnimatorStateInfo(0);
-
-        // Se o estado atual tiver nome/tag "Attack", não mover
-        if (state.IsName("Attack") || state.IsTag("Attack"))
+        protected void MoveTowards(Vector3 worldTarget, float speed)
         {
-            animator.SetFloat("Speed", 0f);
-            return;
-        }
-    }
-    // ⬆️ FIM DO NOVO BLOCO
+            if (speed <= 0f) return;
 
-    Vector3 pos = transform.position;
+            // Nota: O bloqueio de movimento durante Attack/Hit já é tratado no Update() global.
+            // Se chegamos aqui, o cérebro está livre para se mover.
+
+            Vector3 pos = transform.position;
     Vector3 to = worldTarget - pos;
     to.y = 0f;
 

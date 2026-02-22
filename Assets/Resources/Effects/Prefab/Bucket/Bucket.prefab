@@ -80,7 +80,7 @@ PrefabInstance:
       addedObject: {fileID: 98841460866901862}
     - targetCorrespondingSourceObject: {fileID: 919132149155446097, guid: 04bd6c1c2d252544b89978775998dd26, type: 3}
       insertIndex: -1
-      addedObject: {fileID: 4202625480516542180}
+      addedObject: {fileID: 6354970685072149020}
   m_SourcePrefab: {fileID: 100100000, guid: 04bd6c1c2d252544b89978775998dd26, type: 3}
 --- !u!1 &2020671304569565649 stripped
 GameObject:
@@ -135,7 +135,7 @@ SphereCollider:
   serializedVersion: 3
   m_Radius: 0.014831085
   m_Center: {x: 0.001833452, y: 0, z: 0}
---- !u!114 &4202625480516542180
+--- !u!114 &6354970685072149020
 MonoBehaviour:
   m_ObjectHideFlags: 0
   m_CorrespondingSourceObject: {fileID: 0}
@@ -144,10 +144,10 @@ MonoBehaviour:
   m_GameObject: {fileID: 2020671304569565649}
   m_Enabled: 1
   m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: 80033ccc67f55b941bf2b62f42f665cf, type: 3}
+  m_Script: {fileID: 11500000, guid: 7a1d00267933f6d41b7e150f7da9f566, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  damage: 20
+  damage: 12
   hitMask:
     serializedVersion: 2
     m_Bits: 8

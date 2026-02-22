@@ -13,7 +13,7 @@ MonoBehaviour:
   m_Name: T_R_Drunk
   m_EditorClassIdentifier: 
   displayName: Drunk
-  maxHealth: 10
+  maxHealth: 120
   baseMoveSpeed: 3
   animatorController: {fileID: 9100000, guid: 938316e7aa9effe47bb9cd81bd6fb99a, type: 2}
   melee:

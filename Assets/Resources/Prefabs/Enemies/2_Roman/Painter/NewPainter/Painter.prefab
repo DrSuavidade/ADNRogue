@@ -332,17 +332,15 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 04262b82bdec8064fb09624bede68c08, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  maxHealth: 5
+  maxHealth: 55
   animator: {fileID: 6201851591488493211}
   damagedTrigger: Damaged
   deathTrigger: Death
   deathAnimDuration: 1
   damageTextPrefab: {fileID: 8104875995613135839, guid: 51bfa69456bef62438805f10c2608f9f, type: 3}
   damageTextOffset: {x: 0, y: 2.5, z: 0}
-  hitHealthThresholds:
-  - 0.7
-  - 0.4
-  - 0.15
+  maxPoise: 12
+  poiseRecoveryRate: 6
   healthBarPrefab: {fileID: 7692226100105962595, guid: fbae99ce307c85f42989e3e9d541584f, type: 3}
   healthBarHeightOverride: -1
 --- !u!114 &2849915559385071011
@@ -368,6 +366,7 @@ MonoBehaviour:
     serializedVersion: 2
     m_Bits: 8
   lineOfSightPadding: 0.1
+  hasHyperArmor: 0
   wanderRadius: 6
   wanderInterval: 4
   wanderSpeed: 2
@@ -405,7 +404,7 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   firePoint: {fileID: 2820032179221422656}
   inkSplashPrefab: {fileID: 4356832972467561043, guid: 7288930a702d4e0428704b68b0c7c5a1, type: 3}
-  paintBucketPrefab: {fileID: 0}
+  paintBucketPrefab: {fileID: 2020671304569565649, guid: d1675baeca730d94895c4557de259a13, type: 3}
   closeRangeThreshold: 8
   inkDamage: 10
   bucketDamage: 25

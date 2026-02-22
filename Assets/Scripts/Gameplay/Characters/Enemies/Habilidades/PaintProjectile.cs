@@ -2,7 +2,7 @@ using UnityEngine;
 using Geneforge.Gameplay.Characters.Player;
 using Geneforge.Gameplay.Characters.Enemies;
 
-namespace Geneforge.Gameplay.Characters.Enemies.Eras.Roman
+namespace Geneforge.Gameplay.Characters.Enemies.Habilidades
 {
     public class PaintProjectile : MonoBehaviour
     {
@@ -42,14 +42,15 @@ namespace Geneforge.Gameplay.Characters.Enemies.Eras.Roman
             {
                 Vector3 spawnPos = transform.position;
 
-                // Se batermos em algo, tentamos encontrar o chão exato abaixo com um raio
-                if (Physics.Raycast(transform.position + Vector3.up, Vector3.down, out RaycastHit hit, 5f))
+                // Raycast melhorado: ignora Triggers (outras poças/projéteis) e procura o chão real
+                if (Physics.Raycast(transform.position + Vector3.up * 2.0f, Vector3.down, out RaycastHit hit, 20f, Physics.AllLayers, QueryTriggerInteraction.Ignore))
                 {
-                    spawnPos = hit.point + new Vector3(0, 0.05f, 0); // Altura de segurança para ser visível
+                    spawnPos = hit.point + new Vector3(0, 0.02f, 0); 
                 }
                 else
                 {
-                    spawnPos = transform.position + new Vector3(0, 0.05f, 0);
+                    // Se falhar, tenta usar a posição atual mas baixa (Y=0 ou próximo do pivot do inimigo)
+                    spawnPos = new Vector3(transform.position.x, 0.02f, transform.position.z);
                 }
 
                 GameObject puddle = Instantiate(puddlePrefab, spawnPos, Quaternion.Euler(90, 0, 0));

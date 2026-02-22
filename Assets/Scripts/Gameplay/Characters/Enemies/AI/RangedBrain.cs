@@ -66,7 +66,7 @@ namespace Geneforge.Gameplay.Characters.Enemies.AI
             if (isRepositioning)
             {
                 float sqr = (transform.position - repositionTarget).sqrMagnitude;
-                if (sqr <= 0.25f)
+                if (sqr <= 0.4f)
                 {
                     // Chegou ao ponto pretendido
                     isRepositioning = false;
@@ -79,28 +79,28 @@ namespace Geneforge.Gameplay.Characters.Enemies.AI
                     MoveTowards(repositionTarget, wanderSpeed * 1.5f);
                 }
 
-                return; // muito importante: nada de ataques aqui
+                return; // importante: nada de ataques durante a corrida
             }
 
-     if (dist < minRange +2f)
-{
-    StartReposition();
-    return;
-}
-
+            // 2) Se o player está demasiado perto, fugir
+            if (dist < minRange)
+            {
+                StartReposition();
+                return;
+            }
 
             // 3) Está demasiado longe da distância ideal → aproximar
-            if (dist > preferredRange)
+            if (dist > preferredRange + 1.5f)
             {
                 MoveTowards(target.position, wanderSpeed * 1.2f);
                 return;
             }
 
             // 4) Estamos na “zona ideal” → parar, virar e atacar
+            if (animator != null) animator.SetFloat("Speed", 0f);
             FaceTarget();
 
-            // Não chamamos Strafe(dt); -> deixamos de andar às voltas ao jogador
-
+            // Só tenta atacar se estiver "zona ideal" E estiver minimamente virado para o player
             TryAttack();
         }
 
@@ -125,11 +125,22 @@ namespace Geneforge.Gameplay.Characters.Enemies.AI
             if (!IsAttackReady(ref lastAttackTime, attackRate))
                 return;
 
+            // --- PROTEÇÃO CONTRA TIRO DE COSTAS ---
+            if (target != null)
+            {
+                Vector3 toTarget = (target.position - transform.position);
+                toTarget.y = 0;
+                if (toTarget.sqrMagnitude > 0.001f)
+                {
+                    float angle = Vector3.Angle(transform.forward, toTarget.normalized);
+                    // Se o ângulo for maior que 40 graus, ainda está a rodar. 
+                    if (angle > 40f)
+                        return;
+                }
+            }
+
             // Disparar animação
             TriggerAttackAnim();
-
-            // A parte de lançar a lança / disparar projétil
-            // fica a cargo do Animation Event + RangedAttackExecutor
         }
 
         void TriggerAttackAnim()
@@ -150,7 +161,7 @@ namespace Geneforge.Gameplay.Characters.Enemies.AI
             }
         }
 
-        // ---------- Reposicionar quando o player está demasiado perto ----------
+        // ---------- Reposicionar (IA Inteligente para procurar espaço) ----------
 
         void StartReposition()
         {
@@ -160,29 +171,71 @@ namespace Geneforge.Gameplay.Characters.Enemies.AI
                 return;
             }
 
-            // Direção do player -> inimigo (para fugir nessa direção)
-            Vector3 toEnemy = transform.position - target.position;
-            toEnemy.y = 0f;
+            float avoidRadius = preferredRange;
+            Vector3 bestPoint = transform.position;
+            float bestScore = -1000f;
 
-            if (toEnemy.sqrMagnitude < 0.01f)
+            // Vamos testar 8 direções para encontrar um "safe spot"
+            Vector3 toEnemy = (transform.position - target.position).normalized;
+
+            for (int i = 0; i < 8; i++)
             {
-                // Estamos demasiado em cima do player, escolhe uma direção qualquer
-                Vector2 rnd2D = Random.insideUnitCircle.normalized;
-                toEnemy = new Vector3(rnd2D.x, 0f, rnd2D.y);
+                float angleDegrees = i * 45f;
+                Vector3 directionFromPlayer = Quaternion.Euler(0, angleDegrees, 0) * Vector3.forward;
+                Vector3 candidatePoint = target.position + directionFromPlayer * avoidRadius;
+
+                float score = 0f;
+
+                // 1. Queremos fugir do sítio atual, mas PRIORIZAR manter o player à frente
+                score += Vector3.Distance(transform.position, candidatePoint) * 0.4f;
+
+                // 2. PENALIZAÇÃO CRÍTICA: Se o ponto estiver do "outro lado" do player, 
+                // o inimigo teria de passar por cima dele.
+                // Direção do player para o ponto candidato
+                Vector3 toCandidate = (candidatePoint - target.position).normalized;
+                float alignment = Vector3.Dot(toEnemy, toCandidate);
+                
+                // Se alignment < 0, o ponto está do lado oposto do player em relação ao inimigo
+                // Se alignment for baixo, o inimigo vai passar demasiado perto do player
+                if (alignment < 0.2f) 
+                {
+                    score -= 100f; // Penalização pesada para não vir "para cima" do player
+                }
+
+                // 3. Verificar Line of Sight
+                if (HasLineOfSightFrom(candidatePoint, target.position))
+                    score += 25f;
+                else
+                    score -= 15f;
+
+                // 4. Evitar pontos dentro de obstáculos
+                if (Physics.CheckSphere(candidatePoint + Vector3.up * 1f, 0.7f, lineOfSightMask, QueryTriggerInteraction.Ignore))
+                    score -= 60f;
+
+                if (score > bestScore)
+                {
+                    bestScore = score;
+                    bestPoint = candidatePoint;
+                }
             }
-            else
-            {
-                toEnemy.Normalize();
-            }
 
-            float desiredRadius = Mathf.Max(minRange, preferredRange);
-
-            repositionTarget = target.position + toEnemy * desiredRadius;
-
+            repositionTarget = bestPoint;
             isRepositioning = true;
 
             if (animator != null)
-                animator.SetFloat("Speed", 1f); // se usares isto para blend de run
+                animator.SetFloat("Speed", 1f); 
+        }
+
+        private bool HasLineOfSightFrom(Vector3 from, Vector3 to)
+        {
+            Vector3 origin = from + Vector3.up * 1f;
+            Vector3 dest = to + Vector3.up * 1f;
+            Vector3 dir = dest - origin;
+            float dist = dir.magnitude;
+            
+            if (dist <= 0.1f) return true;
+
+            return !Physics.Raycast(origin, dir.normalized, dist, lineOfSightMask, QueryTriggerInteraction.Ignore);
         }
     }
 }

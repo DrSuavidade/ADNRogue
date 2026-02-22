@@ -13,7 +13,7 @@ MonoBehaviour:
   m_Name: T_R_MaceMaster
   m_EditorClassIdentifier: 
   displayName: Mace Master
-  maxHealth: 10
+  maxHealth: 50
   baseMoveSpeed: 3
   animatorController: {fileID: 9100000, guid: 3b5c707641bd3ae4cb5522828ee96a80, type: 2}
   melee:

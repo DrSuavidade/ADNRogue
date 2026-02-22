@@ -13,7 +13,7 @@ MonoBehaviour:
   m_Name: T_R_Gladiator
   m_EditorClassIdentifier: 
   displayName: Gladiator
-  maxHealth: 10
+  maxHealth: 100
   baseMoveSpeed: 3
   animatorController: {fileID: 9100000, guid: ebd6e14a35b2cfb45942277c746ee8a9, type: 2}
   melee:

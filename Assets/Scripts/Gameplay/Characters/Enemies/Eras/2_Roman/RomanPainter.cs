@@ -2,6 +2,7 @@ using UnityEngine;
 using Geneforge.Gameplay.Characters.Enemies;
 using System.Collections;
 using System.Collections.Generic;
+using Geneforge.Gameplay.Characters.Enemies.Habilidades;
 
 namespace Geneforge.Gameplay.Characters.Enemies.Eras.Roman
 {

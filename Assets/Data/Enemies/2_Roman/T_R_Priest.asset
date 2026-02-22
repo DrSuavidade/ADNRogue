@@ -13,7 +13,7 @@ MonoBehaviour:
   m_Name: T_R_Priest
   m_EditorClassIdentifier: 
   displayName: Priest
-  maxHealth: 10
+  maxHealth: 50
   baseMoveSpeed: 3
   animatorController: {fileID: 9100000, guid: 9d0c8f77aee22a541b10def17961b94f, type: 2}
   melee:

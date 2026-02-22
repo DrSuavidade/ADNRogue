@@ -79,11 +79,19 @@ namespace Geneforge.Gameplay.Characters.Enemies.AI
             if (!IsAttackReady(ref lastAttackTime, attackRate))
                 return;
 
+            // Anti-backfire check
+            if (target != null)
+            {
+                Vector3 toTarget = (target.position - transform.position);
+                toTarget.y = 0;
+                if (toTarget.sqrMagnitude > 0.001f)
+                {
+                    float angle = Vector3.Angle(transform.forward, toTarget.normalized);
+                    if (angle > 40f) return;
+                }
+            }
+
             TriggerAttackAnim();
-            // Aqui é onde podes:
-            // - disparar projéteis
-            // - chamar uma ability
-            // - ou simplesmente não fazer nada por agora
         }
 
         void TriggerAttackAnim()

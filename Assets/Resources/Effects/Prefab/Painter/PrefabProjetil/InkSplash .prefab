@@ -13,7 +13,7 @@ GameObject:
   - component: {fileID: 4509530817167308643}
   - component: {fileID: 7242804422698815023}
   - component: {fileID: 1046903695613506497}
-  - component: {fileID: 2682880168512890936}
+  - component: {fileID: 2698370222318671536}
   m_Layer: 0
   m_Name: 'InkSplash '
   m_TagString: Untagged
@@ -208,7 +208,7 @@ TrailRenderer:
   m_Autodestruct: 0
   m_Emitting: 1
   m_ApplyActiveColorSpace: 1
---- !u!114 &2682880168512890936
+--- !u!114 &2698370222318671536
 MonoBehaviour:
   m_ObjectHideFlags: 0
   m_CorrespondingSourceObject: {fileID: 0}
@@ -217,7 +217,7 @@ MonoBehaviour:
   m_GameObject: {fileID: 4356832972467561043}
   m_Enabled: 1
   m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: 80033ccc67f55b941bf2b62f42f665cf, type: 3}
+  m_Script: {fileID: 11500000, guid: 7a1d00267933f6d41b7e150f7da9f566, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
   damage: 10

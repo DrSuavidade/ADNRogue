@@ -13,7 +13,7 @@ MonoBehaviour:
   m_Name: T_R_Baker
   m_EditorClassIdentifier: 
   displayName: Baker
-  maxHealth: 10
+  maxHealth: 30
   baseMoveSpeed: 3
   animatorController: {fileID: 9100000, guid: 6e3ffb4510a36af4a97e64c7ee06c61f, type: 2}
   melee:

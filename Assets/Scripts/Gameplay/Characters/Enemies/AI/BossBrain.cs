@@ -33,6 +33,15 @@ namespace Geneforge.Gameplay.Characters.Enemies.AI
 
             FaceTarget();
 
+            // Anti-backfire check: Wait until boss is facing the player
+            Vector3 toTarget = (target.position - transform.position);
+            toTarget.y = 0;
+            if (toTarget.sqrMagnitude > 0.001f)
+            {
+                float angle = Vector3.Angle(transform.forward, toTarget.normalized);
+                if (angle > 40f) return;
+            }
+
             float attackRate = GetCurrentAttackRate();
             if (IsAttackReady(ref lastAttackTime, attackRate))
             {

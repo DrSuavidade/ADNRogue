@@ -91,6 +91,10 @@ PrefabInstance:
       propertyPath: m_Name
       value: Drunk
       objectReference: {fileID: 0}
+    - target: {fileID: 919132149155446097, guid: 7b820ba840a15b845b0cc404563a7a13, type: 3}
+      propertyPath: m_TagString
+      value: Enemy
+      objectReference: {fileID: 0}
     m_RemovedComponents: []
     m_RemovedGameObjects: []
     m_AddedGameObjects:
@@ -193,6 +197,7 @@ MonoBehaviour:
     serializedVersion: 2
     m_Bits: 8
   lineOfSightPadding: 0.1
+  hasHyperArmor: 0
   wanderRadius: 6
   wanderInterval: 4
   wanderSpeed: 2
@@ -215,17 +220,15 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 04262b82bdec8064fb09624bede68c08, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  maxHealth: 5
+  maxHealth: 120
   animator: {fileID: 3483874323761315330}
   damagedTrigger: Damaged
   deathTrigger: Death
   deathAnimDuration: 1
   damageTextPrefab: {fileID: 0}
   damageTextOffset: {x: 0, y: 2.5, z: 0}
-  hitHealthThresholds:
-  - 0.7
-  - 0.4
-  - 0.15
+  maxPoise: 25
+  poiseRecoveryRate: 4
   healthBarPrefab: {fileID: 0}
   healthBarHeightOverride: -1
 --- !u!114 &2759295566357338622
@@ -260,3 +263,6 @@ MonoBehaviour:
   hitMask:
     serializedVersion: 2
     m_Bits: 8
+  puddlePrefab: {fileID: 3226897963492343564, guid: ccc1a595c2029be45b9eb8c6fc11b726, type: 3}
+  wobbleAmplitude: 1.5
+  wobbleFrequency: 5

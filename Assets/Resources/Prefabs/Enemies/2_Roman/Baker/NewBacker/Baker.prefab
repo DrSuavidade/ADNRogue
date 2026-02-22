@@ -276,6 +276,7 @@ MonoBehaviour:
     serializedVersion: 2
     m_Bits: 8
   lineOfSightPadding: 0.1
+  hasHyperArmor: 0
   stayStationary: 0
   rotateInPlace: 1
   wanderRadius: 5
@@ -301,17 +302,15 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 04262b82bdec8064fb09624bede68c08, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  maxHealth: 5
+  maxHealth: 30
   animator: {fileID: 261008765991555941}
   damagedTrigger: Damaged
   deathTrigger: Death
   deathAnimDuration: 1
   damageTextPrefab: {fileID: 0}
   damageTextOffset: {x: 0, y: 2.5, z: 0}
-  hitHealthThresholds:
-  - 0.7
-  - 0.4
-  - 0.15
+  maxPoise: 10
+  poiseRecoveryRate: 5
   healthBarPrefab: {fileID: 0}
   healthBarHeightOverride: -1
 --- !u!114 &9053733091305510742

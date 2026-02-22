@@ -13,7 +13,7 @@ MonoBehaviour:
   m_Name: T_R_Archer
   m_EditorClassIdentifier: 
   displayName: Archer
-  maxHealth: 120
+  maxHealth: 50
   baseMoveSpeed: 3
   animatorController: {fileID: 9100000, guid: f7ffa20c0f1df544e91b491d7ccf99dd, type: 2}
   melee:
