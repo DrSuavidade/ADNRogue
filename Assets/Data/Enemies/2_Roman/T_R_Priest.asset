@@ -27,21 +27,21 @@ MonoBehaviour:
     damagePerHit: 0
     attackVariants: 1
   ranged:
-    detectionRadius: 0
-    wanderRadius: 0
-    wanderInterval: 0
-    wanderSpeed: 0
-    preferredRange: 0
-    minRange: 0
-    strafeSpeed: 0
-    attackRate: 0
-    attackVariants: 1
-  support:
-    followRadiusFromSpawn: 15
-    repositionSpeed: 5
-    detectionRadius: 14
-    supportInterval: 2
+    detectionRadius: 15
+    wanderRadius: 4
+    wanderInterval: 3
+    wanderSpeed: 3
+    preferredRange: 13
+    minRange: 2
+    strafeSpeed: 5
+    attackRate: 1.2
     attackVariants: 2
+  support:
+    followRadiusFromSpawn: 0
+    repositionSpeed: 0
+    detectionRadius: 0
+    supportInterval: 0
+    attackVariants: 1
   animal:
     roamRadius: 0
     roamInterval: 0
@@ -68,7 +68,7 @@ MonoBehaviour:
     attackVariants: 0
   projectile:
     enabled: 0
-    projectilePrefab: {fileID: 0}
+    projectilePrefab: {fileID: 4356832972467561043, guid: 7288930a702d4e0428704b68b0c7c5a1, type: 3}
     spawnOffset: {x: 0, y: 0, z: 0}
     damage: 0
     speed: 0
