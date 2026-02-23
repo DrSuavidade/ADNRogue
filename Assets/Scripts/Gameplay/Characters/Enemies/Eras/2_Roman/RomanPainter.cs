@@ -23,16 +23,23 @@ namespace Geneforge.Gameplay.Characters.Enemies.Eras.Roman
         public float bucketDamage = 25f;  // Dano do balde
 
         public Color[] paintColors = new Color[] { 
-            Color.cyan, 
-            new Color(1f, 0f, 1f), // Magenta
+            Color.red, 
             Color.yellow, 
-            new Color(0.1f, 0.1f, 0.1f) // Black/Ink
+            Color.green, 
+            Color.blue,
+            Color.cyan,
+            new Color(1f, 0f, 1f) // Magenta
         };
 
         [Header("Ink Animation (Attack 1)")]
-        public Sprite[] inkAnimationFrames; // Os teus frames de tinta
+        public Sprite[] inkAnimationFrames; 
         public float inkFPS = 12f;
         public float inkScale = 1.0f;
+
+        [Header("Puddle Animation (Ground)")]
+        public Sprite[] puddleAnimationFrames;
+        public float puddleFPS = 10f;
+        public float puddleScale = 2.0f;
 
         private void OnDrawGizmosSelected()
         {
@@ -61,12 +68,25 @@ namespace Geneforge.Gameplay.Characters.Enemies.Eras.Roman
         {
             if (inkSplashPrefab == null || firePoint == null) return;
 
-            GameObject projectile = Instantiate(inkSplashPrefab, firePoint.position, firePoint.rotation);
+            // --- LÓGICA DE SPAWN HORIZONTAL (Igual ao Disco) ---
+            Vector3 targetCenter = target.position + Vector3.up * 1.2f;
+            Vector3 to = targetCenter - firePoint.position;
+            
+            Vector3 flatDir = to;
+            flatDir.y = 0;
+            if (flatDir.sqrMagnitude < 0.0001f) flatDir = transform.forward;
+
+            // Pegamos a rotação original do prefab (para respeitar o "deitado")
+            Vector3 prefabEuler = inkSplashPrefab.transform.eulerAngles;
+            float targetYaw = Quaternion.LookRotation(flatDir).eulerAngles.y;
+            // Combinamos X e Z do prefab com o Yaw para o player
+            Quaternion spawnRot = Quaternion.Euler(prefabEuler.x, targetYaw, prefabEuler.z);
+
+            GameObject projectile = Instantiate(inkSplashPrefab, firePoint.position, spawnRot);
             
             // Lógica da Animação por Frames
             if (inkAnimationFrames != null && inkAnimationFrames.Length > 0)
             {
-                // Desativa modelos 3D originais para não sobrepor
                 foreach (var r in projectile.GetComponentsInChildren<Renderer>())
                 {
                     if (!(r is SpriteRenderer)) r.enabled = false;
@@ -77,23 +97,26 @@ namespace Geneforge.Gameplay.Characters.Enemies.Eras.Roman
                 
                 animator.Initialize(inkAnimationFrames, inkFPS, SpriteSheetAnimator.AnimationMode.Horizontal);
                 
-                // Aplicamos a escala no componente que contém o SpriteRenderer (que agora pode ser um filho)
                 animator.transform.localScale = Vector3.one * inkScale;
             }
 
-            // Sorteamos uma cor base para a poça se o jato bater em algo
             Color randomColor = paintColors[Random.Range(0, paintColors.Length)];
-            // Passar o dano
+            
             var projScript = projectile.GetComponent<PaintProjectile>();
             if (projScript == null) projScript = projectile.AddComponent<PaintProjectile>();
             projScript.damage = inkDamage;
             projScript.myColor = randomColor; 
+            
+            // Passamos a animação da poça
+            projScript.puddleFrames = puddleAnimationFrames;
+            projScript.puddleFPS = puddleFPS;
+            projScript.puddleScale = puddleScale;
 
             Rigidbody rb = projectile.GetComponent<Rigidbody>();
             if (rb != null)
             {
                 rb.isKinematic = false;
-                Vector3 direction = (target.position + Vector3.up - firePoint.position).normalized;
+                Vector3 direction = (targetCenter - firePoint.position).normalized;
                 rb.linearVelocity = direction * 15f;
             }
         }
@@ -102,10 +125,8 @@ namespace Geneforge.Gameplay.Characters.Enemies.Eras.Roman
         {
             if (paintBucketPrefab == null || target == null) return;
 
-            // SPAWN EM CIMA DO PLAYER (3.5 metros acima para ser rápido e visível)
             Vector3 spawnPos = target.position + Vector3.up * 3.5f;
             
-            // Instancia o balde virado para baixo e com rotação aleatória
             GameObject bucket = Instantiate(paintBucketPrefab, spawnPos, Quaternion.Euler(180, Random.Range(0, 360), 0));
             
             ApplyEffects(bucket, paintColor, false);
@@ -115,20 +136,23 @@ namespace Geneforge.Gameplay.Characters.Enemies.Eras.Roman
             projScript.damage = bucketDamage;
             projScript.myColor = paintColor;
 
+            // Passamos a animação da poça
+            projScript.puddleFrames = puddleAnimationFrames;
+            projScript.puddleFPS = puddleFPS;
+            projScript.puddleScale = puddleScale;
+
             Rigidbody rb = bucket.GetComponent<Rigidbody>();
             if (rb != null)
             {
                 rb.isKinematic = false;
                 rb.useGravity = true;
-                
-                // Forçar a queda vertical
                 rb.linearVelocity = Vector3.down * 5f;
-                // Adicionar um pouco de rotação caótica
                 rb.AddTorque(Random.insideUnitSphere * 4f, ForceMode.Impulse);
             }
 
             Debug.Log($"<color=#{ColorUtility.ToHtmlStringRGB(paintColor)}><b>[PAINTER]</b> Balde invocado sobre o player!</color>");
         }
+
 
         private void ApplyEffects(GameObject obj, Color color, bool isRainbow)
         {

@@ -1,6 +1,6 @@
 using UnityEngine;
 using Geneforge.Gameplay.Characters.Player;
-using Geneforge.Gameplay.Characters.Enemies.Config; // <- para EnemyConfigurator
+using Geneforge.Gameplay.Characters.Enemies.Config;
 
 namespace Geneforge.Gameplay.Characters.Enemies.Eras.Roman
 {
@@ -10,8 +10,9 @@ namespace Geneforge.Gameplay.Characters.Enemies.Eras.Roman
     {
         [Header("Tiro")]
         public float throwSpeed = 22f;
-        public float arcHeight = 0.8f;
+        public float arcHeight = 0.5f; 
         public float damage = 12f;
+        public float discRotationSpeed = 1500f; 
 
         [Tooltip("Layers que o disco pode atingir.")]
         public LayerMask hitMask = ~0;
@@ -25,19 +26,16 @@ namespace Geneforge.Gameplay.Characters.Enemies.Eras.Roman
                 _config = GetComponent<EnemyConfigurator>();
         }
 
-        // Chamado pelo Animation Event na animação de ataque 1
         public void AnimEvent_ThrowDisc()
         {
             ThrowSingleDisc(0f);
         }
 
-        // NOVO: Chamado pelo Animation Event no Attack2
-        // Dispara 3 discos em leque para ser mais difícil mas ainda desviável
         public void AnimEvent_ThrowDiscVolley()
         {
-            ThrowSingleDisc(0f);    // Centro
-            ThrowSingleDisc(-18f);  // Esquerda
-            ThrowSingleDisc(18f);   // Direita
+            ThrowSingleDisc(0f);    
+            ThrowSingleDisc(-18f);  
+            ThrowSingleDisc(18f);   
         }
 
         private void ThrowSingleDisc(float angleOffset)
@@ -51,24 +49,31 @@ namespace Geneforge.Gameplay.Characters.Enemies.Eras.Roman
             Transform origin = transform.Find("ProjectileSpawnPoint");
             if (origin == null) origin = transform;
             
-            Vector3 to = target.position - origin.position;
-            to.y += settings.arcHeight;
-            Vector3 dir = Quaternion.Euler(0, angleOffset, 0) * to.normalized;
-
-            // CORREÇÃO: Pegamos na direção mas "limpamos" a inclinação vertical (Y) 
-            // para que o disco se mantenha horizontal (estilo frisbee) e não aponte para cima.
-            Vector3 flatDir = dir;
+            Vector3 targetCenter = target.position + Vector3.up * 1.2f;
+            Vector3 to = targetCenter - origin.position;
+            
+            Vector3 flatDir = to;
             flatDir.y = 0;
             if (flatDir.sqrMagnitude < 0.0001f) flatDir = transform.forward;
             
-            Quaternion spawnRot = Quaternion.LookRotation(flatDir);
+            // --- CORREÇÃO DE ORIENTAÇÃO ---
+            // Pegamos a rotação original do prefab para respeitar o "deitado" (Pitch/Roll)
+            Vector3 prefabEuler = settings.projectilePrefab.transform.eulerAngles;
+            // Calculamos o ângulo para o player (Yaw)
+            float targetYaw = Quaternion.LookRotation(flatDir).eulerAngles.y + angleOffset;
+            // Combinamos: X e Z do prefab (que o mantêm horizontal) com o Y do alvo
+            Quaternion spawnRot = Quaternion.Euler(prefabEuler.x, targetYaw, prefabEuler.z);
 
             GameObject obj = Instantiate(settings.projectilePrefab, origin.position, spawnRot);
 
             var rb = obj.GetComponent<Rigidbody>();
             if (rb)
             {
-                Vector3 vel = dir * throwSpeed;
+                rb.useGravity = true;
+                Vector3 shootDir = Quaternion.Euler(0, angleOffset, 0) * to.normalized;
+                Vector3 vel = shootDir * throwSpeed;
+                vel.y += arcHeight;
+
 #if UNITY_6000_0_OR_NEWER
                 rb.linearVelocity = vel;
 #else
@@ -78,45 +83,84 @@ namespace Geneforge.Gameplay.Characters.Enemies.Eras.Roman
 
             var proj = obj.GetComponent<RomanDiscProjectile>();
             if (!proj) proj = obj.AddComponent<RomanDiscProjectile>();
-            proj.Init(damage, hitMask);
+            proj.Init(damage, hitMask, discRotationSpeed);
         }
     }
 
-    // Projétil com efeito de rotação (Spin)
     public class RomanDiscProjectile : MonoBehaviour
     {
-        float damage;
-        LayerMask hitMask;
-        public float rotationSpeed = 1200f; // Velocidade do spin
+        private float damage;
+        private LayerMask hitMask;
+        private float rotationSpeed;
+        private float _currentYaw;
+        private float _fixedX;
+        private float _fixedZ;
+        private Rigidbody _rb;
+        private bool _isInitialized;
 
-        public void Init(float dmg, LayerMask mask)
+        public void Init(float dmg, LayerMask mask, float rotSpeed)
         {
             damage = dmg;
             hitMask = mask;
-            Destroy(gameObject, 8f);
+            rotationSpeed = rotSpeed;
+            _rb = GetComponent<Rigidbody>();
+            
+            // Guardamos a rotação inicial (que já veio correta do spawn respeitando o prefab)
+            _fixedX = transform.eulerAngles.x;
+            _fixedZ = transform.eulerAngles.z;
+            _currentYaw = transform.eulerAngles.y;
+            
+            if (_rb != null)
+            {
+                // Travamos os eixos de física para o disco não "tropeçar" ou capotar
+                _rb.constraints = RigidbodyConstraints.FreezeRotationX | RigidbodyConstraints.FreezeRotationZ;
+                _rb.interpolation = RigidbodyInterpolation.Interpolate;
+                _rb.collisionDetectionMode = CollisionDetectionMode.ContinuousDynamic;
+            }
+
+            _isInitialized = true;
+            Destroy(gameObject, 6f);
         }
 
-        void Update()
+        void FixedUpdate()
         {
-            // Profissional: O disco deve manter-se sempre perfeitamente horizontal (paralelo ao chão)
-            // Independentemente da direção do projétil, limpamos rotações em X e Z.
-            Vector3 currentRotation = transform.eulerAngles;
-            float newYaw = currentRotation.y + rotationSpeed * Time.deltaTime;
-            
-            // Forçamos X=0 e Z=0 para ser um "frisbee" profissional
-            transform.rotation = Quaternion.Euler(0, newYaw, 0);
+            if (!_isInitialized || _rb == null) return;
+
+            // ROTAÇÃO HORIZONTAL (Yaw) Preservando o roll/pitch horizontal
+            _currentYaw += rotationSpeed * Time.fixedDeltaTime;
+            // Aplicamos a rotação mantendo o X e Z que o deixam "deitado"
+            _rb.MoveRotation(Quaternion.Euler(_fixedX, _currentYaw, _fixedZ));
+
+            // SUSTENTAÇÃO (LIFT)
+            Vector3 hVel = _rb.linearVelocity;
+            hVel.y = 0;
+            float horizontalSpeed = hVel.magnitude;
+
+            if (horizontalSpeed > 1f)
+            {
+                float liftStrength = Mathf.Min(horizontalSpeed * 0.35f, 8.5f);
+                _rb.AddForce(Vector3.up * liftStrength, ForceMode.Acceleration);
+            }
         }
 
         void OnTriggerEnter(Collider other)
         {
-            if ((hitMask.value & (1 << other.gameObject.layer)) == 0)
-                return;
+            if (!_isInitialized) return;
 
             var hp = other.GetComponent<PlayerHealth>();
             if (hp != null)
+            {
                 hp.ApplyDamage(damage);
+                Destroy(gameObject);
+                return;
+            }
 
-            Destroy(gameObject);
+            if (!other.isTrigger && ((hitMask.value & (1 << other.gameObject.layer)) != 0))
+            {
+                Destroy(gameObject);
+            }
         }
     }
 }
+
+

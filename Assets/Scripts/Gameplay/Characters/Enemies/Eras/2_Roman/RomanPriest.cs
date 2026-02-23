@@ -102,35 +102,26 @@ namespace Geneforge.Gameplay.Characters.Enemies.Eras.Roman
         {
             if (target == null) yield break;
             
-            // Ativa imunidade como solicitado ("ficam imunes ao dano")
+            // PREVENIR STACKING: Se já tiver escudo, não aplicamos outro
+            if (target.transform.Find("PriestShieldFX") != null) yield break;
+
             target.IsInvulnerable = true;
 
             GameObject shieldObj = null;
             if (shieldPrefab != null)
             {
-                // Instancia e ajusta a posição (subindo pelo offset)
                 Vector3 spawnPos = target.transform.position + Vector3.up * shieldYOffset;
                 shieldObj = Instantiate(shieldPrefab, spawnPos, Quaternion.identity, target.transform);
-                
-                // Ajusta o tamanho da escala
+                shieldObj.name = "PriestShieldFX"; // Nome fixo para detecção
                 shieldObj.transform.localScale = Vector3.one * shieldScale;
 
-                // Configura o animador de sprites (Modo Billboard para a esfera)
                 var animator = shieldObj.GetComponent<SpriteSheetAnimator>();
                 if (animator == null) animator = shieldObj.AddComponent<SpriteSheetAnimator>();
-                
                 animator.Initialize(shieldAnimationFrames, shieldFPS, SpriteSheetAnimator.AnimationMode.Billboard);
             }
 
-            float elapsed = 0f;
-            while (elapsed < shieldDuration)
-            {
-                if (target == null || target.IsDead) break;
-                elapsed += Time.deltaTime;
-                yield return null;
-            }
+            yield return new WaitForSeconds(shieldDuration);
 
-            // Finalização: remove imunidade e limpa o visual
             if (target != null)
             {
                 target.IsInvulnerable = false;
@@ -147,21 +138,22 @@ namespace Geneforge.Gameplay.Characters.Enemies.Eras.Roman
         {
             if (target == null) yield break;
             
+            // PREVENIR STACKING: Se já estiver em fúria, não somamos stats
+            if (target.transform.Find("PriestFuryFX") != null) yield break;
+
             float oldSpeed = target.Animator != null ? target.Animator.speed : 1f;
             if (target.Animator != null) target.Animator.speed = oldSpeed * attackSpeedMultiplier;
 
             GameObject furyObj = null;
             if (furyPrefab != null)
             {
-                // Instancia rente ao chão
                 Vector3 spawnPos = target.transform.position + Vector3.up * furyYOffset;
                 furyObj = Instantiate(furyPrefab, spawnPos, Quaternion.identity, target.transform);
+                furyObj.name = "PriestFuryFX"; // Nome fixo para detecção
                 furyObj.transform.localScale = Vector3.one * furyScale;
 
-                // Configura o animador de sprites (Modo Floor para ficar deitado no chão)
                 var animator = furyObj.GetComponent<SpriteSheetAnimator>();
                 if (animator == null) animator = furyObj.AddComponent<SpriteSheetAnimator>();
-                
                 animator.Initialize(furyAnimationFrames, furyFPS, SpriteSheetAnimator.AnimationMode.Floor);
             }
 
@@ -177,5 +169,6 @@ namespace Geneforge.Gameplay.Characters.Enemies.Eras.Roman
                 Destroy(furyObj);
             }
         }
+
     }
 }

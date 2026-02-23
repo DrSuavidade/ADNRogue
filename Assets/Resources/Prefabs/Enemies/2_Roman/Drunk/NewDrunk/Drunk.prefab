@@ -264,5 +264,18 @@ MonoBehaviour:
     serializedVersion: 2
     m_Bits: 8
   puddlePrefab: {fileID: 3226897963492343564, guid: ccc1a595c2029be45b9eb8c6fc11b726, type: 3}
+  puddleAnimationFrames:
+  - {fileID: -723012710, guid: d99ae3c7130833f4da0ef64f6aab6367, type: 3}
+  - {fileID: -1413326705, guid: d99ae3c7130833f4da0ef64f6aab6367, type: 3}
+  - {fileID: 1916177417, guid: d99ae3c7130833f4da0ef64f6aab6367, type: 3}
+  - {fileID: 1855946669, guid: d99ae3c7130833f4da0ef64f6aab6367, type: 3}
+  - {fileID: -1616432248, guid: d99ae3c7130833f4da0ef64f6aab6367, type: 3}
+  - {fileID: 426196747, guid: d99ae3c7130833f4da0ef64f6aab6367, type: 3}
+  - {fileID: 1406742583, guid: d99ae3c7130833f4da0ef64f6aab6367, type: 3}
+  - {fileID: 935108305, guid: d99ae3c7130833f4da0ef64f6aab6367, type: 3}
+  - {fileID: -1107696287, guid: d99ae3c7130833f4da0ef64f6aab6367, type: 3}
+  - {fileID: 1009841257, guid: d99ae3c7130833f4da0ef64f6aab6367, type: 3}
+  puddleFPS: 10
+  puddleScale: 2.5
   wobbleAmplitude: 1.5
   wobbleFrequency: 5
