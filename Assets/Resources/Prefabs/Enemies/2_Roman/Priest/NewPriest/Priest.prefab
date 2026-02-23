@@ -253,6 +253,38 @@ MonoBehaviour:
   shieldDuration: 4
   furyDuration: 5
   attackSpeedMultiplier: 1.4
+  shieldPrefab: {fileID: 3098376143577340443, guid: 6176381a2f004184e9f443951fbf54bc, type: 3}
+  shieldAnimationFrames:
+  - {fileID: 21300000, guid: 90df7df63ef80ae419691576c6ccc39e, type: 3}
+  - {fileID: 21300000, guid: a8fe2ec2388d9a94498d0504145617e9, type: 3}
+  - {fileID: 21300000, guid: 42b854a548827654b858f0ccca76c022, type: 3}
+  - {fileID: 21300000, guid: 83ace20eccaefd748996f2cd1ba278c4, type: 3}
+  - {fileID: 21300000, guid: 9f7fc71bdd7a10b418bbb6aad76bea1f, type: 3}
+  - {fileID: 21300000, guid: dc648ef7b62589047a0860f0d641c9ca, type: 3}
+  - {fileID: 21300000, guid: 5b9a9c6f09a3d9b4eb52e26944df4d80, type: 3}
+  - {fileID: 21300000, guid: cc6e58e3da54c8842a6e6aa30a665ef6, type: 3}
+  - {fileID: 21300000, guid: afc360f9a40283849b2549ccf33e61de, type: 3}
+  - {fileID: 21300000, guid: 8c12f86a846b6c349af24dea6b214ac1, type: 3}
+  - {fileID: 21300000, guid: 08044a059a1aa1f4b8a5724f0c187409, type: 3}
+  shieldFPS: 12
+  shieldScale: 0.7
+  shieldYOffset: 1
+  furyPrefab: {fileID: 3098376143577340443, guid: 6176381a2f004184e9f443951fbf54bc, type: 3}
+  furyAnimationFrames:
+  - {fileID: 21300000, guid: 3c0142f55b033e14abedb377b5a38d05, type: 3}
+  - {fileID: 21300000, guid: c7ceb83d00049e44c9cd53b575d34b9e, type: 3}
+  - {fileID: 21300000, guid: 3ef4ebe8ef352dc44a241bdb22d03067, type: 3}
+  - {fileID: 21300000, guid: 951d5499e468f55408204176f0595b9d, type: 3}
+  - {fileID: 21300000, guid: 279825197dd497d4fba50e0932b621fb, type: 3}
+  - {fileID: 21300000, guid: 5a106eb4279f186438ced91a8b143da8, type: 3}
+  - {fileID: 21300000, guid: 8c4ce01a241463849b9373b2a2e6040c, type: 3}
+  - {fileID: 21300000, guid: f1a2338f530e16b48aeaed00d28fc736, type: 3}
+  - {fileID: 21300000, guid: 44a7380c22d8d3e4f88828e288b4303b, type: 3}
+  - {fileID: 21300000, guid: 5ae92af6f7bcb1d47b6e92ec1bd5ee2b, type: 3}
+  - {fileID: 21300000, guid: 41485031f76a25247bdccb12d3cb8a7a, type: 3}
+  furyFPS: 12
+  furyScale: 0.7
+  furyYOffset: 0.05
 --- !u!4 &3782212650392415171 stripped
 Transform:
   m_CorrespondingSourceObject: {fileID: 1852576806548013000, guid: 6cc7968a8db41fd49ba18ffb5a346463, type: 3}

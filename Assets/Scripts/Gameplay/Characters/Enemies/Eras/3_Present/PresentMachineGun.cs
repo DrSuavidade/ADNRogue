@@ -107,6 +107,15 @@ namespace Geneforge.Gameplay.Characters.Enemies.Eras.Present
             Destroy(gameObject, lifeTime);
         }
 
+        void Update()
+        {
+            var rb = GetComponent<Rigidbody>();
+            if (rb != null && rb.linearVelocity.sqrMagnitude > 0.1f)
+            {
+                transform.rotation = Quaternion.LookRotation(rb.linearVelocity);
+            }
+        }
+
         void OnTriggerEnter(Collider other)
         {
             // 1) filtrar pela Layer

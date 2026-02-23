@@ -35,6 +35,12 @@ namespace Geneforge.Gameplay.Characters.Enemies.Abilities
             if (!_initialized) return;
             
             transform.position += _direction * _speed * Time.deltaTime;
+
+            // Professional touch: Ensure the projectile faces its movement direction
+            if (_direction.sqrMagnitude > 0.001f)
+            {
+                transform.rotation = Quaternion.LookRotation(_direction);
+            }
         }
 
         void OnTriggerEnter(Collider other)
@@ -45,7 +51,6 @@ namespace Geneforge.Gameplay.Characters.Enemies.Abilities
             if ((_hitMask.value & (1 << other.gameObject.layer)) == 0) return;
 
             // Damage player
-            // Assuming PlayerHealth is standard, replace with Interface if available
             var playerHealth = other.GetComponent<Geneforge.Gameplay.Characters.Player.PlayerHealth>();
             if (playerHealth != null)
             {

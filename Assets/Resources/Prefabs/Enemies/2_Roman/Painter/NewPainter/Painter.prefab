@@ -413,6 +413,17 @@ MonoBehaviour:
   - {r: 1, g: 0, b: 1, a: 1}
   - {r: 1, g: 0.92156863, b: 0.015686275, a: 1}
   - {r: 0.1, g: 0.1, b: 0.1, a: 1}
+  inkAnimationFrames:
+  - {fileID: 21300000, guid: 8dc8940512f9f624da762a2fab6cf03b, type: 3}
+  - {fileID: 21300000, guid: e5bc4cd7c085ddc4bb7ebd0121a78202, type: 3}
+  - {fileID: 21300000, guid: 3f2ef2f12a0bc514fbd22220c2774cdf, type: 3}
+  - {fileID: 21300000, guid: 6322c2e4357bd3f44a8be4f47c35f62c, type: 3}
+  - {fileID: 21300000, guid: 26f63a63efbb38e41b70bb1f63d72d8c, type: 3}
+  - {fileID: 21300000, guid: 276cceef0cbf980418b671a431852cf4, type: 3}
+  - {fileID: 21300000, guid: 07006dbc232362c46addd0010e421151, type: 3}
+  - {fileID: 21300000, guid: 0a82c558092fab34991af8dd1eface08, type: 3}
+  inkFPS: 12
+  inkScale: 1
 --- !u!1001 &8910932676761197094
 PrefabInstance:
   m_ObjectHideFlags: 0

@@ -17,6 +17,17 @@ namespace Geneforge.Gameplay.Characters.Enemies.Habilidades
             Destroy(gameObject, 5f);
         }
 
+        private void Update()
+        {
+            var rb = GetComponent<Rigidbody>();
+            // Profissional: Projéteis que não usam gravidade (como o jato de tinta) devem olhar para onde vão.
+            // Os baldes usam gravidade e torque aleatório, então ignoramos para não estragar a física.
+            if (rb != null && !rb.useGravity && rb.linearVelocity.sqrMagnitude > 0.1f)
+            {
+                transform.rotation = Quaternion.LookRotation(rb.linearVelocity);
+            }
+        }
+
         private void OnTriggerEnter(Collider other)
         {
             // 1. Ignorar amigos

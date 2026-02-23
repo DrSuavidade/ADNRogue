@@ -3,6 +3,7 @@ using Geneforge.Gameplay.Characters.Enemies;
 using System.Collections;
 using System.Collections.Generic;
 using Geneforge.Gameplay.Characters.Enemies.Habilidades;
+using Geneforge.Gameplay.Visuals;
 
 namespace Geneforge.Gameplay.Characters.Enemies.Eras.Roman
 {
@@ -21,13 +22,17 @@ namespace Geneforge.Gameplay.Characters.Enemies.Eras.Roman
         public float inkDamage = 10f;     // Dano do jato
         public float bucketDamage = 25f;  // Dano do balde
 
-        [Header("Visuals - Paint Colors")]
         public Color[] paintColors = new Color[] { 
             Color.cyan, 
             new Color(1f, 0f, 1f), // Magenta
             Color.yellow, 
             new Color(0.1f, 0.1f, 0.1f) // Black/Ink
         };
+
+        [Header("Ink Animation (Attack 1)")]
+        public Sprite[] inkAnimationFrames; // Os teus frames de tinta
+        public float inkFPS = 12f;
+        public float inkScale = 1.0f;
 
         private void OnDrawGizmosSelected()
         {
@@ -58,15 +63,31 @@ namespace Geneforge.Gameplay.Characters.Enemies.Eras.Roman
 
             GameObject projectile = Instantiate(inkSplashPrefab, firePoint.position, firePoint.rotation);
             
+            // Lógica da Animação por Frames
+            if (inkAnimationFrames != null && inkAnimationFrames.Length > 0)
+            {
+                // Desativa modelos 3D originais para não sobrepor
+                foreach (var r in projectile.GetComponentsInChildren<Renderer>())
+                {
+                    if (!(r is SpriteRenderer)) r.enabled = false;
+                }
+
+                var animator = projectile.GetComponent<SpriteSheetAnimator>();
+                if (animator == null) animator = projectile.AddComponent<SpriteSheetAnimator>();
+                
+                animator.Initialize(inkAnimationFrames, inkFPS, SpriteSheetAnimator.AnimationMode.Horizontal);
+                
+                // Aplicamos a escala no componente que contém o SpriteRenderer (que agora pode ser um filho)
+                animator.transform.localScale = Vector3.one * inkScale;
+            }
+
             // Sorteamos uma cor base para a poça se o jato bater em algo
             Color randomColor = paintColors[Random.Range(0, paintColors.Length)];
-            ApplyEffects(projectile, Color.white, true);
-
             // Passar o dano
             var projScript = projectile.GetComponent<PaintProjectile>();
             if (projScript == null) projScript = projectile.AddComponent<PaintProjectile>();
             projScript.damage = inkDamage;
-            projScript.myColor = randomColor; // Define a cor da futura poça
+            projScript.myColor = randomColor; 
 
             Rigidbody rb = projectile.GetComponent<Rigidbody>();
             if (rb != null)

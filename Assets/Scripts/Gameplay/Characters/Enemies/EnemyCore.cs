@@ -120,10 +120,11 @@ namespace Geneforge.Gameplay.Characters.Enemies
                 }
             }
         }
+        public bool IsInvulnerable { get; set; } = false;
 
         public void TakeDamage(float dmg, bool wasCrit = false)
         {
-            if (dmg <= 0f || isDead) return;
+            if (dmg <= 0f || isDead || IsInvulnerable) return;
 
             if (!hasBeenHit)
             {

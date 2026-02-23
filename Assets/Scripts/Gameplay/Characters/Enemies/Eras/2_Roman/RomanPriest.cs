@@ -2,6 +2,7 @@ using UnityEngine;
 using Geneforge.Gameplay.Characters.Enemies;
 using System.Collections;
 using System.Collections.Generic;
+using Geneforge.Gameplay.Visuals;
 
 namespace Geneforge.Gameplay.Characters.Enemies.Eras.Roman
 {
@@ -19,6 +20,20 @@ namespace Geneforge.Gameplay.Characters.Enemies.Eras.Roman
         public float shieldDuration = 4f; // Duração exata de 4 segundos pedida
         public float furyDuration = 5f;
         public float attackSpeedMultiplier = 1.4f;
+
+        [Header("Shield Visuals")]
+        public GameObject shieldPrefab;
+        public Sprite[] shieldAnimationFrames;
+        public float shieldFPS = 12f;
+        public float shieldScale = 1.5f;
+        public float shieldYOffset = 1.0f;
+
+        [Header("Fury Visuals")]
+        public GameObject furyPrefab; // Podes usar o mesmo prefab da esfera ou outro
+        public Sprite[] furyAnimationFrames; // Os teus 10 frames para o chão
+        public float furyFPS = 12f;
+        public float furyScale = 2.0f;
+        public float furyYOffset = 0.05f; // Quase rente ao chão
 
         private void OnDrawGizmosSelected()
         {
@@ -68,77 +83,98 @@ namespace Geneforge.Gameplay.Characters.Enemies.Eras.Roman
             foreach (var c in cols)
             {
                 var ec = c.GetComponentInParent<EnemyCore>();
-                if (ec != null && ec != enemy && !ec.IsDead) list.Add(ec);
+                
+                // Filtros: não nulo, não ser o próprio priest, não estar morto
+                if (ec != null && ec != enemy && !ec.IsDead) 
+                {
+                    // NOVO: Impedir que o Player receba o buff mesmo que tenha EnemyCore ou esteja na LayerMask
+                    if (ec.CompareTag("Player")) continue;
+                    if (target != null && ec.transform == target) continue;
+
+                    list.Add(ec);
+                }
             }
             return list;
         }
 
-        // --- ROTINA DO ESCUDO: PISCAR AMARELO ---
+        // --- ROTINA DO ESCUDO: ESFERA ANIMADA ---
         private IEnumerator ApplyShieldRoutine(EnemyCore target)
         {
             if (target == null) yield break;
             
-            var renderers = target.GetComponentsInChildren<Renderer>(true);
-            var propBlock = new MaterialPropertyBlock();
-            float elapsed = 0f;
-            float blinkSpeed = 0.15f; // Velocidade do piscar
+            // Ativa imunidade como solicitado ("ficam imunes ao dano")
+            target.IsInvulnerable = true;
 
+            GameObject shieldObj = null;
+            if (shieldPrefab != null)
+            {
+                // Instancia e ajusta a posição (subindo pelo offset)
+                Vector3 spawnPos = target.transform.position + Vector3.up * shieldYOffset;
+                shieldObj = Instantiate(shieldPrefab, spawnPos, Quaternion.identity, target.transform);
+                
+                // Ajusta o tamanho da escala
+                shieldObj.transform.localScale = Vector3.one * shieldScale;
+
+                // Configura o animador de sprites (Modo Billboard para a esfera)
+                var animator = shieldObj.GetComponent<SpriteSheetAnimator>();
+                if (animator == null) animator = shieldObj.AddComponent<SpriteSheetAnimator>();
+                
+                animator.Initialize(shieldAnimationFrames, shieldFPS, SpriteSheetAnimator.AnimationMode.Billboard);
+            }
+
+            float elapsed = 0f;
             while (elapsed < shieldDuration)
             {
                 if (target == null || target.IsDead) break;
-
-                // Lógica de piscar
-                bool on = (Mathf.FloorToInt(elapsed / blinkSpeed) % 2 == 0);
-                
-                // Amarelo bem brilhante (HDR) quando ligado, Original (Branco) quando desligado
-                Color blinkColor = on ? Color.yellow * 2.5f : Color.white;
-                
-                propBlock.SetColor("_Color", blinkColor);
-                propBlock.SetColor("_BaseColor", blinkColor);
-                propBlock.SetColor("_EmissionColor", blinkColor * 0.6f);
-
-                foreach (var r in renderers) {
-                    if (r) r.SetPropertyBlock(propBlock);
-                }
-
                 elapsed += Time.deltaTime;
                 yield return null;
             }
 
-            // Garante que volta ao normal no fim
-            foreach (var r in renderers) {
-                if (r) r.SetPropertyBlock(null);
+            // Finalização: remove imunidade e limpa o visual
+            if (target != null)
+            {
+                target.IsInvulnerable = false;
+            }
+            
+            if (shieldObj != null) 
+            {
+                Destroy(shieldObj);
             }
         }
 
+        // --- ROTINA DA FÚRIA: ANIMAÇÃO NO CHÃO ---
         private IEnumerator ApplyFuryRoutine(EnemyCore target)
         {
             if (target == null) yield break;
             
-            var renderers = target.GetComponentsInChildren<Renderer>(true);
-            var propBlock = new MaterialPropertyBlock();
             float oldSpeed = target.Animator != null ? target.Animator.speed : 1f;
-            
             if (target.Animator != null) target.Animator.speed = oldSpeed * attackSpeedMultiplier;
 
-            // Fúria é um vermelho constante (não pisca) para diferenciar do escudo
-            Color furyColor = new Color(1f, 0.2f, 0.2f) * 1.5f;
-            propBlock.SetColor("_Color", furyColor);
-            propBlock.SetColor("_BaseColor", furyColor);
-            propBlock.SetColor("_EmissionColor", furyColor * 0.4f);
+            GameObject furyObj = null;
+            if (furyPrefab != null)
+            {
+                // Instancia rente ao chão
+                Vector3 spawnPos = target.transform.position + Vector3.up * furyYOffset;
+                furyObj = Instantiate(furyPrefab, spawnPos, Quaternion.identity, target.transform);
+                furyObj.transform.localScale = Vector3.one * furyScale;
 
-            foreach (var r in renderers) {
-                if (r) r.SetPropertyBlock(propBlock);
+                // Configura o animador de sprites (Modo Floor para ficar deitado no chão)
+                var animator = furyObj.GetComponent<SpriteSheetAnimator>();
+                if (animator == null) animator = furyObj.AddComponent<SpriteSheetAnimator>();
+                
+                animator.Initialize(furyAnimationFrames, furyFPS, SpriteSheetAnimator.AnimationMode.Floor);
             }
 
             yield return new WaitForSeconds(furyDuration);
             
-            if (target != null)
+            if (target != null && target.Animator != null)
             {
-                if (target.Animator != null) target.Animator.speed = oldSpeed;
-                foreach (var r in renderers) {
-                    if (r) r.SetPropertyBlock(null);
-                }
+                target.Animator.speed = oldSpeed;
+            }
+
+            if (furyObj != null)
+            {
+                Destroy(furyObj);
             }
         }
     }

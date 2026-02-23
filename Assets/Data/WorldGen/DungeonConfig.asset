@@ -46,17 +46,19 @@ MonoBehaviour:
     - prefab: {fileID: 3127517845568862864, guid: 08e886791beb087418d99ab208bd5bb8, type: 3}
       weight: 6
     enemyPrefabs:
-    - prefab: {fileID: 3325723471878475444, guid: 9eb2b3ca70fff9744a5e1060ab33ca5c, type: 3}
+    - prefab: {fileID: 1673158105172721084, guid: 29014882d36e9b648bd2bd98faa6530f, type: 3}
       weight: 1
-    - prefab: {fileID: 1958871129842735578, guid: 5dab0e2464ecb584eb37a709d53765ad, type: 3}
+    - prefab: {fileID: 2380674973863127386, guid: df2a55ca92771ee4f97b6a588599cf09, type: 3}
       weight: 1
-    - prefab: {fileID: 4097680685806662130, guid: b8ce0075ffe5bd949b73a3a2edb65d6e, type: 3}
+    - prefab: {fileID: 6254141507589438715, guid: 2e1083dce7df1f240ac6aea5d241e9d1, type: 3}
       weight: 1
-    - prefab: {fileID: 8616044378864164074, guid: d9f76866d24842b438301b294e62c55a, type: 3}
+    - prefab: {fileID: 2073904731268509504, guid: 018497ae51936b744ab73ca334625281, type: 3}
       weight: 1
-    - prefab: {fileID: 5365526907987867840, guid: dfbb33ae4fa339e47a7b46c731949314, type: 3}
+    - prefab: {fileID: 6730019254463957589, guid: 518d2884be6b2604ca9349bcb1363111, type: 3}
       weight: 1
-    - prefab: {fileID: 1153405868413957991, guid: eff61d674c147594093b22794403e8ab, type: 3}
+    - prefab: {fileID: 4877043980599544480, guid: 6259860d98a5d6d4ebaf004de5587e04, type: 3}
+      weight: 1
+    - prefab: {fileID: 6903755313332105317, guid: 936df2c269af2ce4497beb0b56ec66a9, type: 3}
       weight: 1
     commonRate: 70
     rareRate: 30

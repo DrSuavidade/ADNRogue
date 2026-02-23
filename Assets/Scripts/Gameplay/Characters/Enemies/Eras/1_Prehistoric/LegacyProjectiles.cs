@@ -29,6 +29,15 @@ namespace Geneforge.Gameplay.Characters.Enemies.Eras.Prehistoric
             Destroy(gameObject, 6f);
         }
 
+        void Update()
+        {
+            var rb = GetComponent<Rigidbody>();
+            if (rb != null && rb.linearVelocity.sqrMagnitude > 0.1f)
+            {
+                transform.rotation = Quaternion.LookRotation(rb.linearVelocity);
+            }
+        }
+
         void OnTriggerEnter(Collider other)
         {
             if ((hitMask.value & (1 << other.gameObject.layer)) == 0) return;
@@ -68,6 +77,15 @@ namespace Geneforge.Gameplay.Characters.Enemies.Eras.Prehistoric
             damage = dmg;
             hitMask = mask;
             Destroy(gameObject, 8f);
+        }
+
+        void Update()
+        {
+            var rb = GetComponent<Rigidbody>();
+            if (rb != null && rb.linearVelocity.sqrMagnitude > 0.1f)
+            {
+                transform.rotation = Quaternion.LookRotation(rb.linearVelocity);
+            }
         }
 
         void OnTriggerEnter(Collider other)

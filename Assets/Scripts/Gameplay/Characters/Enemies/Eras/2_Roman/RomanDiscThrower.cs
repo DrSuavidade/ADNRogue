@@ -98,8 +98,13 @@ namespace Geneforge.Gameplay.Characters.Enemies.Eras.Roman
 
         void Update()
         {
-            // Faz o disco girar sobre si mesmo enquanto voa
-            transform.Rotate(Vector3.up, rotationSpeed * Time.deltaTime, Space.Self);
+            // Profissional: O disco deve manter-se sempre perfeitamente horizontal (paralelo ao chão)
+            // Independentemente da direção do projétil, limpamos rotações em X e Z.
+            Vector3 currentRotation = transform.eulerAngles;
+            float newYaw = currentRotation.y + rotationSpeed * Time.deltaTime;
+            
+            // Forçamos X=0 e Z=0 para ser um "frisbee" profissional
+            transform.rotation = Quaternion.Euler(0, newYaw, 0);
         }
 
         void OnTriggerEnter(Collider other)
