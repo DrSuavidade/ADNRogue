@@ -255,16 +255,18 @@ MonoBehaviour:
   attackSpeedMultiplier: 1.4
   shieldPrefab: {fileID: 3098376143577340443, guid: 6176381a2f004184e9f443951fbf54bc, type: 3}
   shieldAnimationFrames:
-  - {fileID: 1631088153, guid: 957d39bc18935254fa94362e959a650d, type: 3}
-  - {fileID: 146875602, guid: 957d39bc18935254fa94362e959a650d, type: 3}
-  - {fileID: -1833040103, guid: 957d39bc18935254fa94362e959a650d, type: 3}
-  - {fileID: -1508546217, guid: 957d39bc18935254fa94362e959a650d, type: 3}
-  - {fileID: 1604567769, guid: 957d39bc18935254fa94362e959a650d, type: 3}
-  - {fileID: 925500724, guid: 957d39bc18935254fa94362e959a650d, type: 3}
-  - {fileID: -1762208272, guid: 957d39bc18935254fa94362e959a650d, type: 3}
-  - {fileID: 1965567390, guid: 957d39bc18935254fa94362e959a650d, type: 3}
-  - {fileID: 1076830732, guid: 957d39bc18935254fa94362e959a650d, type: 3}
-  - {fileID: 1326242795, guid: 957d39bc18935254fa94362e959a650d, type: 3}
+  - {fileID: -1525551969, guid: 0cd16c22ab4fc714ab3975acc27a3ba7, type: 3}
+  - {fileID: -1671258933, guid: 0cd16c22ab4fc714ab3975acc27a3ba7, type: 3}
+  - {fileID: 732850232, guid: 0cd16c22ab4fc714ab3975acc27a3ba7, type: 3}
+  - {fileID: 237115129, guid: 0cd16c22ab4fc714ab3975acc27a3ba7, type: 3}
+  - {fileID: -353618853, guid: 0cd16c22ab4fc714ab3975acc27a3ba7, type: 3}
+  - {fileID: 2130207819, guid: 0cd16c22ab4fc714ab3975acc27a3ba7, type: 3}
+  - {fileID: -1135123439, guid: 0cd16c22ab4fc714ab3975acc27a3ba7, type: 3}
+  - {fileID: -582941665, guid: 0cd16c22ab4fc714ab3975acc27a3ba7, type: 3}
+  - {fileID: 1320806908, guid: 0cd16c22ab4fc714ab3975acc27a3ba7, type: 3}
+  - {fileID: -2107955824, guid: 0cd16c22ab4fc714ab3975acc27a3ba7, type: 3}
+  - {fileID: 2002489695, guid: 0cd16c22ab4fc714ab3975acc27a3ba7, type: 3}
+  - {fileID: 805839722, guid: 0cd16c22ab4fc714ab3975acc27a3ba7, type: 3}
   shieldFPS: 12
   shieldScale: 0.7
   shieldYOffset: 1

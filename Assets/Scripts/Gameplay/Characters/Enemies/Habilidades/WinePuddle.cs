@@ -7,34 +7,62 @@ namespace Geneforge.Gameplay.Characters.Enemies.Habilidades
     public class WinePuddle : MonoBehaviour
     {
         public float lifetime = 5f;
-        public float slowAmount = -0.5f; // -50% speed
         public Color puddleColor = new Color(0.5f, 0, 0, 0.7f); // Deep Wine Red
 
+        private float _poisonDps;
+        private float _poisonDuration;
         private bool _playerInside = false;
 
-        public void Init()
+        public void Init(Sprite[] frames = null, float fps = 10f, float scale = 2.5f, float dps = 2f, float duration = 3f)
         {
-            var renderer = GetComponent<Renderer>();
-            if (renderer != null)
-            {
-                var propBlock = new MaterialPropertyBlock();
-                propBlock.SetColor("_Color", puddleColor);
-                propBlock.SetColor("_BaseColor", puddleColor);
-                renderer.SetPropertyBlock(propBlock);
-            }
+            _poisonDps = dps;
+            _poisonDuration = duration;
 
-            transform.localScale = Vector3.one * 0.1f;
-            // Simple scale up effect instead of LeanTween
-            StartCoroutine(ScaleUp());
+            Debug.Log($"<color=purple>[WINE]</color> Inicializando poça com POISON. DPS: {dps}, Duração: {duration}");
+
+            if (frames != null && frames.Length > 0)
+            {
+                foreach (var r in GetComponentsInChildren<Renderer>())
+                {
+                    if (r != null && !(r is SpriteRenderer)) r.enabled = false;
+                }
+
+                var animator = GetComponent<Visuals.SpriteSheetAnimator>();
+                if (animator == null) animator = gameObject.AddComponent<Visuals.SpriteSheetAnimator>();
+                
+                animator.Initialize(frames, fps, Visuals.SpriteSheetAnimator.AnimationMode.Floor);
+                transform.localScale = Vector3.one * scale;
+
+                var sr = animator.GetComponentInChildren<SpriteRenderer>();
+                if (sr != null) 
+                {
+                    sr.color = puddleColor;
+                    sr.sortingOrder = 5;
+                }
+            }
+            else
+            {
+                var renderer = GetComponent<Renderer>();
+                if (renderer != null)
+                {
+                    var propBlock = new MaterialPropertyBlock();
+                    propBlock.SetColor("_Color", puddleColor);
+                    propBlock.SetColor("_BaseColor", puddleColor);
+                    renderer.SetPropertyBlock(propBlock);
+                }
+
+                transform.localScale = Vector3.one * 0.1f;
+                StartCoroutine(ScaleUp(scale));
+            }
 
             Destroy(gameObject, lifetime);
         }
 
-        private System.Collections.IEnumerator ScaleUp()
+        private System.Collections.IEnumerator ScaleUp(float targetScaleVal)
         {
             float elapsed = 0f;
             float duration = 0.5f;
-            Vector3 targetScale = new Vector3(2.5f, 0.1f, 2.5f);
+            Vector3 targetScale = new Vector3(targetScaleVal, 0.1f, targetScaleVal);
             while (elapsed < duration)
             {
                 elapsed += Time.deltaTime;
@@ -45,38 +73,38 @@ namespace Geneforge.Gameplay.Characters.Enemies.Habilidades
 
         private void OnTriggerEnter(Collider other)
         {
-            if (other.CompareTag("Player"))
+            if (IsPlayer(other))
             {
-                var run = RunSession.Instance?.Run;
-                if (run != null && !_playerInside)
-                {
-                    run.ModifySpeed(slowAmount);
-                    _playerInside = true;
-                }
+                ApplyPoison(other);
             }
         }
 
-        private void OnTriggerExit(Collider other)
+        private void OnTriggerStay(Collider other)
         {
-            if (other.CompareTag("Player"))
+            if (IsPlayer(other))
             {
-                var run = RunSession.Instance?.Run;
-                if (run != null && _playerInside)
-                {
-                    run.ModifySpeed(-slowAmount); // Restore speed
-                    _playerInside = false;
-                }
+                // No caso do poison, aplicamos continuamente enquanto estiver na poça 
+                // para renovar a duração
+                ApplyPoison(other);
             }
         }
 
-        private void OnDestroy()
+        private bool IsPlayer(Collider other)
         {
-            // Ensure speed is restored if puddle disappears while player is inside
-            if (_playerInside)
+            return other.CompareTag("Player") || 
+                   other.GetComponentInParent<PlayerHealth>() != null || 
+                   other.gameObject.layer == 3;
+        }
+
+        private void ApplyPoison(Collider other)
+        {
+            var pStatus = other.GetComponentInParent<PlayerPoisonStatus>();
+            if (pStatus == null) 
             {
-                var run = RunSession.Instance?.Run;
-                run?.ModifySpeed(-slowAmount);
+                pStatus = other.transform.root.gameObject.AddComponent<PlayerPoisonStatus>();
             }
+            
+            pStatus.Apply(_poisonDps, _poisonDuration, Color.green, 0.1f);
         }
     }
 }

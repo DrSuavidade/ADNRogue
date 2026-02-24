@@ -46,14 +46,14 @@ namespace Geneforge.Gameplay.Characters.Player
                 isInvulnerable = false;
         }
 
-        public void ApplyDamage(float dmg)
+        public void ApplyDamage(float dmg, bool triggerAnim = true)
         {
             if (!enabled || runStats == null) return;
             if (isInvulnerable) return;
 
             bool died = runStats.TakeDamage(dmg);
 
-            if (!died)
+            if (!died && triggerAnim)
             {
                 animator?.SetTrigger("Damaged");
             }

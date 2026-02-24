@@ -10,6 +10,8 @@ namespace Geneforge.Gameplay.Characters.Enemies.Habilidades
         public float lifetime = 4f;
         public float slowAmount = -0.6f; // Aumentado para 60% para ser bem percetível
         
+        private float _poisonDps;
+        private float _poisonDuration;
         private bool _playerInside = false;
 
         private void Start()
@@ -18,8 +20,10 @@ namespace Geneforge.Gameplay.Characters.Enemies.Habilidades
             Destroy(gameObject, lifetime);
         }
 
-        public void Init(Color color, Sprite[] frames = null, float fps = 10f, float scale = 2f)
+        public void Init(Color color, Sprite[] frames = null, float fps = 10f, float scale = 2f, float poisonDps = 0f, float poisonDuration = 0f)
         {
+            _poisonDps = poisonDps;
+            _poisonDuration = poisonDuration;
             if (frames != null && frames.Length > 0)
             {
                 foreach (var r in GetComponentsInChildren<Renderer>())
@@ -61,9 +65,10 @@ namespace Geneforge.Gameplay.Characters.Enemies.Habilidades
 
         private void OnTriggerStay(Collider other)
         {
-            if (!_playerInside && IsPlayer(other))
+            if (IsPlayer(other))
             {
-                ApplySlow();
+                if (!_playerInside) ApplySlow();
+                if (_poisonDps > 0) ApplyPoison(other);
             }
         }
 
@@ -90,10 +95,26 @@ namespace Geneforge.Gameplay.Characters.Enemies.Habilidades
             var run = RunSession.Instance?.Run;
             if (run != null)
             {
-                run.ModifySpeed(slowAmount);
+                // Só aplica se houver um valor de slow real
+                if (Mathf.Abs(slowAmount) > 0.01f)
+                {
+                    run.ModifySpeed(slowAmount);
+                    Debug.Log("<color=orange><b>[PUDDLE]</b> Player ENTROU na tinta! Slow aplicado.</color>");
+                }
+                
                 _playerInside = true;
-                Debug.Log("<color=orange><b>[PUDDLE]</b> Player ENTROU na tinta! Slow aplicado.</color>");
             }
+        }
+
+        private void ApplyPoison(Collider other)
+        {
+            var pStatus = other.GetComponentInParent<PlayerPoisonStatus>();
+            if (pStatus == null) 
+            {
+                pStatus = other.transform.root.gameObject.AddComponent<PlayerPoisonStatus>();
+            }
+            
+            pStatus.Apply(_poisonDps, _poisonDuration, Color.green, 0.1f);
         }
 
         private void RemoveSlow()
@@ -102,9 +123,12 @@ namespace Geneforge.Gameplay.Characters.Enemies.Habilidades
             var run = RunSession.Instance?.Run;
             if (run != null)
             {
-                run.ModifySpeed(-slowAmount);
+                if (Mathf.Abs(slowAmount) > 0.01f)
+                {
+                    run.ModifySpeed(-slowAmount);
+                    Debug.Log("<color=green><b>[PUDDLE]</b> Player SAIU da tinta! Velocidade restaurada.</color>");
+                }
                 _playerInside = false;
-                Debug.Log("<color=green><b>[PUDDLE]</b> Player SAIU da tinta! Velocidade restaurada.</color>");
             }
         }
 

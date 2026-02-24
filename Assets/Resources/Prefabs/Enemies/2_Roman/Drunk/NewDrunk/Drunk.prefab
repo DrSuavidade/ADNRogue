@@ -264,18 +264,20 @@ MonoBehaviour:
     serializedVersion: 2
     m_Bits: 8
   puddlePrefab: {fileID: 3226897963492343564, guid: ccc1a595c2029be45b9eb8c6fc11b726, type: 3}
-  puddleAnimationFrames:
-  - {fileID: -723012710, guid: d99ae3c7130833f4da0ef64f6aab6367, type: 3}
-  - {fileID: -1413326705, guid: d99ae3c7130833f4da0ef64f6aab6367, type: 3}
-  - {fileID: 1916177417, guid: d99ae3c7130833f4da0ef64f6aab6367, type: 3}
-  - {fileID: 1855946669, guid: d99ae3c7130833f4da0ef64f6aab6367, type: 3}
-  - {fileID: -1616432248, guid: d99ae3c7130833f4da0ef64f6aab6367, type: 3}
-  - {fileID: 426196747, guid: d99ae3c7130833f4da0ef64f6aab6367, type: 3}
-  - {fileID: 1406742583, guid: d99ae3c7130833f4da0ef64f6aab6367, type: 3}
-  - {fileID: 935108305, guid: d99ae3c7130833f4da0ef64f6aab6367, type: 3}
-  - {fileID: -1107696287, guid: d99ae3c7130833f4da0ef64f6aab6367, type: 3}
-  - {fileID: 1009841257, guid: d99ae3c7130833f4da0ef64f6aab6367, type: 3}
-  puddleFPS: 10
-  puddleScale: 2.5
   wobbleAmplitude: 1.5
   wobbleFrequency: 5
+  puddleColor: {r: 0.86415094, g: 0.024456954, b: 0.2035915, a: 0.8}
+  puddleAnimationFrames:
+  - {fileID: -1541102891, guid: c7d5b8b7930e5e041a7c63d685d952e7, type: 3}
+  - {fileID: -1646270438, guid: c7d5b8b7930e5e041a7c63d685d952e7, type: 3}
+  - {fileID: -1350771427, guid: c7d5b8b7930e5e041a7c63d685d952e7, type: 3}
+  - {fileID: -170476668, guid: c7d5b8b7930e5e041a7c63d685d952e7, type: 3}
+  - {fileID: -274061439, guid: c7d5b8b7930e5e041a7c63d685d952e7, type: 3}
+  - {fileID: 1668312100, guid: c7d5b8b7930e5e041a7c63d685d952e7, type: 3}
+  - {fileID: -1964824597, guid: c7d5b8b7930e5e041a7c63d685d952e7, type: 3}
+  - {fileID: 756719708, guid: c7d5b8b7930e5e041a7c63d685d952e7, type: 3}
+  - {fileID: -338732048, guid: c7d5b8b7930e5e041a7c63d685d952e7, type: 3}
+  - {fileID: -1362462167, guid: c7d5b8b7930e5e041a7c63d685d952e7, type: 3}
+  - {fileID: -473794535, guid: c7d5b8b7930e5e041a7c63d685d952e7, type: 3}
+  puddleFPS: 12
+  puddleScale: 1.5

@@ -84,7 +84,7 @@ namespace Geneforge.Gameplay.Characters.Enemies.Eras.Prehistoric
             float t = 0f;
             while (t < dotDuration && hp != null)
             {
-                hp.ApplyDamage(dotDps * Time.deltaTime);
+                hp.ApplyDamage(dotDps * Time.deltaTime, false);
                 t += Time.deltaTime;
                 yield return null;
             }
