@@ -15,25 +15,27 @@ namespace Geneforge.Gameplay.Characters.Enemies.Habilidades
         [HideInInspector] public float puddleFPS = 10f;
         [HideInInspector] public float puddleScale = 2.0f;
 
-        private float _fixedX;
-        private float _fixedZ;
+        public float visualYawOffset = 90f; // Ajuste no Inspector se a mancha voar de lado
+
+        private float _fixedYaw;
         private Rigidbody _rb;
         private bool _isInitialized;
 
-        private void Start()
+        public void Init(float dmg, LayerMask mask, float yaw, Color color, bool useGravity)
         {
-            _rb = GetComponent<Rigidbody>();
+            damage = dmg;
+            hitMask = mask;
+            myColor = color;
+            _fixedYaw = yaw;
             
-            // Guardamos a rotação horizontal original do prefab
-            _fixedX = transform.eulerAngles.x;
-            _fixedZ = transform.eulerAngles.z;
+            _rb = GetComponent<Rigidbody>();
+            if (_rb == null) _rb = gameObject.AddComponent<Rigidbody>(); 
 
-            if (_rb != null)
-            {
-                // Travamos X e Z para ele não "capotar" no ar, tal como o disco
-                _rb.constraints = RigidbodyConstraints.FreezeRotationX | RigidbodyConstraints.FreezeRotationZ;
-                _rb.interpolation = RigidbodyInterpolation.Interpolate;
-            }
+            _rb.isKinematic = false;
+            _rb.useGravity = useGravity;
+            _rb.constraints = RigidbodyConstraints.FreezeRotation; // Impede a física de girar o sprite
+            _rb.interpolation = RigidbodyInterpolation.Interpolate;
+            _rb.collisionDetectionMode = CollisionDetectionMode.Continuous;
 
             _isInitialized = true;
             Destroy(gameObject, 5f);
@@ -43,15 +45,9 @@ namespace Geneforge.Gameplay.Characters.Enemies.Habilidades
         {
             if (!_isInitialized || _rb == null) return;
 
-            // Se for um projétil sem gravidade (Jato de tinta), mantemos a orientação horizontal
-            if (!_rb.useGravity && _rb.linearVelocity.sqrMagnitude > 0.1f)
-            {
-                // Calculamos para onde ele deve olhar no eixo Y (Yaw)
-                Quaternion targetRot = Quaternion.LookRotation(_rb.linearVelocity);
-                
-                // Aplicamos a rotação mantendo o X e Z originais (o "deitado" do prefab)
-                _rb.MoveRotation(Quaternion.Euler(_fixedX, targetRot.eulerAngles.y, _fixedZ));
-            }
+            // FORÇA A ORIENTAÇÃO EXACTA (Tipo a seta/disco)
+            // Isso garante que ele não vire para os lados nem para cima/baixo
+            _rb.MoveRotation(Quaternion.Euler(0, _fixedYaw, 0));
         }
 
         private void OnTriggerEnter(Collider other)

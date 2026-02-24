@@ -21,10 +21,19 @@ namespace Geneforge.Gameplay.Characters.Enemies.Eras.Prehistoric
         {
             if (!dartPrefab || !shootOrigin || !target) return;
 
-            var obj = Object.Instantiate(dartPrefab, shootOrigin.position, shootOrigin.rotation);
+            // Garantir que a rotação inicial seja horizontal na direção do alvo
+            Vector3 targetDir = (target.position - shootOrigin.position);
+            targetDir.y = 0;
+            if (targetDir == Vector3.zero) targetDir = shootOrigin.forward;
+            Quaternion horizontalRot = Quaternion.LookRotation(targetDir);
+
+            var obj = Object.Instantiate(dartPrefab, shootOrigin.position, horizontalRot);
             var rb = obj.GetComponent<Rigidbody>();
             if (rb)
             {
+                // Freeze rotation via code to ensure physics don't spin the arrow
+                rb.constraints = RigidbodyConstraints.FreezeRotation;
+
                 Vector3 dir = (target.position - shootOrigin.position).normalized;
                 rb.linearVelocity = dir * dartSpeed;
             }
@@ -56,7 +65,13 @@ namespace Geneforge.Gameplay.Characters.Enemies.Eras.Prehistoric
             var rb = GetComponent<Rigidbody>();
             if (rb != null && rb.linearVelocity.sqrMagnitude > 0.1f)
             {
-                transform.rotation = Quaternion.LookRotation(rb.linearVelocity);
+                Vector3 horizontalVel = rb.linearVelocity;
+                horizontalVel.y = 0; // Forçamos a ser horizontal
+
+                if (horizontalVel != Vector3.zero)
+                {
+                    transform.rotation = Quaternion.LookRotation(horizontalVel);
+                }
             }
         }
 

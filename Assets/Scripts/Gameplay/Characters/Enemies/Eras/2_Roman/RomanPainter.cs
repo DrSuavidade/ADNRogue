@@ -36,6 +36,20 @@ namespace Geneforge.Gameplay.Characters.Enemies.Eras.Roman
         public float inkFPS = 12f;
         public float inkScale = 1.0f;
 
+        [Header("Projectile Setting")]
+        [Tooltip("Se a tinta voar de lado, mude o Y para 90 ou -90 aqui.")]
+        public float yawOffset = 90f;
+        public float inkSpeed = 25f; // Aumentado para ser profissional como o Archer
+        public bool inkUseGravity = false; // Falso para voar em linha reta perfeita
+        [Tooltip("Que layers o projetil pode atingir.")]
+        public LayerMask hitMask = ~0;
+
+        [Header("Aiming")]
+        [Tooltip("Velocidade com que o pintor gira para encarar o player.")]
+        public float turnSpeed = 12f;
+        [Tooltip("Se ativado, o pintor vira instantaneamente para o player no momento da pintura.")]
+        public bool snapToTargetOnFire = true;
+
         [Header("Puddle Animation (Ground)")]
         public Sprite[] puddleAnimationFrames;
         public float puddleFPS = 10f;
@@ -47,9 +61,36 @@ namespace Geneforge.Gameplay.Characters.Enemies.Eras.Roman
             Gizmos.DrawWireSphere(transform.position, closeRangeThreshold);
         }
 
+        protected virtual void Update()
+        {
+            if (target != null)
+            {
+                // Rotação suave em direção ao player (apenas no eixo Y)
+                Vector3 lookPos = target.position - transform.position;
+                lookPos.y = 0; // Mantém o inimigo em pé
+                
+                if (lookPos.sqrMagnitude > 0.01f)
+                {
+                    Quaternion targetRot = Quaternion.LookRotation(lookPos);
+                    transform.rotation = Quaternion.Slerp(transform.rotation, targetRot, turnSpeed * Time.deltaTime);
+                }
+            }
+        }
+
         public void AnimEvent_PainterLogic()
         {
             if (target == null) return;
+
+            // SNAP: Ajuste instantâneo para não pintar de lado
+            if (snapToTargetOnFire)
+            {
+                Vector3 finalLook = target.position - transform.position;
+                finalLook.y = 0;
+                if (finalLook.sqrMagnitude > 0.01f)
+                {
+                    transform.rotation = Quaternion.LookRotation(finalLook);
+                }
+            }
 
             float distance = Vector3.Distance(transform.position, target.position);
             Color randomColor = paintColors[Random.Range(0, paintColors.Length)];
@@ -64,61 +105,77 @@ namespace Geneforge.Gameplay.Characters.Enemies.Eras.Roman
             }
         }
 
+
+
         private void LaunchInkSplash()
         {
-            if (inkSplashPrefab == null || firePoint == null) return;
+            if (inkSplashPrefab == null || !target) return;
 
-            // --- LÓGICA DE SPAWN HORIZONTAL (Igual ao Disco) ---
-            Vector3 targetCenter = target.position + Vector3.up * 1.2f;
-            Vector3 to = targetCenter - firePoint.position;
+            // --- LÓGICA IDÊNTICA AO ARCHER ---
+            // 1. Alvo na altura do peito/centro
+            Vector3 targetPos = target.position + Vector3.up * 1.2f;
+            Vector3 toTarget = targetPos - firePoint.position;
             
-            Vector3 flatDir = to;
+            // 2. Direção horizontal para orientação visual do prefab
+            Vector3 flatDir = toTarget;
             flatDir.y = 0;
-            if (flatDir.sqrMagnitude < 0.0001f) flatDir = transform.forward;
-
-            // Pegamos a rotação original do prefab (para respeitar o "deitado")
-            Vector3 prefabEuler = inkSplashPrefab.transform.eulerAngles;
-            float targetYaw = Quaternion.LookRotation(flatDir).eulerAngles.y;
-            // Combinamos X e Z do prefab com o Yaw para o player
-            Quaternion spawnRot = Quaternion.Euler(prefabEuler.x, targetYaw, prefabEuler.z);
+            if (flatDir.sqrMagnitude < 0.001f) flatDir = transform.forward;
+            
+            // 3. Calculamos o ângulo Y (Yaw) para o player e somamos o offset do modelo
+            float angleY = Quaternion.LookRotation(flatDir).eulerAngles.y + yawOffset;
+            Quaternion spawnRot = Quaternion.Euler(0, angleY, 0);
 
             GameObject projectile = Instantiate(inkSplashPrefab, firePoint.position, spawnRot);
             
+            // Ignorar colisão com o próprio atirador
+            var shooterCols = GetComponentsInChildren<Collider>();
+            var projCols = projectile.GetComponentsInChildren<Collider>();
+            foreach (var sCol in shooterCols)
+                foreach (var pCol in projCols)
+                    Physics.IgnoreCollision(sCol, pCol);
+
+            var rb = projectile.GetComponent<Rigidbody>();
+            if (rb == null) rb = projectile.AddComponent<Rigidbody>();
+
+            if (rb != null)
+            {
+                rb.useGravity = inkUseGravity;
+                // Travamos rotações para evitar capotamento físico
+                rb.constraints = RigidbodyConstraints.FreezeRotation;
+                rb.collisionDetectionMode = CollisionDetectionMode.Continuous;
+
+                Vector3 velocity = toTarget.normalized * inkSpeed;
+                // Se usar gravidade, adicionamos o arco (para ser igual à seta)
+                if (inkUseGravity) velocity.y += 1.5f;
+
+#if UNITY_6000_0_OR_NEWER
+                rb.linearVelocity = velocity;
+#else
+                rb.velocity = velocity;
+#endif
+            }
+
             // Lógica da Animação por Frames
             if (inkAnimationFrames != null && inkAnimationFrames.Length > 0)
             {
                 foreach (var r in projectile.GetComponentsInChildren<Renderer>())
-                {
                     if (!(r is SpriteRenderer)) r.enabled = false;
-                }
 
                 var animator = projectile.GetComponent<SpriteSheetAnimator>();
                 if (animator == null) animator = projectile.AddComponent<SpriteSheetAnimator>();
-                
                 animator.Initialize(inkAnimationFrames, inkFPS, SpriteSheetAnimator.AnimationMode.Horizontal);
-                
                 animator.transform.localScale = Vector3.one * inkScale;
             }
 
-            Color randomColor = paintColors[Random.Range(0, paintColors.Length)];
-            
             var projScript = projectile.GetComponent<PaintProjectile>();
-            if (projScript == null) projScript = projectile.AddComponent<PaintProjectile>();
-            projScript.damage = inkDamage;
-            projScript.myColor = randomColor; 
+            if (!projScript) projScript = projectile.AddComponent<PaintProjectile>();
             
-            // Passamos a animação da poça
+            // Inicializa com o Yaw fixo para não girar/tremer (igual ao Archer)
+            projScript.Init(inkDamage, hitMask, spawnRot.eulerAngles.y, paintColors[Random.Range(0, paintColors.Length)], inkUseGravity);
+            
             projScript.puddleFrames = puddleAnimationFrames;
             projScript.puddleFPS = puddleFPS;
             projScript.puddleScale = puddleScale;
-
-            Rigidbody rb = projectile.GetComponent<Rigidbody>();
-            if (rb != null)
-            {
-                rb.isKinematic = false;
-                Vector3 direction = (targetCenter - firePoint.position).normalized;
-                rb.linearVelocity = direction * 15f;
-            }
         }
 
         private void LaunchPaintBucket(Color paintColor)
@@ -133,8 +190,9 @@ namespace Geneforge.Gameplay.Characters.Enemies.Eras.Roman
 
             var projScript = bucket.GetComponent<PaintProjectile>();
             if (projScript == null) projScript = bucket.AddComponent<PaintProjectile>();
-            projScript.damage = bucketDamage;
-            projScript.myColor = paintColor;
+            
+            // Usamos a mesma lógica de Init, mandando 'true' para a gravidade do balde
+            projScript.Init(bucketDamage, hitMask, bucket.transform.eulerAngles.y, paintColor, true);
 
             // Passamos a animação da poça
             projScript.puddleFrames = puddleAnimationFrames;
