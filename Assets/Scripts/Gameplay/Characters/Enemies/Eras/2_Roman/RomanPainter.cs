@@ -4,6 +4,7 @@ using System.Collections;
 using System.Collections.Generic;
 using Geneforge.Gameplay.Characters.Enemies.Habilidades;
 using Geneforge.Gameplay.Visuals;
+using Geneforge.Core.Pooling;
 
 namespace Geneforge.Gameplay.Characters.Enemies.Eras.Roman
 {
@@ -53,7 +54,8 @@ namespace Geneforge.Gameplay.Characters.Enemies.Eras.Roman
         [Header("Puddle Animation (Ground)")]
         public Sprite[] puddleAnimationFrames;
         public float puddleFPS = 10f;
-        public float puddleScale = 2.0f;
+        public Vector3 puddleScale = new Vector3(2.0f, 2.0f, 1f);
+        [Range(0, 360)] public float puddleRotationY = 0f;
 
         private void OnDrawGizmosSelected()
         {
@@ -97,7 +99,7 @@ namespace Geneforge.Gameplay.Characters.Enemies.Eras.Roman
 
             if (distance <= closeRangeThreshold)
             {
-                LaunchInkSplash(); 
+                LaunchInkSplash(randomColor); 
             }
             else
             {
@@ -107,7 +109,7 @@ namespace Geneforge.Gameplay.Characters.Enemies.Eras.Roman
 
 
 
-        private void LaunchInkSplash()
+        private void LaunchInkSplash(Color randomColor)
         {
             if (inkSplashPrefab == null || !target) return;
 
@@ -125,7 +127,9 @@ namespace Geneforge.Gameplay.Characters.Enemies.Eras.Roman
             float angleY = Quaternion.LookRotation(flatDir).eulerAngles.y + yawOffset;
             Quaternion spawnRot = Quaternion.Euler(0, angleY, 0);
 
-            GameObject projectile = Instantiate(inkSplashPrefab, firePoint.position, spawnRot);
+            GameObject projectile = PoolManager.Instance != null 
+                ? PoolManager.Instance.Spawn(inkSplashPrefab, firePoint.position, spawnRot)
+                : Instantiate(inkSplashPrefab, firePoint.position, spawnRot);
             
             // Ignorar colisão com o próprio atirador
             var shooterCols = GetComponentsInChildren<Collider>();
@@ -140,12 +144,14 @@ namespace Geneforge.Gameplay.Characters.Enemies.Eras.Roman
             if (rb != null)
             {
                 rb.useGravity = inkUseGravity;
-                // Travamos rotações para evitar capotamento físico
                 rb.constraints = RigidbodyConstraints.FreezeRotation;
                 rb.collisionDetectionMode = CollisionDetectionMode.Continuous;
 
-                Vector3 velocity = toTarget.normalized * inkSpeed;
-                // Se usar gravidade, adicionamos o arco (para ser igual à seta)
+                // --- AJUSTE: Movimento Estritamente Horizontal ---
+                Vector3 horizontalToTarget = toTarget;
+                if (!inkUseGravity) horizontalToTarget.y = 0; // Se não tem gravidade, não sobe nem desce
+                
+                Vector3 velocity = horizontalToTarget.normalized * inkSpeed;
                 if (inkUseGravity) velocity.y += 1.5f;
 
 #if UNITY_6000_0_OR_NEWER
@@ -163,8 +169,13 @@ namespace Geneforge.Gameplay.Characters.Enemies.Eras.Roman
 
                 var animator = projectile.GetComponent<SpriteSheetAnimator>();
                 if (animator == null) animator = projectile.AddComponent<SpriteSheetAnimator>();
-                animator.Initialize(inkAnimationFrames, inkFPS, SpriteSheetAnimator.AnimationMode.Horizontal);
+                
+                // --- AJUSTE: Definir escala ANTES da inicialização ---
                 animator.transform.localScale = Vector3.one * inkScale;
+
+                animator.tintColor = randomColor * 2f; // Dobramos a intensidade para o Bloom (HDR)
+                animator.useSpawnScale = true; 
+                animator.Initialize(inkAnimationFrames, inkFPS, SpriteSheetAnimator.AnimationMode.Billboard);
             }
 
             var projScript = projectile.GetComponent<PaintProjectile>();
@@ -176,6 +187,7 @@ namespace Geneforge.Gameplay.Characters.Enemies.Eras.Roman
             projScript.puddleFrames = puddleAnimationFrames;
             projScript.puddleFPS = puddleFPS;
             projScript.puddleScale = puddleScale;
+            projScript.puddleRotationY = puddleRotationY;
         }
 
         private void LaunchPaintBucket(Color paintColor)
@@ -184,7 +196,9 @@ namespace Geneforge.Gameplay.Characters.Enemies.Eras.Roman
 
             Vector3 spawnPos = target.position + Vector3.up * 3.5f;
             
-            GameObject bucket = Instantiate(paintBucketPrefab, spawnPos, Quaternion.Euler(180, Random.Range(0, 360), 0));
+            GameObject bucket = PoolManager.Instance != null
+                ? PoolManager.Instance.Spawn(paintBucketPrefab, spawnPos, Quaternion.Euler(180, Random.Range(0, 360), 0))
+                : Instantiate(paintBucketPrefab, spawnPos, Quaternion.Euler(180, Random.Range(0, 360), 0));
             
             ApplyEffects(bucket, paintColor, false);
 
@@ -198,6 +212,7 @@ namespace Geneforge.Gameplay.Characters.Enemies.Eras.Roman
             projScript.puddleFrames = puddleAnimationFrames;
             projScript.puddleFPS = puddleFPS;
             projScript.puddleScale = puddleScale;
+            projScript.puddleRotationY = puddleRotationY;
 
             Rigidbody rb = bucket.GetComponent<Rigidbody>();
             if (rb != null)

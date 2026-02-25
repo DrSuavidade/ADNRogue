@@ -2,6 +2,7 @@ using UnityEngine;
 using Geneforge.Gameplay.Characters.Player;
 using Geneforge.Gameplay.Characters.Enemies.Config;
 using Geneforge.Gameplay.Characters.Enemies.Habilidades;
+using Geneforge.Core.Pooling;
 
 namespace Geneforge.Gameplay.Characters.Enemies.Eras.Roman
 {
@@ -24,10 +25,11 @@ namespace Geneforge.Gameplay.Characters.Enemies.Eras.Roman
         public float wobbleFrequency = 5f;
 
         [Header("Puddle Animation (Ground)")]
-        public Color puddleColor = new Color(0.5f, 0f, 0f, 0.8f); // Vinho tinto por padrão
+        [ColorUsage(true, true)] public Color puddleColor = new Color(0.5f, 0f, 0f, 0.8f); // Vinho tinto por padrão
         public Sprite[] puddleAnimationFrames;
         public float puddleFPS = 10f;
-        public float puddleScale = 2.5f;
+        public Vector3 puddleScale = new Vector3(1.2f, 1.2f, 1f);
+        [Range(0, 360)] public float puddleRotationY = 0f;
 
         [Header("Poison Settings")]
         public float poisonDps = 2.0f;
@@ -41,19 +43,11 @@ namespace Geneforge.Gameplay.Characters.Enemies.Eras.Roman
             _config = GetComponent<EnemyConfigurator>();
         }
 
-        /// <summary>
-        /// Ataque 1: Trajetória Ébria. A garrafa faz um movimento em S no ar.
-        /// Chamado pelo Animation Event.
-        /// </summary>
         public void AnimEvent_AttackWobbly()
         {
             LaunchBottle(RomanWineBottleProjectile.BottleType.Wobbly);
         }
 
-        /// <summary>
-        /// Ataque 2: Garrafa de Vinho com Poça. Cria uma área de Slow no impacto.
-        /// Chamado pelo Animation Event.
-        /// </summary>
         public void AnimEvent_AttackPuddle()
         {
             LaunchBottle(RomanWineBottleProjectile.BottleType.Puddle);
@@ -70,16 +64,24 @@ namespace Geneforge.Gameplay.Characters.Enemies.Eras.Roman
             Transform origin = transform.Find("ProjectileSpawnPoint");
             if (origin == null) origin = transform;
             
-            GameObject obj = Instantiate(settings.projectilePrefab, origin.position, origin.rotation);
+            GameObject obj = PoolManager.Instance != null 
+                ? PoolManager.Instance.Spawn(settings.projectilePrefab, origin.position, origin.rotation)
+                : Instantiate(settings.projectilePrefab, origin.position, origin.rotation);
+
+            // SEGURANÇA: Ignora colisão com o próprio Drunk
+            var drunkCols = GetComponentsInChildren<Collider>();
+            var bottleCols = obj.GetComponentsInChildren<Collider>();
+            foreach (var dCol in drunkCols)
+                foreach (var bCol in bottleCols)
+                    Physics.IgnoreCollision(dCol, bCol);
             
             var proj = obj.GetComponent<RomanWineBottleProjectile>();
             if (!proj) proj = obj.AddComponent<RomanWineBottleProjectile>();
 
-            // Calculamos a direção apenas no plano horizontal para o arco funcionar melhor
             Vector3 startPos = origin.position;
             Vector3 targetPos = target.position;
             Vector3 dir = (targetPos - startPos);
-            dir.y = 0; // Ignora altura na direção base
+            dir.y = 0; 
             dir.Normalize();
             
             proj.Init(type, impactDamage, splashRadius, hitMask, dir, throwSpeed, arcHeight, startPos);
@@ -96,6 +98,7 @@ namespace Geneforge.Gameplay.Characters.Enemies.Eras.Roman
                 proj.puddleFrames = puddleAnimationFrames;
                 proj.puddleFPS = puddleFPS;
                 proj.puddleScale = puddleScale;
+                proj.puddleRotationY = puddleRotationY;
                 proj.poisonDps = poisonDps;
                 proj.poisonDuration = poisonDuration;
             }
@@ -112,7 +115,8 @@ namespace Geneforge.Gameplay.Characters.Enemies.Eras.Roman
         [HideInInspector] public Color puddleColor;
         [HideInInspector] public Sprite[] puddleFrames;
         [HideInInspector] public float puddleFPS = 10f;
-        [HideInInspector] public float puddleScale = 2.0f;
+        [HideInInspector] public Vector3 puddleScale = Vector3.one;
+        [HideInInspector] public float puddleRotationY = 0f;
         [HideInInspector] public float poisonDps;
         [HideInInspector] public float poisonDuration;
 
@@ -129,6 +133,7 @@ namespace Geneforge.Gameplay.Characters.Enemies.Eras.Roman
         private float wobbleAmp;
         private float wobbleFreq;
         private Vector3 horizontalAxis;
+        private bool _hasExploded;
 
         public void Init(BottleType t, float dmg, float r, LayerMask mask, Vector3 dir, float s, float h, Vector3 start)
         {
@@ -141,15 +146,29 @@ namespace Geneforge.Gameplay.Characters.Enemies.Eras.Roman
             arc = h;
             startPos = start;
             startTime = Time.time;
+            _hasExploded = false; // Reset flag
             
-            // Define o eixo horizontal para o ziguezague
             horizontalAxis = Vector3.Cross(direction, Vector3.up).normalized;
             
-            // Garante que o Rigidbody não interfere com o nosso script de movimento
             var rb = GetComponent<Rigidbody>();
             if (rb != null) rb.isKinematic = true;
 
-            Destroy(gameObject, 6f);
+            StopAllCoroutines();
+            StartCoroutine(LifetimeRoutine(6f));
+        }
+
+        private System.Collections.IEnumerator LifetimeRoutine(float delay)
+        {
+            yield return new WaitForSeconds(delay);
+            ReturnToPool();
+        }
+
+        private void ReturnToPool()
+        {
+            if (PoolManager.Instance != null && GetComponent<PoolIdentifier>() != null)
+                PoolManager.Instance.Reclaim(gameObject);
+            else
+                Destroy(gameObject);
         }
 
         public void SetWobble(float amp, float freq)
@@ -191,10 +210,13 @@ namespace Geneforge.Gameplay.Characters.Enemies.Eras.Roman
 
         private void OnTriggerEnter(Collider other)
         {
-            if (other.GetComponentInParent<EnemyCore>() != null) return;
+            // SEGURANÇA: Só explode após 0.05s de voo para não bater no pé
+            if (_hasExploded || (Time.time - startTime < 0.05f) || other.GetComponentInParent<EnemyCore>() != null) return;
 
-            if ((hitMask.value & (1 << other.gameObject.layer)) != 0)
+            // Se for camada do hitMask OU uma colisão sólida (não trigger)
+            if (((1 << other.gameObject.layer) & hitMask.value) != 0 || !other.isTrigger)
             {
+                _hasExploded = true;
                 Explode();
             }
         }
@@ -227,21 +249,23 @@ namespace Geneforge.Gameplay.Characters.Enemies.Eras.Roman
                     spawnPos = new Vector3(transform.position.x, 0.1f, transform.position.z);
                 }
                 
-                GameObject p = Instantiate(puddlePrefab, spawnPos, Quaternion.Euler(90, 0, 0));
+                GameObject p = PoolManager.Instance != null 
+                    ? PoolManager.Instance.Spawn(puddlePrefab, spawnPos, Quaternion.Euler(90, 0, 0))
+                    : Instantiate(puddlePrefab, spawnPos, Quaternion.Euler(90, 0, 0));
                 
                 // Inicializamos como PaintPuddle (o script do Painter)
                 var paintPuddle = p.GetComponent<PaintPuddle>();
                 if (paintPuddle != null)
                 {
                     // No Drunk, passamos o poison. O Painter continuará a passar apenas os defaults (poison=0)
-                    paintPuddle.Init(puddleColor, puddleFrames, puddleFPS, puddleScale, poisonDps, poisonDuration);
+                    paintPuddle.Init(puddleColor, puddleFrames, puddleFPS, puddleScale, puddleRotationY, poisonDps, poisonDuration);
                     
                     // Como queremos apenas Poison no Drunk, zeramos o Slow Amount
                     paintPuddle.slowAmount = 0f; 
                 }
             }
 
-            Destroy(gameObject);
+            ReturnToPool();
         }
     }
 }

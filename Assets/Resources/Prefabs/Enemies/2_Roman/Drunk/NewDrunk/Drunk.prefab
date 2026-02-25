@@ -268,16 +268,22 @@ MonoBehaviour:
   wobbleFrequency: 5
   puddleColor: {r: 0.86415094, g: 0.024456954, b: 0.2035915, a: 0.8}
   puddleAnimationFrames:
-  - {fileID: -1541102891, guid: c7d5b8b7930e5e041a7c63d685d952e7, type: 3}
-  - {fileID: -1646270438, guid: c7d5b8b7930e5e041a7c63d685d952e7, type: 3}
-  - {fileID: -1350771427, guid: c7d5b8b7930e5e041a7c63d685d952e7, type: 3}
-  - {fileID: -170476668, guid: c7d5b8b7930e5e041a7c63d685d952e7, type: 3}
-  - {fileID: -274061439, guid: c7d5b8b7930e5e041a7c63d685d952e7, type: 3}
-  - {fileID: 1668312100, guid: c7d5b8b7930e5e041a7c63d685d952e7, type: 3}
-  - {fileID: -1964824597, guid: c7d5b8b7930e5e041a7c63d685d952e7, type: 3}
-  - {fileID: 756719708, guid: c7d5b8b7930e5e041a7c63d685d952e7, type: 3}
-  - {fileID: -338732048, guid: c7d5b8b7930e5e041a7c63d685d952e7, type: 3}
-  - {fileID: -1362462167, guid: c7d5b8b7930e5e041a7c63d685d952e7, type: 3}
-  - {fileID: -473794535, guid: c7d5b8b7930e5e041a7c63d685d952e7, type: 3}
-  puddleFPS: 12
-  puddleScale: 1.5
+  - {fileID: 1352382079, guid: b097b6c056ee69541add21010626ea62, type: 3}
+  - {fileID: -1800444045, guid: b097b6c056ee69541add21010626ea62, type: 3}
+  - {fileID: -354691048, guid: b097b6c056ee69541add21010626ea62, type: 3}
+  - {fileID: 1181532592, guid: b097b6c056ee69541add21010626ea62, type: 3}
+  - {fileID: -1080205987, guid: b097b6c056ee69541add21010626ea62, type: 3}
+  - {fileID: -731459252, guid: b097b6c056ee69541add21010626ea62, type: 3}
+  - {fileID: -595821741, guid: b097b6c056ee69541add21010626ea62, type: 3}
+  - {fileID: -1599692036, guid: b097b6c056ee69541add21010626ea62, type: 3}
+  - {fileID: -1284554898, guid: b097b6c056ee69541add21010626ea62, type: 3}
+  - {fileID: 1059724748, guid: b097b6c056ee69541add21010626ea62, type: 3}
+  - {fileID: 328017922, guid: b097b6c056ee69541add21010626ea62, type: 3}
+  - {fileID: 421341299, guid: b097b6c056ee69541add21010626ea62, type: 3}
+  - {fileID: 1098458279, guid: b097b6c056ee69541add21010626ea62, type: 3}
+  - {fileID: 1167384972, guid: b097b6c056ee69541add21010626ea62, type: 3}
+  puddleFPS: 14
+  puddleScale: {x: 1, y: 2, z: 1}
+  puddleRotationY: 0
+  poisonDps: 2
+  poisonDuration: 3

@@ -27,6 +27,7 @@ namespace Geneforge.Gameplay.Characters.Enemies.Eras.Roman
         public float shieldFPS = 12f;
         public float shieldScale = 1.5f;
         public float shieldYOffset = 1.0f;
+        [ColorUsage(true, true)] public Color shieldColor = Color.white; // Cor do escudo (HDR)
 
         [Header("Fury Visuals")]
         public GameObject furyPrefab; // Podes usar o mesmo prefab da esfera ou outro
@@ -34,11 +35,73 @@ namespace Geneforge.Gameplay.Characters.Enemies.Eras.Roman
         public float furyFPS = 12f;
         public float furyScale = 2.0f;
         public float furyYOffset = 0.05f; // Quase rente ao chão
+        [ColorUsage(true, true)] public Color furyColor = new Color(2.0f, 0.2f, 0.2f, 0.8f); // Vermelho Fúria (HDR) por padrão
+
+        [Header("Attack Indicator Visuals")]
+        public GameObject indicatorPrefab; 
+        public Sprite[] indicatorAnimationFrames;
+        public float indicatorFPS = 12f;
+        public float indicatorScale = 2.0f;
+        public float indicatorYOffset = 0.02f;
+        [ColorUsage(true, true)] public Color indicatorColor = new Color(1.5f, 0.2f, 2.0f, 0.8f); // Roxo Místico (HDR) por padrão
 
         private void OnDrawGizmosSelected()
         {
             Gizmos.color = Color.cyan;
             Gizmos.DrawWireSphere(transform.position, buffRadius);
+        }
+
+        /// <summary>
+        /// Chamado pelo Animator no INÍCIO da animação de suporte/ataque.
+        /// Cria o indicador visual no chão com Glow HDR e Fade suave.
+        /// </summary>
+        public void AnimEvent_StartAttackIndicator()
+        {
+            if (indicatorAnimationFrames == null || indicatorAnimationFrames.Length == 0) return;
+
+            // 1. Spawn ligeiramente mais alto (0.05f) para evitar o corte do chão (Z-Fighting)
+            GameObject indicatorObj = new GameObject("Priest_AttackIndicator");
+            indicatorObj.transform.SetParent(transform);
+            indicatorObj.transform.position = transform.position + Vector3.up * 0.05f; 
+            indicatorObj.transform.localScale = Vector3.one * indicatorScale;
+
+            var sr = indicatorObj.AddComponent<SpriteRenderer>();
+            sr.sortingOrder = 5; // Por cima do chão, mas por baixo dos pés
+            
+            var animator = indicatorObj.AddComponent<SpriteSheetAnimator>();
+            
+            // 2. ADICIONAR JUICE: Usar o Pulse e SpawnScale que o animator já tem!
+            animator.useSpawnScale = true;
+            animator.usePulse = true;
+            
+            // 3. HDR GLOW: Usa a cor definida no Inspector
+            animator.tintColor = indicatorColor;
+
+            animator.Initialize(indicatorAnimationFrames, indicatorFPS, SpriteSheetAnimator.AnimationMode.Floor);
+            animator.loop = false;
+
+            // 4. FADE OUT SUAVE: Em vez de destruir seco, fazemos um fade
+            StartCoroutine(FadeAndDestroy(indicatorObj, sr));
+        }
+
+        private IEnumerator FadeAndDestroy(GameObject obj, SpriteRenderer sr)
+        {
+            float duration = indicatorAnimationFrames.Length / (indicatorFPS > 0 ? indicatorFPS : 12f);
+            yield return new WaitForSeconds(duration * 0.8f); // Começa o fade perto do fim
+
+            float t = 1f;
+            while (t > 0)
+            {
+                t -= Time.deltaTime * 2f;
+                if (sr != null)
+                {
+                    Color c = sr.color;
+                    c.a = t;
+                    sr.color = c;
+                }
+                yield return null;
+            }
+            Destroy(obj);
         }
 
         public void AnimEvent_PriestLogic()
@@ -117,6 +180,7 @@ namespace Geneforge.Gameplay.Characters.Enemies.Eras.Roman
 
                 var animator = shieldObj.GetComponent<SpriteSheetAnimator>();
                 if (animator == null) animator = shieldObj.AddComponent<SpriteSheetAnimator>();
+                animator.tintColor = shieldColor;
                 animator.Initialize(shieldAnimationFrames, shieldFPS, SpriteSheetAnimator.AnimationMode.Billboard);
             }
 
@@ -154,6 +218,7 @@ namespace Geneforge.Gameplay.Characters.Enemies.Eras.Roman
 
                 var animator = furyObj.GetComponent<SpriteSheetAnimator>();
                 if (animator == null) animator = furyObj.AddComponent<SpriteSheetAnimator>();
+                animator.tintColor = furyColor;
                 animator.Initialize(furyAnimationFrames, furyFPS, SpriteSheetAnimator.AnimationMode.Floor);
             }
 

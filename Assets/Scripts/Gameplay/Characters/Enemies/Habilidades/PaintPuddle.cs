@@ -2,28 +2,54 @@ using UnityEngine;
 using Geneforge.Gameplay.Characters.Player;
 using Geneforge.Gameplay.Progression;
 using Geneforge.Gameplay.Visuals;
+using Geneforge.Core.Pooling;
 
 namespace Geneforge.Gameplay.Characters.Enemies.Habilidades
 {
     public class PaintPuddle : MonoBehaviour
     {
-        public float lifetime = 4f;
+        public float lifetime = 3f;
         public float slowAmount = -0.6f; // Aumentado para 60% para ser bem percetível
         
         private float _poisonDps;
         private float _poisonDuration;
         private bool _playerInside = false;
 
-        private void Start()
+        private void OnEnable()
         {
-            Debug.Log($"<color=cyan>[PUDDLE]</color> Poça de tinta criada em {transform.position}");
-            Destroy(gameObject, lifetime);
+            _playerInside = false; // Reset state for pooling
+            StopAllCoroutines();
+            StartCoroutine(LifetimeRoutine(lifetime));
         }
 
-        public void Init(Color color, Sprite[] frames = null, float fps = 10f, float scale = 2f, float poisonDps = 0f, float poisonDuration = 0f)
+        private void OnDisable()
         {
+            RemoveSlow(); // Garante que o slow é removido se o objeto sumir
+        }
+
+        private System.Collections.IEnumerator LifetimeRoutine(float delay)
+        {
+            yield return new WaitForSeconds(delay);
+            ReturnToPool();
+        }
+
+        private void ReturnToPool()
+        {
+            if (PoolManager.Instance != null && GetComponent<Geneforge.Core.Pooling.PoolIdentifier>() != null)
+                PoolManager.Instance.Reclaim(gameObject);
+            else
+                Destroy(gameObject);
+        }
+
+        public void Init(Color color, Sprite[] frames = null, float fps = 10f, Vector3 scale = default, float rotationY = 0f, float poisonDps = 0f, float poisonDuration = 0f)
+        {
+            if (scale == default) scale = Vector3.one;
             _poisonDps = poisonDps;
             _poisonDuration = poisonDuration;
+
+            // Define a rotação (90 no X para deitar no chão, e a tua rotação custom no Y)
+            transform.rotation = Quaternion.Euler(90f, rotationY, 0f);
+
             if (frames != null && frames.Length > 0)
             {
                 foreach (var r in GetComponentsInChildren<Renderer>())
@@ -34,12 +60,13 @@ namespace Geneforge.Gameplay.Characters.Enemies.Habilidades
                 var animator = GetComponent<SpriteSheetAnimator>();
                 if (animator == null) animator = gameObject.AddComponent<SpriteSheetAnimator>();
                 
-                animator.Initialize(frames, fps, SpriteSheetAnimator.AnimationMode.Floor);
-                
-                transform.localScale = Vector3.one * scale;
+                // --- NOVO: Profissional Juice ---
+                transform.localScale = scale;
 
-                var sr = animator.GetComponentInChildren<SpriteRenderer>();
-                if (sr != null) sr.color = color;
+                animator.tintColor = color * 1.5f; // Leve brilho na poça
+                animator.useSpawnScale = true; 
+                animator.Initialize(frames, fps, SpriteSheetAnimator.AnimationMode.Floor);
+                animator.Flash(0.12f); // Impacto visual!
             }
             else
             {
@@ -51,7 +78,7 @@ namespace Geneforge.Gameplay.Characters.Enemies.Habilidades
                     propBlock.SetColor("_BaseColor", color);
                     renderer.SetPropertyBlock(propBlock);
                 }
-                transform.localScale = Vector3.one;
+                transform.localScale = scale;
             }
         }
 

@@ -414,18 +414,13 @@ MonoBehaviour:
   - {r: 1, g: 0.92156863, b: 0.015686275, a: 1}
   - {r: 0.1, g: 0.1, b: 0.1, a: 1}
   inkAnimationFrames:
-  - {fileID: -538734581, guid: afffb06e4fb457c4cb2936ee1407f8fc, type: 3}
-  - {fileID: -1885516485, guid: afffb06e4fb457c4cb2936ee1407f8fc, type: 3}
-  - {fileID: 2142798557, guid: afffb06e4fb457c4cb2936ee1407f8fc, type: 3}
-  - {fileID: 1110617918, guid: afffb06e4fb457c4cb2936ee1407f8fc, type: 3}
-  - {fileID: 627567320, guid: afffb06e4fb457c4cb2936ee1407f8fc, type: 3}
-  - {fileID: 1001203218, guid: afffb06e4fb457c4cb2936ee1407f8fc, type: 3}
-  - {fileID: 1341768716, guid: afffb06e4fb457c4cb2936ee1407f8fc, type: 3}
-  - {fileID: -1226172335, guid: afffb06e4fb457c4cb2936ee1407f8fc, type: 3}
-  - {fileID: -1170806212, guid: afffb06e4fb457c4cb2936ee1407f8fc, type: 3}
-  - {fileID: 1334184837, guid: afffb06e4fb457c4cb2936ee1407f8fc, type: 3}
+  - {fileID: 1169902826, guid: 47992b2fba3bfa444b07a83ec48594fc, type: 3}
+  - {fileID: 1638907063, guid: 47992b2fba3bfa444b07a83ec48594fc, type: 3}
+  - {fileID: -810556834, guid: 47992b2fba3bfa444b07a83ec48594fc, type: 3}
+  - {fileID: 72064876, guid: 47992b2fba3bfa444b07a83ec48594fc, type: 3}
+  - {fileID: 1838280536, guid: 47992b2fba3bfa444b07a83ec48594fc, type: 3}
   inkFPS: 12
-  inkScale: 1
+  inkScale: 0.6
   yawOffset: 90
   inkSpeed: 10
   inkUseGravity: 0
@@ -448,7 +443,8 @@ MonoBehaviour:
   - {fileID: 1656756681, guid: 8f0a8148d6fba6e46a71891509a76f38, type: 3}
   - {fileID: -300878618, guid: 8f0a8148d6fba6e46a71891509a76f38, type: 3}
   puddleFPS: 10
-  puddleScale: 2
+  puddleScale: {x: 2, y: 2, z: 1}
+  puddleRotationY: 0
 --- !u!1001 &8910932676761197094
 PrefabInstance:
   m_ObjectHideFlags: 0

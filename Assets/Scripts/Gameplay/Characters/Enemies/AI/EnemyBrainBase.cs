@@ -121,7 +121,8 @@ namespace Geneforge.Gameplay.Characters.Enemies.AI
                 bool isLocked = state.IsTag("Hit") || state.IsName("Hit") || state.IsName("Damaged") ||
                                 state.IsTag("Attack") || state.IsName("Attack") || 
                                 state.IsName("Attack2") || state.IsName("Attack3") ||
-                                state.IsName("AttackB") || state.IsName("AttackC");
+                                state.IsName("AttackB") || state.IsName("AttackC") ||
+                                state.IsName("Enrage");
 
                 if (animator.IsInTransition(0))
                 {
@@ -129,7 +130,8 @@ namespace Geneforge.Gameplay.Characters.Enemies.AI
                     isLocked |= nextState.IsTag("Hit") || nextState.IsName("Hit") || nextState.IsName("Damaged") ||
                                 nextState.IsTag("Attack") || nextState.IsName("Attack") || 
                                 nextState.IsName("Attack2") || nextState.IsName("Attack3") ||
-                                nextState.IsName("AttackB") || nextState.IsName("AttackC");
+                                nextState.IsName("AttackB") || nextState.IsName("AttackC") ||
+                                nextState.IsName("Enrage");
                 }
 
                 if (isLocked)

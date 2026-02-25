@@ -255,33 +255,63 @@ MonoBehaviour:
   attackSpeedMultiplier: 1.4
   shieldPrefab: {fileID: 3098376143577340443, guid: 6176381a2f004184e9f443951fbf54bc, type: 3}
   shieldAnimationFrames:
-  - {fileID: -1525551969, guid: 0cd16c22ab4fc714ab3975acc27a3ba7, type: 3}
-  - {fileID: -1671258933, guid: 0cd16c22ab4fc714ab3975acc27a3ba7, type: 3}
-  - {fileID: 732850232, guid: 0cd16c22ab4fc714ab3975acc27a3ba7, type: 3}
-  - {fileID: 237115129, guid: 0cd16c22ab4fc714ab3975acc27a3ba7, type: 3}
-  - {fileID: -353618853, guid: 0cd16c22ab4fc714ab3975acc27a3ba7, type: 3}
-  - {fileID: 2130207819, guid: 0cd16c22ab4fc714ab3975acc27a3ba7, type: 3}
-  - {fileID: -1135123439, guid: 0cd16c22ab4fc714ab3975acc27a3ba7, type: 3}
-  - {fileID: -582941665, guid: 0cd16c22ab4fc714ab3975acc27a3ba7, type: 3}
-  - {fileID: 1320806908, guid: 0cd16c22ab4fc714ab3975acc27a3ba7, type: 3}
-  - {fileID: -2107955824, guid: 0cd16c22ab4fc714ab3975acc27a3ba7, type: 3}
-  - {fileID: 2002489695, guid: 0cd16c22ab4fc714ab3975acc27a3ba7, type: 3}
-  - {fileID: 805839722, guid: 0cd16c22ab4fc714ab3975acc27a3ba7, type: 3}
-  shieldFPS: 12
-  shieldScale: 0.7
+  - {fileID: -146228828, guid: e6b14413343fdaf4b81bb85f370867cc, type: 3}
+  - {fileID: -1208750005, guid: e6b14413343fdaf4b81bb85f370867cc, type: 3}
+  - {fileID: 1864886725, guid: e6b14413343fdaf4b81bb85f370867cc, type: 3}
+  - {fileID: -850537350, guid: e6b14413343fdaf4b81bb85f370867cc, type: 3}
+  - {fileID: 157970785, guid: e6b14413343fdaf4b81bb85f370867cc, type: 3}
+  - {fileID: 720977453, guid: e6b14413343fdaf4b81bb85f370867cc, type: 3}
+  - {fileID: -934016120, guid: e6b14413343fdaf4b81bb85f370867cc, type: 3}
+  - {fileID: -1792001266, guid: e6b14413343fdaf4b81bb85f370867cc, type: 3}
+  - {fileID: -693941343, guid: e6b14413343fdaf4b81bb85f370867cc, type: 3}
+  - {fileID: 2093375183, guid: e6b14413343fdaf4b81bb85f370867cc, type: 3}
+  - {fileID: 1111953241, guid: e6b14413343fdaf4b81bb85f370867cc, type: 3}
+  - {fileID: -1125269124, guid: e6b14413343fdaf4b81bb85f370867cc, type: 3}
+  - {fileID: -79001777, guid: e6b14413343fdaf4b81bb85f370867cc, type: 3}
+  - {fileID: -571411082, guid: e6b14413343fdaf4b81bb85f370867cc, type: 3}
+  shieldFPS: 14
+  shieldScale: 2
   shieldYOffset: 1
+  shieldColor: {r: 0.041471392, g: 0.04150939, b: 0.040961154, a: 1}
   furyPrefab: {fileID: 3098376143577340443, guid: 6176381a2f004184e9f443951fbf54bc, type: 3}
   furyAnimationFrames:
-  - {fileID: 1956658356, guid: fd5c0b916d3eb024da0c088e3ebf618f, type: 3}
-  - {fileID: 667845619, guid: fd5c0b916d3eb024da0c088e3ebf618f, type: 3}
-  - {fileID: -27411229, guid: fd5c0b916d3eb024da0c088e3ebf618f, type: 3}
-  - {fileID: -315658101, guid: fd5c0b916d3eb024da0c088e3ebf618f, type: 3}
-  - {fileID: 778808991, guid: fd5c0b916d3eb024da0c088e3ebf618f, type: 3}
-  - {fileID: 1944704375, guid: fd5c0b916d3eb024da0c088e3ebf618f, type: 3}
-  - {fileID: -98979565, guid: fd5c0b916d3eb024da0c088e3ebf618f, type: 3}
+  - {fileID: -1157193631, guid: bc9d7e6b6e2ca574c871282b12ed6b2f, type: 3}
+  - {fileID: -225073900, guid: bc9d7e6b6e2ca574c871282b12ed6b2f, type: 3}
+  - {fileID: 318584510, guid: bc9d7e6b6e2ca574c871282b12ed6b2f, type: 3}
+  - {fileID: 953399796, guid: bc9d7e6b6e2ca574c871282b12ed6b2f, type: 3}
+  - {fileID: -2131718175, guid: bc9d7e6b6e2ca574c871282b12ed6b2f, type: 3}
+  - {fileID: -1437281283, guid: bc9d7e6b6e2ca574c871282b12ed6b2f, type: 3}
+  - {fileID: 1818135234, guid: bc9d7e6b6e2ca574c871282b12ed6b2f, type: 3}
+  - {fileID: -1745366816, guid: bc9d7e6b6e2ca574c871282b12ed6b2f, type: 3}
+  - {fileID: -1547192808, guid: bc9d7e6b6e2ca574c871282b12ed6b2f, type: 3}
+  - {fileID: 1501142754, guid: bc9d7e6b6e2ca574c871282b12ed6b2f, type: 3}
+  - {fileID: -1715219012, guid: bc9d7e6b6e2ca574c871282b12ed6b2f, type: 3}
+  - {fileID: -1834138796, guid: bc9d7e6b6e2ca574c871282b12ed6b2f, type: 3}
+  - {fileID: -2033940042, guid: bc9d7e6b6e2ca574c871282b12ed6b2f, type: 3}
+  - {fileID: -1109270551, guid: bc9d7e6b6e2ca574c871282b12ed6b2f, type: 3}
+  - {fileID: 1459640454, guid: bc9d7e6b6e2ca574c871282b12ed6b2f, type: 3}
   furyFPS: 7
   furyScale: 0.7
   furyYOffset: 0.05
+  furyColor: {r: 2.7542999, g: 0, b: 0, a: 0.8}
+  indicatorPrefab: {fileID: 0}
+  indicatorAnimationFrames:
+  - {fileID: -825528139, guid: 1079ae11ca68e45419cb1d55abf792c3, type: 3}
+  - {fileID: 859085242, guid: 1079ae11ca68e45419cb1d55abf792c3, type: 3}
+  - {fileID: 457980886, guid: 1079ae11ca68e45419cb1d55abf792c3, type: 3}
+  - {fileID: -678380369, guid: 1079ae11ca68e45419cb1d55abf792c3, type: 3}
+  - {fileID: 796732470, guid: 1079ae11ca68e45419cb1d55abf792c3, type: 3}
+  - {fileID: 893665730, guid: 1079ae11ca68e45419cb1d55abf792c3, type: 3}
+  - {fileID: 2090207915, guid: 1079ae11ca68e45419cb1d55abf792c3, type: 3}
+  - {fileID: -339185239, guid: 1079ae11ca68e45419cb1d55abf792c3, type: 3}
+  - {fileID: 1248321660, guid: 1079ae11ca68e45419cb1d55abf792c3, type: 3}
+  - {fileID: -1098874446, guid: 1079ae11ca68e45419cb1d55abf792c3, type: 3}
+  - {fileID: 1944013882, guid: 1079ae11ca68e45419cb1d55abf792c3, type: 3}
+  - {fileID: -1538754219, guid: 1079ae11ca68e45419cb1d55abf792c3, type: 3}
+  indicatorFPS: 12
+  indicatorScale: 0.9
+  indicatorYOffset: 0.04
+  indicatorColor: {r: 0.96862745, g: 0.85758543, b: 0.05098037, a: 1}
 --- !u!4 &3782212650392415171 stripped
 Transform:
   m_CorrespondingSourceObject: {fileID: 1852576806548013000, guid: 6cc7968a8db41fd49ba18ffb5a346463, type: 3}
