@@ -148,6 +148,18 @@ namespace Geneforge.Gameplay.Characters.Enemies.AI
                 if (isLocked)
                 {
                     animator.SetFloat(SpeedHash, 0f);
+
+                    // PROFISSIONAL: Permitir rotação durante o ataque (Wind-up)
+                    // Isto evita que o inimigo dispare "de lado" se o player se mexer durante a animação
+                    bool isAttacking = state.tagHash == AttackTagHash || state.shortNameHash == AttackStateHash || 
+                                     state.shortNameHash == Attack2StateHash || state.shortNameHash == Attack3StateHash ||
+                                     state.shortNameHash == AttackBStateHash || state.shortNameHash == AttackCStateHash;
+                    
+                    if (isAttacking && target != null)
+                    {
+                        FaceTarget();
+                    }
+
                     return;
                 }
             }

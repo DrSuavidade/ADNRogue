@@ -239,9 +239,11 @@ namespace Geneforge.Gameplay.Characters.Player
 
             volleyColliders.Clear();
 
-            Vector3 forward = firePoint.forward;
-            Vector3 axis = firePoint.up;
-            Vector3 right = firePoint.right;
+            // Usamos as orientações do Root transform para garantir um tiro estável,
+            // evitando que o jitter/tilting das animações (ex: correr) desvie as balas.
+            Vector3 forward = transform.forward;
+            Vector3 axis = Vector3.up;
+            Vector3 right = transform.right;
 
             for (int i = 0; i < shots; i++)
             {
@@ -539,9 +541,10 @@ namespace Geneforge.Gameplay.Characters.Player
 
             volleyColliders.Clear();
 
-            Vector3 forward = origin.forward;
-            Vector3 axis = origin.up;
-            Vector3 right = origin.right;
+            // Usamos transform.forward para estabilidade, ignorando rotações da animação do osso de origem.
+            Vector3 forward = transform.forward;
+            Vector3 axis = Vector3.up;
+            Vector3 right = transform.right;
 
             for (int i = 0; i < shots; i++)
             {

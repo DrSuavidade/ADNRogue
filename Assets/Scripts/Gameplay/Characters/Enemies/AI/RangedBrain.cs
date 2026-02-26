@@ -133,9 +133,13 @@ namespace Geneforge.Gameplay.Characters.Enemies.AI
                 if (toTarget.sqrMagnitude > 0.001f)
                 {
                     float angle = Vector3.Angle(transform.forward, toTarget.normalized);
-                    // Se o ângulo for maior que 40 graus, ainda está a rodar. 
-                    if (angle > 40f)
+                    // PROFISSIONAL: Reduzimos de 40 para 15 graus. 
+                    // O inimigo tem de estar quase de frente para começar a disparar.
+                    if (angle > 15f)
                         return;
+
+                    // Opcional: Pequeno "Snap" para garantir perfeição no frame zero
+                    transform.rotation = Quaternion.LookRotation(toTarget.normalized);
                 }
             }
 
