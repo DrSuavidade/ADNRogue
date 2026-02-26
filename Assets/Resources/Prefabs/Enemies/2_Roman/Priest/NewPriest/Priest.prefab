@@ -309,8 +309,8 @@ MonoBehaviour:
   - {fileID: -1098874446, guid: 1079ae11ca68e45419cb1d55abf792c3, type: 3}
   - {fileID: 1944013882, guid: 1079ae11ca68e45419cb1d55abf792c3, type: 3}
   - {fileID: -1538754219, guid: 1079ae11ca68e45419cb1d55abf792c3, type: 3}
-  indicatorFPS: 12
-  indicatorScale: 1.2
+  indicatorFPS: 3
+  indicatorScale: 2
   indicatorYOffset: 0.04
   indicatorColor: {r: 0.96862745, g: 0.85758543, b: 0.05098037, a: 1}
 --- !u!4 &3782212650392415171 stripped

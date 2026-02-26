@@ -95,33 +95,37 @@ PrefabInstance:
     serializedVersion: 3
     m_TransformParent: {fileID: 4881877304764153442}
     m_Modifications:
+    - target: {fileID: 1341112178316809705, guid: 4ab5710aa8722524281711e8f079b3a4, type: 3}
+      propertyPath: m_IsKinematic
+      value: 1
+      objectReference: {fileID: 0}
     - target: {fileID: 4033803289560597605, guid: 4ab5710aa8722524281711e8f079b3a4, type: 3}
       propertyPath: m_Name
       value: Sword
       objectReference: {fileID: 0}
     - target: {fileID: 4373314185983925983, guid: 4ab5710aa8722524281711e8f079b3a4, type: 3}
       propertyPath: m_LocalScale.x
-      value: 0.39999998
+      value: 0.5
       objectReference: {fileID: 0}
     - target: {fileID: 4373314185983925983, guid: 4ab5710aa8722524281711e8f079b3a4, type: 3}
       propertyPath: m_LocalScale.y
-      value: 0.39999998
+      value: 0.5
       objectReference: {fileID: 0}
     - target: {fileID: 4373314185983925983, guid: 4ab5710aa8722524281711e8f079b3a4, type: 3}
       propertyPath: m_LocalScale.z
-      value: 0.39999998
+      value: 0.5
       objectReference: {fileID: 0}
     - target: {fileID: 4373314185983925983, guid: 4ab5710aa8722524281711e8f079b3a4, type: 3}
       propertyPath: m_LocalPosition.x
-      value: -0.051
+      value: -0.185
       objectReference: {fileID: 0}
     - target: {fileID: 4373314185983925983, guid: 4ab5710aa8722524281711e8f079b3a4, type: 3}
       propertyPath: m_LocalPosition.y
-      value: -0.01
+      value: -0.014
       objectReference: {fileID: 0}
     - target: {fileID: 4373314185983925983, guid: 4ab5710aa8722524281711e8f079b3a4, type: 3}
       propertyPath: m_LocalPosition.z
-      value: 0.021
+      value: 0.026
       objectReference: {fileID: 0}
     - target: {fileID: 4373314185983925983, guid: 4ab5710aa8722524281711e8f079b3a4, type: 3}
       propertyPath: m_LocalRotation.w
@@ -155,7 +159,8 @@ PrefabInstance:
       propertyPath: m_ConstrainProportionsScale
       value: 1
       objectReference: {fileID: 0}
-    m_RemovedComponents: []
+    m_RemovedComponents:
+    - {fileID: 4011866814121698432, guid: 4ab5710aa8722524281711e8f079b3a4, type: 3}
     m_RemovedGameObjects: []
     m_AddedGameObjects: []
     m_AddedComponents: []
@@ -403,6 +408,10 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   vfxGenericPrefab: {fileID: 1657940832873615945, guid: 7f33b61444b7a7f438bec4e05f82d2b0, type: 3}
   weaponObject: {fileID: 3803185036958181235}
+  weaponPositionOffset: {x: 0, y: 0, z: 0}
+  weaponRotationOffset: {x: 0, y: 0, z: 0}
+  weaponScale: {x: 1, y: 1, z: 1}
+  forceKinematicWeapon: 1
   damage: 10
   hitRange: 1.8
   rouletteIndicator: {fileID: 4382632765299259385}

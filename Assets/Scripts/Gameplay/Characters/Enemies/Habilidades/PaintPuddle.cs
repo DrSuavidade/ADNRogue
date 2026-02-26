@@ -3,96 +3,187 @@ using Geneforge.Gameplay.Characters.Player;
 using Geneforge.Gameplay.Progression;
 using Geneforge.Gameplay.Visuals;
 using Geneforge.Core.Pooling;
+using System.Collections;
+using Geneforge.Gameplay.Characters.Enemies.Eras.Roman;
 
 namespace Geneforge.Gameplay.Characters.Enemies.Habilidades
 {
     public class PaintPuddle : MonoBehaviour
     {
-        public float lifetime = 8f;
-        public float slowAmount = -0.6f; // Aumentado para 60% para ser bem percetível
+        [Header("Settings")]
+        public float lifetime = 20f;
+        public float slowAmount = -0.6f;
         
+        [Header("Hades Style Juice")]
+        public bool useGlowLayer = true;
+        public float pulseSpeed = 2f;
+        public float pulseAmount = 0.05f;
+
         private float _poisonDps;
         private float _poisonDuration;
         private bool _playerInside = false;
+        private GameObject _glowLayer;
+        private Vector3 _baseScale;
+        private float _timeActive;
+
+        private Coroutine _lifetimeCoroutine;
 
         private void OnEnable()
         {
-            _playerInside = false; // Reset state for pooling
-            StopAllCoroutines();
-            StartCoroutine(LifetimeRoutine(lifetime));
+            _playerInside = false;
+            _timeActive = 0f;
+            _isReturningToPool = false;
+            // Delay starting the lifetime until Init is called, 
+            // but have a fallback in case Init is never called
+            if (_lifetimeCoroutine != null) StopCoroutine(_lifetimeCoroutine);
+            _lifetimeCoroutine = StartCoroutine(LifetimeRoutine(lifetime));
         }
+
+        private bool _isReturningToPool = false;
 
         private void OnDisable()
         {
-            RemoveSlow(); // Garante que o slow é removido se o objeto sumir
+            RemoveSlow();
+            if (!_isReturningToPool) CleanupGlow();
         }
 
-        private System.Collections.IEnumerator LifetimeRoutine(float delay)
+        private IEnumerator LifetimeRoutine(float delay)
         {
-            yield return new WaitForSeconds(delay);
+            yield return Geneforge.Core.Utils.WaitCache.Get(delay);
             ReturnToPool();
         }
 
         private void ReturnToPool()
         {
-            if (PoolManager.Instance != null && GetComponent<Geneforge.Core.Pooling.PoolIdentifier>() != null)
+            _isReturningToPool = true;
+            CleanupGlow();
+            if (PoolManager.Instance != null && GetComponent<PoolIdentifier>() != null)
                 PoolManager.Instance.Reclaim(gameObject);
             else
                 Destroy(gameObject);
         }
 
-        public void Init(Color color, Sprite[] frames = null, float fps = 10f, Vector3 scale = default, float rotationY = 0f, float poisonDps = 0f, float poisonDuration = 0f)
+        private void CleanupGlow()
         {
+            if (_glowLayer != null)
+            {
+                if (PoolManager.Instance != null) PoolManager.Instance.Reclaim(_glowLayer);
+                else Destroy(_glowLayer);
+                _glowLayer = null;
+            }
+        }
+
+        public void Init(Color color, Sprite[] frames = null, float fps = 10f, Vector3 scale = default, float rotationY = 0f, float poisonDps = 0f, float poisonDuration = 0f, float duration = -1f)
+        {
+            if (duration > 0) lifetime = duration;
             if (scale == default) scale = Vector3.one;
+            _baseScale = scale;
             _poisonDps = poisonDps;
             _poisonDuration = poisonDuration;
 
-            // Define a rotação (90 no X para deitar no chão, e a rotação custom no Y)
+            // Restart lifetime with corrected value
+            if (_lifetimeCoroutine != null) StopCoroutine(_lifetimeCoroutine);
+            _lifetimeCoroutine = StartCoroutine(LifetimeRoutine(lifetime));
+
             transform.rotation = Quaternion.Euler(90f, rotationY, 0f);
+            
+            var animator = GetComponent<SpriteSheetAnimator>();
+            if (animator == null) animator = gameObject.AddComponent<SpriteSheetAnimator>();
+            
+            // Disable animator scaling to avoid conflicts with our local Update scaling
+            animator.useSpawnScale = false;
+            animator.usePulse = false;
+            animator.scaleMultiplier = Vector3.one;
 
-            if (frames != null && frames.Length > 0)
+            animator.tintColor = color;
+            animator.useFadeOut = true;
+            animator.loop = true;
+            animator.fadeStartTime = 0.85f; // Fade later
+            animator.Initialize(frames, fps, SpriteSheetAnimator.AnimationMode.Floor, lifetime);
+
+            if (useGlowLayer && frames != null && frames.Length > 0)
             {
-                foreach (var r in GetComponentsInChildren<Renderer>())
-                    if (!(r is SpriteRenderer)) r.enabled = false;
-
-                var animator = GetComponent<SpriteSheetAnimator>();
-                if (animator == null) animator = gameObject.AddComponent<SpriteSheetAnimator>();
-                
-                transform.localScale = scale;
-
-                // Configuração Profissional (Simulando uma partícula de poça)
-                animator.tintColor = color;
-                animator.useSpawnScale = true; 
-                animator.useFadeOut = true;
-                animator.loop = false;
-                animator.fadeStartTime = 0.8f;
-                // Faz a poça "espalhar" ligeiramente enquanto dura
-                animator.scaleMultiplier = new Vector3(1.1f, 1.1f, 1f); 
-                
-                animator.Initialize(frames, fps, SpriteSheetAnimator.AnimationMode.Floor, lifetime);
-                
-                // IMPACTO: Flash de luz quando a tinta atinge o chão
-                animator.Flash(0.15f); 
+                SpawnGlowLayer(color, frames[0], scale);
             }
-            else
+
+            StopCoroutine("PopInRoutine");
+            StartCoroutine(PopInRoutine());
+        }
+
+        private void SpawnGlowLayer(Color color, Sprite baseSprite, Vector3 scale)
+        {
+            var drunkScript = GetComponentInParent<RomanDrunk>();
+            GameObject prefab = (drunkScript != null) ? drunkScript.vfxGenericPrefab : null;
+            
+            if (prefab == null) {
+                var painter = FindFirstObjectByType<RomanPainter>();
+                if (painter) prefab = painter.vfxGenericPrefab;
+            }
+
+            if (PoolManager.Instance != null && prefab != null)
             {
-                var renderer = GetComponent<Renderer>();
-                if (renderer != null)
-                {
-                    var propBlock = new MaterialPropertyBlock();
-                    propBlock.SetColor("_Color", color);
-                    propBlock.SetColor("_BaseColor", color);
-                    renderer.SetPropertyBlock(propBlock);
-                }
-                transform.localScale = scale;
+                _glowLayer = PoolManager.Instance.Spawn(prefab, transform.position - Vector3.up * 0.01f, transform.rotation, null);
+                _glowLayer.name = "Puddle_Glow_Layer";
+
+                var gAnim = _glowLayer.GetComponent<SpriteSheetAnimator>();
+                if (gAnim == null) gAnim = _glowLayer.AddComponent<SpriteSheetAnimator>();
+                
+                Color gColor = color;
+                gColor.a = 0.35f;
+                
+                gAnim.tintColor = gColor * 2.5f;
+                gAnim.useFadeOut = true;
+                gAnim.fadeStartTime = 0.85f;
+                gAnim.loop = true;
+                gAnim.Initialize(new Sprite[] { baseSprite }, 1, SpriteSheetAnimator.AnimationMode.Floor, lifetime);
             }
         }
+
+        private IEnumerator PopInRoutine()
+        {
+            float t = 0f;
+            while (t < 1f)
+            {
+                // Slowed down pop-in (from 4f to 2f)
+                t += Time.deltaTime * 2f; 
+                float s = Mathf.Sin(t * Mathf.PI * 0.5f) * 1.05f;
+                if (t > 0.8f) s = Mathf.Lerp(s, 1.0f, (t-0.8f)*5f);
+                
+                // We don't set scale here anymore, we let Update do it using a pop multiplier
+                _popScaleMult = s;
+                yield return null;
+            }
+            _popScaleMult = 1f;
+        }
+
+        private float _popScaleMult = 0f;
+
+        private void Update()
+        {
+            _timeActive += Time.deltaTime;
+            
+            float pulse = 1f + Mathf.Sin(_timeActive * pulseSpeed) * pulseAmount;
+            Vector3 finalScale = _baseScale * pulse * _popScaleMult;
+            transform.localScale = finalScale;
+
+            if (_glowLayer != null)
+            {
+                _glowLayer.transform.localScale = finalScale * 1.3f;
+                _glowLayer.transform.position = transform.position - Vector3.up * 0.01f;
+            }
+        }
+
+        private PlayerPoisonStatus _cachedStatus;
 
         private void OnTriggerEnter(Collider other)
         {
             if (IsPlayer(other))
             {
                 ApplySlow();
+                // Cache immediately on enter
+                _cachedStatus = other.GetComponentInParent<PlayerPoisonStatus>();
+                if (_cachedStatus == null)
+                    _cachedStatus = other.transform.root.gameObject.AddComponent<PlayerPoisonStatus>();
             }
         }
 
@@ -101,7 +192,20 @@ namespace Geneforge.Gameplay.Characters.Enemies.Habilidades
             if (IsPlayer(other))
             {
                 if (!_playerInside) ApplySlow();
-                if (_poisonDps > 0) ApplyPoison(other);
+                
+                if (_poisonDps > 0)
+                {
+                    // Use cached status if possible
+                    if (_cachedStatus != null)
+                    {
+                        _cachedStatus.Apply(_poisonDps, _poisonDuration, Color.green, 0.1f);
+                    }
+                    else
+                    {
+                        // Fallback in case of re-parenting or other edge cases
+                        ApplyPoison(other);
+                    }
+                }
             }
         }
 
@@ -110,17 +214,14 @@ namespace Geneforge.Gameplay.Characters.Enemies.Habilidades
             if (IsPlayer(other))
             {
                 RemoveSlow();
+                _cachedStatus = null;
             }
         }
 
         private bool IsPlayer(Collider other)
         {
-            // Verificação tripla para não falhar: Tag OR Componente OR Layer
-            return other.CompareTag("Player") || 
-                   other.GetComponentInParent<PlayerHealth>() != null || 
-                   other.gameObject.layer == 3; // Layer 3 é geralmente Player
+            return other.CompareTag("Player") || other.gameObject.layer == 3;
         }
-
 
         private void ApplySlow()
         {
@@ -128,13 +229,7 @@ namespace Geneforge.Gameplay.Characters.Enemies.Habilidades
             var run = RunSession.Instance?.Run;
             if (run != null)
             {
-                // Só aplica se houver um valor de slow real
-                if (Mathf.Abs(slowAmount) > 0.01f)
-                {
-                    run.ModifySpeed(slowAmount);
-                    Debug.Log("<color=orange><b>[PUDDLE]</b> Player ENTROU na tinta! Slow aplicado.</color>");
-                }
-                
+                if (Mathf.Abs(slowAmount) > 0.01f) run.ModifySpeed(slowAmount);
                 _playerInside = true;
             }
         }
@@ -142,11 +237,7 @@ namespace Geneforge.Gameplay.Characters.Enemies.Habilidades
         private void ApplyPoison(Collider other)
         {
             var pStatus = other.GetComponentInParent<PlayerPoisonStatus>();
-            if (pStatus == null) 
-            {
-                pStatus = other.transform.root.gameObject.AddComponent<PlayerPoisonStatus>();
-            }
-            
+            if (pStatus == null) pStatus = other.transform.root.gameObject.AddComponent<PlayerPoisonStatus>();
             pStatus.Apply(_poisonDps, _poisonDuration, Color.green, 0.1f);
         }
 
@@ -156,18 +247,9 @@ namespace Geneforge.Gameplay.Characters.Enemies.Habilidades
             var run = RunSession.Instance?.Run;
             if (run != null)
             {
-                if (Mathf.Abs(slowAmount) > 0.01f)
-                {
-                    run.ModifySpeed(-slowAmount);
-                    Debug.Log("<color=green><b>[PUDDLE]</b> Player SAIU da tinta! Velocidade restaurada.</color>");
-                }
+                if (Mathf.Abs(slowAmount) > 0.01f) run.ModifySpeed(-slowAmount);
                 _playerInside = false;
             }
-        }
-
-        private void OnDestroy()
-        {
-            RemoveSlow();
         }
     }
 }

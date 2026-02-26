@@ -7,7 +7,7 @@ namespace Geneforge.Gameplay.Characters.Enemies.Habilidades
 {
     public class WinePuddle : MonoBehaviour
     {
-        public float lifetime = 4f;
+        public float lifetime = 20f;
         public Color puddleColor = new Color(0.5f, 0, 0, 0.7f); // Deep Wine Red
 
         private float _poisonDps;
@@ -37,7 +37,7 @@ namespace Geneforge.Gameplay.Characters.Enemies.Habilidades
                 var animator = GetComponent<Visuals.SpriteSheetAnimator>();
                 if (animator == null) animator = gameObject.AddComponent<Visuals.SpriteSheetAnimator>();
                 
-                animator.Initialize(frames, fps, Visuals.SpriteSheetAnimator.AnimationMode.Floor);
+                animator.Initialize(frames, fps, Visuals.SpriteSheetAnimator.AnimationMode.Floor, lifetime);
                 transform.localScale = Vector3.one * scale;
 
                 var sr = animator.GetComponentInChildren<SpriteRenderer>();
@@ -75,7 +75,7 @@ namespace Geneforge.Gameplay.Characters.Enemies.Habilidades
 
         private System.Collections.IEnumerator AutoReclaim(float delay)
         {
-            yield return new WaitForSeconds(delay);
+            yield return Geneforge.Core.Utils.WaitCache.Get(delay);
             if (PoolManager.Instance != null && _poolId != null)
                 PoolManager.Instance.Reclaim(gameObject);
             else if (gameObject.activeInHierarchy)
@@ -95,11 +95,17 @@ namespace Geneforge.Gameplay.Characters.Enemies.Habilidades
             }
         }
 
+        private PlayerPoisonStatus _cachedStatus;
+
         private void OnTriggerEnter(Collider other)
         {
             if (IsPlayer(other))
             {
-                ApplyPoison(other);
+                _cachedStatus = other.GetComponentInParent<PlayerPoisonStatus>();
+                if (_cachedStatus == null)
+                    _cachedStatus = other.transform.root.gameObject.AddComponent<PlayerPoisonStatus>();
+                
+                ApplyPoison();
             }
         }
 
@@ -107,26 +113,29 @@ namespace Geneforge.Gameplay.Characters.Enemies.Habilidades
         {
             if (IsPlayer(other))
             {
-                ApplyPoison(other);
+                ApplyPoison();
+            }
+        }
+
+        private void OnTriggerExit(Collider other)
+        {
+            if (IsPlayer(other))
+            {
+                _cachedStatus = null;
             }
         }
 
         private bool IsPlayer(Collider other)
         {
-            return other.CompareTag("Player") || 
-                   other.GetComponentInParent<PlayerHealth>() != null || 
-                   other.gameObject.layer == 3;
+            return other.CompareTag("Player") || other.gameObject.layer == 3;
         }
 
-        private void ApplyPoison(Collider other)
+        private void ApplyPoison()
         {
-            var pStatus = other.GetComponentInParent<PlayerPoisonStatus>();
-            if (pStatus == null) 
+            if (_cachedStatus != null)
             {
-                pStatus = other.transform.root.gameObject.AddComponent<PlayerPoisonStatus>();
+                _cachedStatus.Apply(_poisonDps, _poisonDuration, Color.green, 0.1f);
             }
-            
-            pStatus.Apply(_poisonDps, _poisonDuration, Color.green, 0.1f);
         }
     }
 }

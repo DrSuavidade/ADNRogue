@@ -207,7 +207,7 @@ namespace Geneforge.Gameplay.Weapons.Bullets
 
 
 
-        IEnumerator DieAfter(float t) { yield return new WaitForSeconds(t); Despawn(); }
+        IEnumerator DieAfter(float t) { yield return Geneforge.Core.Utils.WaitCache.Get(t); Despawn(); }
 
         public void ApplyRuntimeStats(WeaponStats ws)
         {
@@ -457,7 +457,7 @@ namespace Geneforge.Gameplay.Weapons.Bullets
             if (myCol && other)
             {
                 IgnoreCollisionTracked(other, true);
-                yield return new WaitForSeconds(seconds);
+                yield return Geneforge.Core.Utils.WaitCache.Get(seconds);
                 IgnoreCollisionTracked(other, false);
             }
         }

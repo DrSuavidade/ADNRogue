@@ -443,8 +443,9 @@ MonoBehaviour:
   - {fileID: -1731194076, guid: 8f0a8148d6fba6e46a71891509a76f38, type: 3}
   - {fileID: 1656756681, guid: 8f0a8148d6fba6e46a71891509a76f38, type: 3}
   - {fileID: -300878618, guid: 8f0a8148d6fba6e46a71891509a76f38, type: 3}
-  puddleFPS: 10
-  puddleScale: {x: 2, y: 2, z: 1}
+  puddleFPS: 3
+  puddleLifetime: 4
+  puddleScale: {x: 1, y: 1, z: 1}
   puddleRotationY: 0
 --- !u!1001 &8910932676761197094
 PrefabInstance:

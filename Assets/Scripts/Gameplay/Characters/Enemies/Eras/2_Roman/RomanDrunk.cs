@@ -28,7 +28,8 @@ namespace Geneforge.Gameplay.Characters.Enemies.Eras.Roman
         [Header("Puddle Animation (Ground)")]
         [ColorUsage(true, true)] public Color puddleColor = new Color(0.5f, 0f, 0f, 0.8f); // Vinho tinto por padrão
         public Sprite[] puddleAnimationFrames;
-        public float puddleFPS = 4f;
+        public float puddleFPS = 1.2f;
+        public float puddleLifetime = 15f;
         public Vector3 puddleScale = new Vector3(1.2f, 1.2f, 1f);
         [Range(0, 360)] public float puddleRotationY = 0f;
 
@@ -100,6 +101,7 @@ namespace Geneforge.Gameplay.Characters.Enemies.Eras.Roman
                 proj.puddleFPS = puddleFPS;
                 proj.puddleScale = puddleScale;
                 proj.puddleRotationY = puddleRotationY;
+                proj.puddleLifetime = puddleLifetime;
                 proj.poisonDps = poisonDps;
                 proj.poisonDuration = poisonDuration;
             }
@@ -117,6 +119,7 @@ namespace Geneforge.Gameplay.Characters.Enemies.Eras.Roman
         [HideInInspector] public Color puddleColor;
         [HideInInspector] public Sprite[] puddleFrames;
         [HideInInspector] public float puddleFPS = 10f;
+        [HideInInspector] public float puddleLifetime = 10f;
         [HideInInspector] public Vector3 puddleScale = Vector3.one;
         [HideInInspector] public float puddleRotationY = 0f;
         [HideInInspector] public float poisonDps;
@@ -261,8 +264,10 @@ namespace Geneforge.Gameplay.Characters.Enemies.Eras.Roman
                     bAnim.useSpawnScale = true;
                     bAnim.useFadeOut = true;
                     bAnim.scaleMultiplier = Vector3.one * 1.5f;
+                    bAnim.scaleMultiplier = Vector3.one * 1.5f;
                     bAnim.loop = false; // AUTODESTRUIÇÃO
-                    bAnim.Initialize(puddleFrames, puddleFPS * 1.5f, SpriteSheetAnimator.AnimationMode.Billboard);
+                    // Slowed down splash (0.7f multiplier instead of 1.5f) and forced 1.2s duration
+                    bAnim.Initialize(puddleFrames, puddleFPS * 0.7f, SpriteSheetAnimator.AnimationMode.Billboard, 1.2f);
                 }
                 else
                 {
@@ -274,7 +279,8 @@ namespace Geneforge.Gameplay.Characters.Enemies.Eras.Roman
                     bAnim.useFadeOut = true;
                     bAnim.scaleMultiplier = Vector3.one * 1.5f;
                     bAnim.loop = false;
-                    bAnim.Initialize(puddleFrames, puddleFPS * 1.5f, SpriteSheetAnimator.AnimationMode.Billboard);
+                    // Slowed down splash
+                    bAnim.Initialize(puddleFrames, puddleFPS * 0.7f, SpriteSheetAnimator.AnimationMode.Billboard, 1.2f);
                 }
 
                 // 3. POÇA NORMAL (Fica deitada no chão)
@@ -285,7 +291,7 @@ namespace Geneforge.Gameplay.Characters.Enemies.Eras.Roman
                 var paintPuddle = p.GetComponent<PaintPuddle>();
                 if (paintPuddle != null)
                 {
-                    paintPuddle.Init(puddleColor, puddleFrames, puddleFPS, puddleScale, puddleRotationY, poisonDps, poisonDuration);
+                    paintPuddle.Init(puddleColor, puddleFrames, puddleFPS, puddleScale, puddleRotationY, poisonDps, poisonDuration, puddleLifetime);
                     paintPuddle.slowAmount = 0f; // No Drunk é apenas veneno
                 }
             }

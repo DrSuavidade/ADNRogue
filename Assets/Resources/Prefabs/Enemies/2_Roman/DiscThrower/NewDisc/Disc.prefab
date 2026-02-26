@@ -267,9 +267,28 @@ MonoBehaviour:
   - {fileID: 954642885, guid: 6106cc3a4f9590f47bd789992c2ed0f0, type: 3}
   - {fileID: -1630941925, guid: 6106cc3a4f9590f47bd789992c2ed0f0, type: 3}
   - {fileID: 206086636, guid: 6106cc3a4f9590f47bd789992c2ed0f0, type: 3}
-  auraFPS: 5
+  auraFPS: 3
   auraScale: {x: 0.4, y: 0.4, z: 0.4}
   auraColor: {r: 0.7735849, g: 0.062762484, b: 0.08226174, a: 1}
   hitMask:
     serializedVersion: 2
     m_Bits: 8
+  trailFrames:
+  - {fileID: -1553460566, guid: e029896b677bcca47b30ddbcb58ecdf1, type: 3}
+  - {fileID: -235321193, guid: e029896b677bcca47b30ddbcb58ecdf1, type: 3}
+  - {fileID: -1762211372, guid: e029896b677bcca47b30ddbcb58ecdf1, type: 3}
+  - {fileID: 1992235237, guid: e029896b677bcca47b30ddbcb58ecdf1, type: 3}
+  - {fileID: 317503326, guid: e029896b677bcca47b30ddbcb58ecdf1, type: 3}
+  - {fileID: 2048522566, guid: e029896b677bcca47b30ddbcb58ecdf1, type: 3}
+  - {fileID: 1488734852, guid: e029896b677bcca47b30ddbcb58ecdf1, type: 3}
+  - {fileID: 1354675034, guid: e029896b677bcca47b30ddbcb58ecdf1, type: 3}
+  - {fileID: 797970685, guid: e029896b677bcca47b30ddbcb58ecdf1, type: 3}
+  - {fileID: 917116991, guid: e029896b677bcca47b30ddbcb58ecdf1, type: 3}
+  - {fileID: 2037497762, guid: e029896b677bcca47b30ddbcb58ecdf1, type: 3}
+  - {fileID: -2010507047, guid: e029896b677bcca47b30ddbcb58ecdf1, type: 3}
+  - {fileID: -752076923, guid: e029896b677bcca47b30ddbcb58ecdf1, type: 3}
+  - {fileID: 422779782, guid: e029896b677bcca47b30ddbcb58ecdf1, type: 3}
+  trailFPS: 7
+  trailInterval: 0.05
+  trailScale: {x: 0.5, y: 0.5, z: 0.5}
+  trailColor: {r: 2, g: 1.2, b: 0.5, a: 1}

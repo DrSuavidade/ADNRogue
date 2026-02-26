@@ -379,7 +379,7 @@ MonoBehaviour:
   - {fileID: 1068162542, guid: 3178df2b864fea243932d042d17ce347, type: 3}
   - {fileID: 1459982800, guid: 3178df2b864fea243932d042d17ce347, type: 3}
   launchVFXFPS: 11
-  launchVFXScale: 1
+  launchVFXScale: 0.6
   launchVFXColor: {r: 0.93333334, g: 0.8509804, b: 0.7176471, a: 1}
   arrowTrailFrames:
   - {fileID: -1147571340, guid: f9fa2346e65aab84e88cebca3f9b6f85, type: 3}
@@ -393,7 +393,7 @@ MonoBehaviour:
   - {fileID: -965091620, guid: f9fa2346e65aab84e88cebca3f9b6f85, type: 3}
   - {fileID: 622539148, guid: f9fa2346e65aab84e88cebca3f9b6f85, type: 3}
   arrowTrailFPS: 10
-  arrowTrailScale: 0.4
+  arrowTrailScale: 0.1
   arrowTrailColor: {r: 0.06303301, g: 0.13996084, b: 0.85660374, a: 0.9490196}
   trailInterval: 0.05
 --- !u!114 &4954093475629576477

@@ -283,8 +283,9 @@ MonoBehaviour:
   - {fileID: 421341299, guid: b097b6c056ee69541add21010626ea62, type: 3}
   - {fileID: 1098458279, guid: b097b6c056ee69541add21010626ea62, type: 3}
   - {fileID: 1167384972, guid: b097b6c056ee69541add21010626ea62, type: 3}
-  puddleFPS: 14
-  puddleScale: {x: 1, y: 2, z: 1}
+  puddleFPS: 3
+  puddleLifetime: 4
+  puddleScale: {x: 1, y: 1, z: 1}
   puddleRotationY: 0
   poisonDps: 2
   poisonDuration: 3

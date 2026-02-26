@@ -109,7 +109,7 @@ namespace Geneforge.Gameplay.Visuals
 
         private IEnumerator AutoReclaimRoutine(float delay)
         {
-            yield return new WaitForSeconds(delay);
+            yield return Geneforge.Core.Utils.WaitCache.Get(delay);
             
             if (PoolManager.Instance != null && _poolId != null)
             {

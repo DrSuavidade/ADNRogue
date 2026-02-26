@@ -2,6 +2,7 @@ using UnityEngine;
 using Geneforge.Gameplay.Characters.Player;
 using Geneforge.Gameplay.Characters.Enemies.Config;
 using Geneforge.Core.Pooling;
+using System.Collections;
 
 namespace Geneforge.Gameplay.Characters.Enemies.Eras.Roman
 {
@@ -23,6 +24,13 @@ namespace Geneforge.Gameplay.Characters.Enemies.Eras.Roman
 
         [Tooltip("Layers que o disco pode atingir.")]
         public LayerMask hitMask = ~0;
+
+        [Header("VFX do Rastro (Trail)")]
+        public Sprite[] trailFrames;
+        public float trailFPS = 24f;
+        public float trailInterval = 0.05f;
+        public Vector3 trailScale = Vector3.one;
+        [ColorUsage(true, true)] public Color trailColor = new Color(2f, 1.2f, 0.5f, 1f); // HDR Orangeish
 
         EnemyConfigurator _config;
 
@@ -107,14 +115,18 @@ namespace Geneforge.Gameplay.Characters.Enemies.Eras.Roman
         private float _fixedZ;
         private Rigidbody _rb;
         private bool _isInitialized;
+        private RomanDiscThrower _owner;
 
         private GameObject _activeAura;
+        private Coroutine _trailCoroutine;
+        private WaitForSeconds _trailWait;
 
         public void Init(float dmg, LayerMask mask, float rotSpeed, RomanDiscThrower owner)
         {
             damage = dmg;
             hitMask = mask;
             rotationSpeed = rotSpeed;
+            _owner = owner;
             _rb = GetComponent<Rigidbody>();
             
             _fixedX = transform.eulerAngles.x;
@@ -128,18 +140,12 @@ namespace Geneforge.Gameplay.Characters.Enemies.Eras.Roman
                 _rb.collisionDetectionMode = CollisionDetectionMode.ContinuousDynamic;
             }
 
-            // --- LIMPEZA DE AURAS ANTIGAS (POOLING SAFETY) ---
-            if (_activeAura != null)
-            {
-                if (PoolManager.Instance != null) PoolManager.Instance.Reclaim(_activeAura);
-                else Destroy(_activeAura);
-                _activeAura = null;
-            }
+            // --- LIMPEZA DE AURAS E RASTROS ANTIGOS (POOLING SAFETY) ---
+            CleanupActiveVFX();
 
-            // --- SPAWN DA AURA ---
+            // --- SPAWN DA AURA (Brilho constante no disco) ---
             if (owner != null && owner.auraFrames != null && owner.auraFrames.Length > 0)
             {
-                // Criamos o VFX como FILHO do projétil para ele seguir o movimento
                 _activeAura = owner.SpawnVFXLayer_Public(
                     "DiscGlow", 
                     transform.position, 
@@ -158,12 +164,46 @@ namespace Geneforge.Gameplay.Characters.Enemies.Eras.Roman
                 }
             }
 
+            // --- INICIAR RASTRO (SPRITES LARGADAS NO AR) ---
+            if (owner != null && owner.trailFrames != null && owner.trailFrames.Length > 0)
+            {
+                // CACHE: Criamos o objeto de espera aqui uma vez
+                _trailWait = new WaitForSeconds(_owner.trailInterval);
+                _trailCoroutine = StartCoroutine(TrailRoutine());
+            }
+
             _isInitialized = true;
-            StopAllCoroutines();
-            StartCoroutine(AutoReclaim(6f));
+            StopCoroutine(nameof(AutoReclaim));
+            StartCoroutine(nameof(AutoReclaim), 6f);
         }
 
-        private System.Collections.IEnumerator AutoReclaim(float delay)
+        private IEnumerator TrailRoutine()
+        {
+            while (true)
+            {
+                yield return _trailWait; // REUTILIZAÇÃO: Zero alocação de lixo aqui
+                
+                // Spawna o rastro no ESPAÇO DO MUNDO (parent = null)
+                // Usamos Loop = false para ele tocar a animação uma vez e sumir (pooling automático)
+                _owner.SpawnVFXLayer_Public(
+                    "DiscTrail",
+                    transform.position,
+                    _owner.trailScale,
+                    _owner.trailFrames,
+                    _owner.trailFPS,
+                    _owner.trailColor,
+                    1f, 
+                    15f, // Rotação aleatória leve para variação
+                    0.4f, // Fade começa mais cedo para dissipar rápido
+                    false, // Pulse
+                    null, // SEM PARENT (Fica no ar)
+                    Visuals.SpriteSheetAnimator.AnimationMode.Billboard,
+                    false // SEM LOOP
+                );
+            }
+        }
+
+        private IEnumerator AutoReclaim(float delay)
         {
             yield return new WaitForSeconds(delay);
             Reclaim();
@@ -171,18 +211,28 @@ namespace Geneforge.Gameplay.Characters.Enemies.Eras.Roman
 
         private void Reclaim()
         {
-            // Reclamamos a aura também para não vazar memória/objetos
+            CleanupActiveVFX();
+
+            if (PoolManager.Instance != null)
+                PoolManager.Instance.Reclaim(gameObject);
+            else
+                Destroy(gameObject);
+        }
+
+        private void CleanupActiveVFX()
+        {
+            if (_trailCoroutine != null)
+            {
+                StopCoroutine(_trailCoroutine);
+                _trailCoroutine = null;
+            }
+
             if (_activeAura != null)
             {
                 if (PoolManager.Instance != null) PoolManager.Instance.Reclaim(_activeAura);
                 else Destroy(_activeAura);
                 _activeAura = null;
             }
-
-            if (PoolManager.Instance != null)
-                PoolManager.Instance.Reclaim(gameObject);
-            else
-                Destroy(gameObject);
         }
 
         void FixedUpdate()

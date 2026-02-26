@@ -398,7 +398,7 @@ MonoBehaviour:
   - {fileID: -1277496340, guid: 9cd4cad32157e1e4ea631a007b1899fa, type: 3}
   vfxFPS: 19
   slamScale: {x: 2.5, y: 2.5, z: 2.5}
-  craterScale: {x: 3.5, y: 3.5, z: 3.5}
+  craterScale: {x: 1, y: 1, z: 1}
   impactColor: {r: 1, g: 1, b: 1, a: 1}
 --- !u!4 &9020263470902132244 stripped
 Transform:

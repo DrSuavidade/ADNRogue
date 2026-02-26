@@ -220,7 +220,7 @@ MonoBehaviour:
   - {fileID: -198976787, guid: a8213c4f6cd28d74b896adde3727886f, type: 3}
   - {fileID: 1557035928, guid: a8213c4f6cd28d74b896adde3727886f, type: 3}
   enrageFPS: 12
-  enrageScale: {x: 1, y: 2, z: 1}
+  enrageScale: {x: 0.6, y: 1, z: 0.6}
   enrageYOffset: 0.5
   enrageColor: {r: 2, g: 0.5, b: 0, a: 1}
   slashDamage: 16

@@ -156,7 +156,7 @@ namespace Geneforge.Gameplay.Characters.Enemies.Eras.Roman
                 // Spawn ripple periódico (não é loop, morre sozinho)
                 SpawnVFXLayer("PriestShield_Ripple", ally.transform.position + Vector3.up * shieldYOffset, Vector3.one * shieldScale * 0.8f, shieldAnimationFrames, shieldFPS * 1.5f, shieldColor * 1.5f, 1.8f, 180f, 0.4f, false, ally.transform);
                 
-                yield return new WaitForSeconds(1.0f);
+                yield return Geneforge.Core.Utils.WaitCache.Get(1.0f);
                 elapsed += 1.0f;
             }
 
@@ -199,7 +199,7 @@ namespace Geneforge.Gameplay.Characters.Enemies.Eras.Roman
             // 2. CAMADA BURST (Esfera expandindo no centro do corpo) - Modo Billboard (3D)
             SpawnVFXLayer("PriestFury_Burst", ally.transform.position + Vector3.up * 0.8f, Vector3.one * furyScale * 0.5f, furyAnimationFrames, furyFPS * 0.8f, furyColor * 2f, 2.5f, 0f, 0.3f, false, ally.transform, SpriteSheetAnimator.AnimationMode.Billboard);
 
-            yield return new WaitForSeconds(furyDuration);
+            yield return Geneforge.Core.Utils.WaitCache.Get(furyDuration);
             
             if (ally != null && !ally.IsDead && ally.Animator != null)
             {

@@ -16,6 +16,7 @@ namespace Geneforge.Gameplay.Characters.Enemies.Habilidades
 
         [HideInInspector] public Sprite[] puddleFrames;
         [HideInInspector] public float puddleFPS = 10f;
+        [HideInInspector] public float puddleLifetime = 10f;
         [HideInInspector] public Vector3 puddleScale = Vector3.one;
         [HideInInspector] public float puddleRotationY = 0f;
 
@@ -126,7 +127,8 @@ namespace Geneforge.Gameplay.Characters.Enemies.Habilidades
                         bAnim.useFadeOut = true;
                         bAnim.scaleMultiplier = Vector3.one * 1.6f;
                         bAnim.loop = false;
-                        bAnim.Initialize(puddleFrames, puddleFPS * 1.5f, SpriteSheetAnimator.AnimationMode.Billboard);
+                        // Slowed down splash and forced 1.2s duration
+                        bAnim.Initialize(puddleFrames, puddleFPS * 0.7f, SpriteSheetAnimator.AnimationMode.Billboard, 1.2f);
                     }
                 }
 
@@ -137,7 +139,7 @@ namespace Geneforge.Gameplay.Characters.Enemies.Habilidades
                     var puddleScript = puddle.GetComponent<PaintPuddle>();
                     if (puddleScript != null) 
                     {
-                        puddleScript.Init(myColor, puddleFrames, puddleFPS, puddleScale, puddleRotationY);
+                        puddleScript.Init(myColor, puddleFrames, puddleFPS, puddleScale, puddleRotationY, 0f, 0f, puddleLifetime);
                     }
                 }
             }

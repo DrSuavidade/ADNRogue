@@ -11,6 +11,11 @@ namespace Geneforge.Gameplay.Characters.Enemies.Eras.Roman
         [Header("References")]
         public GameObject weaponObject; 
         
+        [Header("Weapon Transform Adjustment")]
+        public Vector3 weaponPositionOffset = Vector3.zero;
+        public Vector3 weaponRotationOffset = Vector3.zero;
+        public Vector3 weaponScale = Vector3.one; 
+        public bool forceKinematicWeapon = true;
         [Header("Melee (Espátula)")]
         public float damage = 10f;
         public float hitRange = 1.8f;
@@ -43,11 +48,36 @@ namespace Geneforge.Gameplay.Characters.Enemies.Eras.Roman
         protected override void Awake()
         {
             base.Awake();
-            
-            // GARANTIR ARMA ATIVA: Resolve o problema dela nascer sem arma
-            if (weaponObject != null) weaponObject.SetActive(true);
-
+            SetupWeapon();
             if (rouletteIndicator) rouletteIndicator.gameObject.SetActive(false);
+        }
+
+        private void OnEnable()
+        {
+            // Resetar arma quando volta do pool
+            SetupWeapon();
+        }
+
+        private void SetupWeapon()
+        {
+            if (weaponObject == null) return;
+
+            weaponObject.SetActive(true);
+            
+            // Aplicar transformações locais para garantir o encaixe perfeito
+            weaponObject.transform.localPosition = weaponPositionOffset;
+            weaponObject.transform.localEulerAngles = weaponRotationOffset;
+            weaponObject.transform.localScale = weaponScale;
+
+            if (forceKinematicWeapon)
+            {
+                var rb = weaponObject.GetComponent<Rigidbody>();
+                if (rb != null)
+                {
+                    rb.isKinematic = true;
+                    rb.useGravity = false;
+                }
+            }
         }
 
         // Chamado no frame de impacto da animação básica de espátula

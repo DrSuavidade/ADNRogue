@@ -53,7 +53,8 @@ namespace Geneforge.Gameplay.Characters.Enemies.Eras.Roman
 
         [Header("Puddle Animation (Ground)")]
         public Sprite[] puddleAnimationFrames;
-        public float puddleFPS = 4f;
+        public float puddleFPS = 1.2f;
+        public float puddleLifetime = 15f;
         public Vector3 puddleScale = new Vector3(2.0f, 2.0f, 1f);
         [Range(0, 360)] public float puddleRotationY = 0f;
 
@@ -190,6 +191,7 @@ namespace Geneforge.Gameplay.Characters.Enemies.Eras.Roman
             projScript.puddleFPS = puddleFPS;
             projScript.puddleScale = puddleScale;
             projScript.puddleRotationY = puddleRotationY;
+            projScript.puddleLifetime = puddleLifetime;
         }
 
         private void LaunchPaintBucket(Color paintColor)
@@ -215,6 +217,7 @@ namespace Geneforge.Gameplay.Characters.Enemies.Eras.Roman
             projScript.puddleFPS = puddleFPS;
             projScript.puddleScale = puddleScale;
             projScript.puddleRotationY = puddleRotationY;
+            projScript.puddleLifetime = puddleLifetime;
 
             Rigidbody rb = bucket.GetComponent<Rigidbody>();
             if (rb != null)
