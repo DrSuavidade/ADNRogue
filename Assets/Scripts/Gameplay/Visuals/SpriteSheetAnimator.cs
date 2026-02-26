@@ -1,10 +1,12 @@
 using UnityEngine;
 using System.Collections;
+using Geneforge.Core.Pooling;
 
 namespace Geneforge.Gameplay.Visuals
 {
     /// <summary>
     /// Professional frame-based animator with procedural juice (scaling, pulse, flash).
+    /// Suporta Pooling automático (Auto-Reclaim).
     /// </summary>
     public class SpriteSheetAnimator : MonoBehaviour
     {
@@ -17,6 +19,10 @@ namespace Geneforge.Gameplay.Visuals
         [Header("Juice (Professional Polish)")]
         public bool useSpawnScale = true;
         public bool usePulse = false;
+        public bool useFadeOut = true;
+        public float fadeStartTime = 0.7f; // % of life when fade starts
+        public Vector3 scaleMultiplier = Vector3.one;
+        public float randomRotationRange = 0f;
         [ColorUsage(true, true)] public Color tintColor = Color.white;
         
         private SpriteRenderer _sr;
@@ -26,23 +32,57 @@ namespace Geneforge.Gameplay.Visuals
         private int _currentIndex;
         private Vector3 _baseScale;
         private MaterialPropertyBlock _propBlock;
+        private float _normalizedLife = 0f;
+        private float _totalElapsed = 0f; // Tempo total desde o spawn real
+        private Coroutine _reclaimCooldown;
+        private PoolIdentifier _poolId;
+        private static Camera _mainCam;
 
-        public void Initialize(Sprite[] frames, float fps, AnimationMode animationMode)
+        private static readonly int ColorProp = Shader.PropertyToID("_Color");
+        private static readonly int BaseColorProp = Shader.PropertyToID("_BaseColor");
+
+        private void Awake()
         {
             _sr = GetComponent<SpriteRenderer>();
-            
             if (_sr == null)
             {
-                GameObject child = new GameObject("SpriteAnimation");
-                child.transform.SetParent(this.transform, false);
-                _sr = child.AddComponent<SpriteRenderer>();
+                // Try to find in children first (in case of a complex prefab)
+                _sr = GetComponentInChildren<SpriteRenderer>();
+
+                if (_sr == null)
+                {
+                    // Conflict detection: MeshFilter and SpriteRenderer cannot coexist on the same GameObject in many Unity setups.
+                    if (GetComponent<MeshFilter>() != null || GetComponent<MeshRenderer>() != null)
+                    {
+                        GameObject visualChild = new GameObject("SpriteSheet_Visual");
+                        visualChild.transform.SetParent(transform, false);
+                        _sr = visualChild.AddComponent<SpriteRenderer>();
+                        Debug.Log($"[SpriteSheetAnimator] Mesh conflict on {name}. Created child for SpriteRenderer.");
+                    }
+                    else
+                    {
+                        _sr = gameObject.AddComponent<SpriteRenderer>();
+                    }
+                }
             }
             
+            _poolId = GetComponent<PoolIdentifier>();
+            if (_mainCam == null) _mainCam = Camera.main;
+        }
+
+        private float _overriddenDuration = -1f;
+
+        public void Initialize(Sprite[] frames, float fps, AnimationMode animationMode, float customDuration = -1f)
+        {
+            // Reset state for pooling
             _frames = frames;
             _fps = fps;
             mode = animationMode;
+            _overriddenDuration = customDuration;
             _timer = 0f;
             _currentIndex = 0;
+            _normalizedLife = 0f;
+            _totalElapsed = 0f;
             _baseScale = transform.localScale;
 
             if (_frames != null && _frames.Length > 0 && _sr != null)
@@ -51,13 +91,36 @@ namespace Geneforge.Gameplay.Visuals
                 ApplyJuiceTint(tintColor);
             }
 
-            if (useSpawnScale)
+            if (randomRotationRange > 0)
             {
-                StopAllCoroutines();
-                StartCoroutine(SpawnScaleRoutine());
+                transform.rotation *= Quaternion.Euler(0, 0, Random.Range(-randomRotationRange, randomRotationRange));
+            }
+
+            // AUTO-RECLAIM LOGIC
+            if (!loop)
+            {
+                float duration = _overriddenDuration > 0 ? _overriddenDuration : (frames != null ? frames.Length / (fps > 0 ? fps : 10f) : 1f);
+                if (frames != null && frames.Length == 1 && _overriddenDuration <= 0) duration = 1.0f;
+                
+                if (_reclaimCooldown != null) StopCoroutine(_reclaimCooldown);
+                _reclaimCooldown = StartCoroutine(AutoReclaimRoutine(duration + 0.2f));
             }
         }
 
+        private IEnumerator AutoReclaimRoutine(float delay)
+        {
+            yield return new WaitForSeconds(delay);
+            
+            if (PoolManager.Instance != null && _poolId != null)
+            {
+                PoolManager.Instance.Reclaim(gameObject);
+            }
+            else if (!loop)
+            {
+                Destroy(gameObject);
+            }
+        }
+        
         public void SetTintColor(Color color)
         {
             tintColor = color;
@@ -70,41 +133,33 @@ namespace Geneforge.Gameplay.Visuals
             if (_propBlock == null) _propBlock = new MaterialPropertyBlock();
             
             _sr.GetPropertyBlock(_propBlock);
-            _propBlock.SetColor("_Color", color);
-            _propBlock.SetColor("_BaseColor", color); 
+            _propBlock.SetColor(ColorProp, color);
+            _propBlock.SetColor(BaseColorProp, color); 
             _sr.SetPropertyBlock(_propBlock);
         }
 
-        private IEnumerator SpawnScaleRoutine()
-        {
-            transform.localScale = Vector3.zero;
-            float t = 0;
-            while (t < 1.0f)
-            {
-                t += Time.deltaTime * 5f; // Velocidade do surgimento
-                // Curva de "Overshoot" (escala passa um pouco e volta)
-                float s = -4 * t * t + 4 * t; 
-                float bounce = Mathf.Sin(t * Mathf.PI * 1.25f);
-                transform.localScale = _baseScale * Mathf.Lerp(0, 1.1f, t);
-                yield return null;
-            }
-            transform.localScale = _baseScale;
-        }
 
         private void Update()
         {
             if (_frames == null || _frames.Length == 0 || _sr == null) return;
 
-            // Animação de Frames
+            // Frame Animation
             _timer += Time.deltaTime;
-            float frameDuration = 1f / _fps;
+            float frameDuration = 1f / (_fps > 0 ? _fps : 1f);
+            float totalDuration = _overriddenDuration > 0 ? _overriddenDuration : (_frames.Length * frameDuration);
+            
+            float timeStep = Time.deltaTime / (totalDuration > 0 ? totalDuration : 1f);
+            _normalizedLife += timeStep;
+            _totalElapsed += Time.deltaTime;
+
+            if (loop) _normalizedLife %= 1f;
 
             if (_timer >= frameDuration)
             {
                 _timer -= frameDuration;
                 if (!loop && _currentIndex >= _frames.Length - 1)
                 {
-                    // Mantém o último frame ou desativa
+                    // Stay on last frame
                 }
                 else
                 {
@@ -113,23 +168,41 @@ namespace Geneforge.Gameplay.Visuals
                 }
             }
 
-            // Animação Procedural (Pulse)
+            // Professional Fade Out
+            if (useFadeOut && _normalizedLife > fadeStartTime)
+            {
+                float fadeT = (_normalizedLife - fadeStartTime) / (1f - fadeStartTime);
+                Color c = tintColor;
+                c.a *= (1f - fadeT);
+                ApplyJuiceTint(c);
+            }
+
+            // Procedural Animation (Scaling Over Life)
+            float scaleMod = 1f;
             if (usePulse)
             {
-                float pulse = 1f + Mathf.Sin(Time.time * 10f) * 0.05f;
-                transform.localScale = _baseScale * pulse;
+                scaleMod = 1f + Mathf.Sin(_totalElapsed * 5f) * 0.03f;
             }
+            
+            float spawnScaleMult = 1f;
+            if (useSpawnScale && _totalElapsed < 0.3f)
+            {
+                spawnScaleMult = Mathf.Sin((_totalElapsed / 0.3f) * Mathf.PI * 0.5f);
+            }
+
+            Vector3 finalScale = Vector3.Scale(_baseScale, Vector3.Lerp(Vector3.one, scaleMultiplier, _normalizedLife)) * scaleMod * spawnScaleMult;
+            transform.localScale = finalScale;
         }
 
         private void LateUpdate()
         {
+            if (_mainCam == null) _mainCam = Camera.main;
+            if (_mainCam == null) return;
+
             if (mode == AnimationMode.Billboard)
             {
-                if (Camera.main != null)
-                {
-                    transform.LookAt(transform.position + Camera.main.transform.rotation * Vector3.forward,
-                                     Camera.main.transform.rotation * Vector3.up);
-                }
+                transform.LookAt(transform.position + _mainCam.transform.rotation * Vector3.forward,
+                                 _mainCam.transform.rotation * Vector3.up);
             }
             else if (mode == AnimationMode.Floor)
             {
@@ -141,9 +214,6 @@ namespace Geneforge.Gameplay.Visuals
             }
         }
 
-        /// <summary>
-        /// Flash branco rápido para dar impacto (Impact Juice).
-        /// </summary>
         public void Flash(float duration = 0.1f)
         {
             StartCoroutine(FlashRoutine(duration));
@@ -157,4 +227,5 @@ namespace Geneforge.Gameplay.Visuals
         }
     }
 }
+
 

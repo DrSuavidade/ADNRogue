@@ -256,6 +256,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 696d751c3a2530e42bff48e5a0f50838, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
+  vfxGenericPrefab: {fileID: 1657940832873615945, guid: 7f33b61444b7a7f438bec4e05f82d2b0, type: 3}
   throwSpeed: 11
   arcHeight: 1.5
   impactDamage: 15

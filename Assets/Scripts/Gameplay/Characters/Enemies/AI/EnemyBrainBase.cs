@@ -40,6 +40,20 @@ namespace Geneforge.Gameplay.Characters.Enemies.AI
 
         protected bool isDead;
 
+        private static readonly int SpeedHash = Animator.StringToHash("Speed");
+        private static readonly int HitTagHash = Animator.StringToHash("Hit");
+        private static readonly int AttackTagHash = Animator.StringToHash("Attack");
+        
+        // Cache common state names
+        private static readonly int HitStateHash = Animator.StringToHash("Hit");
+        private static readonly int DamagedStateHash = Animator.StringToHash("Damaged");
+        private static readonly int AttackStateHash = Animator.StringToHash("Attack");
+        private static readonly int Attack2StateHash = Animator.StringToHash("Attack2");
+        private static readonly int Attack3StateHash = Animator.StringToHash("Attack3");
+        private static readonly int AttackBStateHash = Animator.StringToHash("AttackB");
+        private static readonly int AttackCStateHash = Animator.StringToHash("AttackC");
+        private static readonly int EnrageStateHash = Animator.StringToHash("Enrage");
+
         public float DefaultMoveSpeed
         {
             get => defaultMoveSpeed;
@@ -52,7 +66,6 @@ namespace Geneforge.Gameplay.Characters.Enemies.AI
             animator = GetComponentInChildren<Animator>();
         }
 
-        // EnemyBrainBase.cs
         protected virtual void Awake()
         {
             if (enemy == null)
@@ -86,6 +99,7 @@ namespace Geneforge.Gameplay.Characters.Enemies.AI
 
         protected virtual void OnEnable()
         {
+            isDead = false;
             if (enemy != null)
             {
                 enemy.OnDamaged += HandleDamaged;
@@ -111,32 +125,29 @@ namespace Geneforge.Gameplay.Characters.Enemies.AI
             if (isDead || enemy == null || enemy.IsDead) return;
 
             // 👉 LOCK ANIMATION CHECK
-            // Se o Animator estiver numa animação de "Hit" ou "Attack", bloqueamos o cérebro
             if (animator != null)
             {
                 var state = animator.GetCurrentAnimatorStateInfo(0);
                 
-                // Hit/Damaged states are "Hard Stuns" (usually from poise break)
-                // These should indeed pause the brain logic completely.
-                bool isLocked = state.IsTag("Hit") || state.IsName("Hit") || state.IsName("Damaged") ||
-                                state.IsTag("Attack") || state.IsName("Attack") || 
-                                state.IsName("Attack2") || state.IsName("Attack3") ||
-                                state.IsName("AttackB") || state.IsName("AttackC") ||
-                                state.IsName("Enrage");
+                bool isLocked = state.tagHash == HitTagHash || state.shortNameHash == HitStateHash || state.shortNameHash == DamagedStateHash ||
+                                state.tagHash == AttackTagHash || state.shortNameHash == AttackStateHash || 
+                                state.shortNameHash == Attack2StateHash || state.shortNameHash == Attack3StateHash ||
+                                state.shortNameHash == AttackBStateHash || state.shortNameHash == AttackCStateHash ||
+                                state.shortNameHash == EnrageStateHash;
 
                 if (animator.IsInTransition(0))
                 {
                     var nextState = animator.GetNextAnimatorStateInfo(0);
-                    isLocked |= nextState.IsTag("Hit") || nextState.IsName("Hit") || nextState.IsName("Damaged") ||
-                                nextState.IsTag("Attack") || nextState.IsName("Attack") || 
-                                nextState.IsName("Attack2") || nextState.IsName("Attack3") ||
-                                nextState.IsName("AttackB") || nextState.IsName("AttackC") ||
-                                nextState.IsName("Enrage");
+                    isLocked |= nextState.tagHash == HitTagHash || nextState.shortNameHash == HitStateHash || nextState.shortNameHash == DamagedStateHash ||
+                                nextState.tagHash == AttackTagHash || nextState.shortNameHash == AttackStateHash || 
+                                nextState.shortNameHash == Attack2StateHash || nextState.shortNameHash == Attack3StateHash ||
+                                nextState.shortNameHash == AttackBStateHash || nextState.shortNameHash == AttackCStateHash ||
+                                nextState.shortNameHash == EnrageStateHash;
                 }
 
                 if (isLocked)
                 {
-                    animator.SetFloat("Speed", 0f);
+                    animator.SetFloat(SpeedHash, 0f);
                     return;
                 }
             }
@@ -162,10 +173,6 @@ namespace Geneforge.Gameplay.Characters.Enemies.AI
             OnOwnerDied();
         }
 
-        // --------------------------------------------------------------------
-        // Helpers
-        // --------------------------------------------------------------------
-
         protected void MoveTowards(Vector3 worldTarget, float speed)
         {
             if (speed <= 0f) return;
@@ -176,7 +183,7 @@ namespace Geneforge.Gameplay.Characters.Enemies.AI
 
             if (to.sqrMagnitude <= 0.0001f)
             {
-                if (animator != null) animator.SetFloat("Speed", 0f);
+                if (animator != null) animator.SetFloat(SpeedHash, 0f);
                 return;
             }
 
@@ -196,7 +203,7 @@ namespace Geneforge.Gameplay.Characters.Enemies.AI
             if (animator != null && defaultMoveSpeed > 0f)
             {
                 float normalizedSpeed = Mathf.Clamp01(speed / defaultMoveSpeed);
-                animator.SetFloat("Speed", normalizedSpeed);
+                animator.SetFloat(SpeedHash, normalizedSpeed);
             }
         }
 
@@ -283,3 +290,4 @@ namespace Geneforge.Gameplay.Characters.Enemies.AI
         }
     }
 }
+

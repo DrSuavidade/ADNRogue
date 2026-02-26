@@ -11,7 +11,7 @@ namespace Geneforge.Gameplay.Characters.Enemies.Eras.Roman
 
         [Header("Enrage Visuals")]
         public Sprite[] enrageAnimationFrames;
-        public float enrageFPS = 14f;
+        public float enrageFPS = 10f;
         public Vector3 enrageScale = new Vector3(2.5f, 2.5f, 1f);
         public float enrageYOffset = 1.2f;
         [ColorUsage(true, true)] public Color enrageColor = new Color(2.5f, 0.8f, 0.2f, 1.0f); // Fire Orange Glow (HDR)
@@ -43,32 +43,21 @@ namespace Geneforge.Gameplay.Characters.Enemies.Eras.Roman
                 enemy.Animator.SetTrigger("Enrage");
             }
 
-            // 2. Spawn Enrage Visual FX (Dynamic)
+            // 2. Spawn Enrage Visual FX (Professional Layered approach)
             if (enrageAnimationFrames != null && enrageAnimationFrames.Length > 0)
             {
                 Vector3 spawnPos = transform.position + Vector3.up * enrageYOffset;
                 
-                GameObject fireObj = new GameObject("Gladiator_Enrage_VFX");
-                fireObj.transform.position = spawnPos;
-                fireObj.transform.SetParent(this.transform); // Segue o gladiador
-                fireObj.transform.localScale = enrageScale;
+                // CAMADA 1: Burst inicial (mais rápido e rotacionado)
+                SpawnVFXLayer("Gladiator_Enrage_Burst", spawnPos, enrageScale * 1.5f, enrageAnimationFrames, enrageFPS * 1.5f, enrageColor, 1.2f, 360f);
 
-                var sr = fireObj.AddComponent<SpriteRenderer>();
-                sr.sortingOrder = 50; // Garante que cobre o gladiador
+                // CAMADA 2: Aura persistente que segue o gladiador
+                SpawnVFXLayer("Gladiator_Enrage_Aura", spawnPos, enrageScale, enrageAnimationFrames, enrageFPS, enrageColor * 0.8f, 1.0f, 0f, 0.5f, true, this.transform);
 
-                var animator = fireObj.AddComponent<Geneforge.Gameplay.Visuals.SpriteSheetAnimator>();
-                animator.useSpawnScale = true;
-                animator.usePulse = true;
-                animator.tintColor = enrageColor * 1.5f; 
-                animator.loop = false; 
-
-                // BILLBOARD: Faz o enrage "cobrir" o gladiador vindo da câmara
-                animator.Initialize(enrageAnimationFrames, enrageFPS, Geneforge.Gameplay.Visuals.SpriteSheetAnimator.AnimationMode.Billboard);
-
-                // 3. Destruir automaticamente após a duração da animação
-                float duration = enrageAnimationFrames.Length / (enrageFPS > 0 ? enrageFPS : 14f);
-                Destroy(fireObj, duration + 0.5f); 
+                // CAMADA 3: Glow residual no chão/corpo
+                SpawnVFXLayer("Gladiator_Enrage_Glow", spawnPos, enrageScale * 2f, new Sprite[] { enrageAnimationFrames[0] }, 1f, enrageColor * 0.4f, 1.1f, 0f, 0.2f, true, this.transform);
             }
+
         }
 
         // Evento na animação de ataque

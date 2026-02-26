@@ -997,9 +997,21 @@ MonoBehaviour:
   - prefab: {fileID: 25857733397299485, guid: 1168fe8bd7731c6488c329322accff4f, type: 3}
     initialSize: 1
   - prefab: {fileID: 8104875995613135839, guid: 51bfa69456bef62438805f10c2608f9f, type: 3}
-    initialSize: 1
+    initialSize: 50
   - prefab: {fileID: 7692226100105962595, guid: fbae99ce307c85f42989e3e9d541584f, type: 3}
-    initialSize: 1
+    initialSize: 50
+  - prefab: {fileID: 1657940832873615945, guid: 7f33b61444b7a7f438bec4e05f82d2b0, type: 3}
+    initialSize: 100
+  - prefab: {fileID: 8125455590163715708, guid: 13ed3289576d67c459085ab3722c6790, type: 3}
+    initialSize: 50
+  - prefab: {fileID: 3480909527420742165, guid: ccc686851d275424db1630e7dfff7228, type: 3}
+    initialSize: 30
+  - prefab: {fileID: 4356832972467561043, guid: 7288930a702d4e0428704b68b0c7c5a1, type: 3}
+    initialSize: 20
+  - prefab: {fileID: 7623692418670594561, guid: a51163d3a20617b4b9c731e837850e15, type: 3}
+    initialSize: 20
+  - prefab: {fileID: 3226897963492343564, guid: ccc1a595c2029be45b9eb8c6fc11b726, type: 3}
+    initialSize: 30
 --- !u!4 &726163640
 Transform:
   m_ObjectHideFlags: 0

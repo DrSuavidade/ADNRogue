@@ -8,7 +8,7 @@ namespace Geneforge.Gameplay.Characters.Enemies.Habilidades
 {
     public class PaintPuddle : MonoBehaviour
     {
-        public float lifetime = 3f;
+        public float lifetime = 8f;
         public float slowAmount = -0.6f; // Aumentado para 60% para ser bem percetível
         
         private float _poisonDps;
@@ -47,26 +47,32 @@ namespace Geneforge.Gameplay.Characters.Enemies.Habilidades
             _poisonDps = poisonDps;
             _poisonDuration = poisonDuration;
 
-            // Define a rotação (90 no X para deitar no chão, e a tua rotação custom no Y)
+            // Define a rotação (90 no X para deitar no chão, e a rotação custom no Y)
             transform.rotation = Quaternion.Euler(90f, rotationY, 0f);
 
             if (frames != null && frames.Length > 0)
             {
                 foreach (var r in GetComponentsInChildren<Renderer>())
-                {
                     if (!(r is SpriteRenderer)) r.enabled = false;
-                }
 
                 var animator = GetComponent<SpriteSheetAnimator>();
                 if (animator == null) animator = gameObject.AddComponent<SpriteSheetAnimator>();
                 
-                // --- NOVO: Profissional Juice ---
                 transform.localScale = scale;
 
-                animator.tintColor = color * 1.5f; // Leve brilho na poça
+                // Configuração Profissional (Simulando uma partícula de poça)
+                animator.tintColor = color;
                 animator.useSpawnScale = true; 
-                animator.Initialize(frames, fps, SpriteSheetAnimator.AnimationMode.Floor);
-                animator.Flash(0.12f); // Impacto visual!
+                animator.useFadeOut = true;
+                animator.loop = false;
+                animator.fadeStartTime = 0.8f;
+                // Faz a poça "espalhar" ligeiramente enquanto dura
+                animator.scaleMultiplier = new Vector3(1.1f, 1.1f, 1f); 
+                
+                animator.Initialize(frames, fps, SpriteSheetAnimator.AnimationMode.Floor, lifetime);
+                
+                // IMPACTO: Flash de luz quando a tinta atinge o chão
+                animator.Flash(0.15f); 
             }
             else
             {

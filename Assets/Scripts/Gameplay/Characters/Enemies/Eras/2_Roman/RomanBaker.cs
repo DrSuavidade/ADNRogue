@@ -27,7 +27,7 @@ namespace Geneforge.Gameplay.Characters.Enemies.Eras.Roman
 
         [Header("Explosion VFX (Normal Bread)")]
         public Sprite[] explosionFrames;
-        public float explosionFPS = 12f;
+        public float explosionFPS = 8f;
         public Vector3 explosionScale = new Vector3(3f, 3f, 3f);
         public float explosionRotationY = 0f;
 
@@ -183,31 +183,20 @@ namespace Geneforge.Gameplay.Characters.Enemies.Eras.Roman
         {
             if (explosionFrames == null || explosionFrames.Length == 0) return;
 
-            // Define a posição da explosão: Agora no CENTRO do corpo (altura 1.0f) para cobrir o player
-            Vector3 spawnPos = (target != null) ? target.position + Vector3.up * 1.0f : transform.position + Vector3.up * 1.0f;
+            // Posição central da explosão (levemente acima do chão para parecer volumosa)
+            Vector3 spawnPos = (target != null) ? target.position + Vector3.up * 0.5f : transform.position + Vector3.up * 0.5f;
 
-            GameObject vfx = new GameObject("Baker_Explosion_VFX");
-            vfx.transform.position = spawnPos;
-            
-            // Em modo Billboard, a escala Vector3 funciona bem, e a rotação é gerida pelo animator
-            vfx.transform.localScale = explosionScale;
+            // 1. CAMADA CORE (A explosão principal)
+            SpawnVFXLayer("Baker_Explosion_Core", spawnPos, explosionScale, explosionFrames, explosionFPS, normalColor * 4f, 1.2f, 180f);
 
-            var sr = vfx.GetComponent<SpriteRenderer>();
-            if (sr == null) sr = vfx.AddComponent<SpriteRenderer>();
-            sr.sortingOrder = 50; // Aumentado para garantir que cobre o player totalmente
+            // 2. CAMADA "ESFERA" (O Blast que expande e cobre o 3D)
+            SpawnVFXLayer("Baker_Explosion_Sphere", spawnPos, explosionScale * 0.5f, explosionFrames, explosionFPS * 0.8f, normalColor * 2f, 2.5f, 0f, 0.4f);
 
-            var animator = vfx.GetComponent<SpriteSheetAnimator>();
-            if (animator == null) animator = vfx.AddComponent<SpriteSheetAnimator>();
-            animator.loop = false;
-            animator.useSpawnScale = true;
-            animator.tintColor = normalColor * 3f; // HDR mais forte para o centro da explosão
-
-            // BILLBOARD: Faz a explosão ficar de pé e sempre virada para a câmara
-            animator.Initialize(explosionFrames, explosionFPS, SpriteSheetAnimator.AnimationMode.Billboard);
-
-            float duration = explosionFrames.Length / (explosionFPS > 0 ? explosionFPS : 10f);
-            Destroy(vfx, duration + 0.5f);
+            // 3. CAMADA GLOW (Brilho residual)
+            SpawnVFXLayer("Baker_Explosion_Glow", spawnPos, explosionScale * 1.5f, new Sprite[] { explosionFrames[0] }, 1f, normalColor * 0.5f, 1.0f, 0f, 0.2f, true);
         }
+
+
 
         private void ApplySlowToPlayer(float amount, float duration)
         {

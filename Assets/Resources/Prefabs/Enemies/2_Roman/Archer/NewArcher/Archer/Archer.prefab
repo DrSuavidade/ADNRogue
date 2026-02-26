@@ -352,18 +352,50 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 2a21441185479d7448609ce45154cf4c, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
+  vfxGenericPrefab: {fileID: 1657940832873615945, guid: 7f33b61444b7a7f438bec4e05f82d2b0, type: 3}
   arrowPrefab: {fileID: 8125455590163715708, guid: 13ed3289576d67c459085ab3722c6790, type: 3}
   shootOrigin: {fileID: 3876429247832852918}
-  arrowSpeed: 26
+  arrowSpeed: 16
   arcHeight: 0.5
   damage: 8
   useGravity: 1
+  fanSpreadAngle: 15
   yawOffset: 90
   turnSpeed: 10
   snapToTargetOnFire: 1
   hitMask:
     serializedVersion: 2
     m_Bits: 8
+  launchVFXFrames:
+  - {fileID: -911033396, guid: 3178df2b864fea243932d042d17ce347, type: 3}
+  - {fileID: -1526311169, guid: 3178df2b864fea243932d042d17ce347, type: 3}
+  - {fileID: 1397611758, guid: 3178df2b864fea243932d042d17ce347, type: 3}
+  - {fileID: -1582653648, guid: 3178df2b864fea243932d042d17ce347, type: 3}
+  - {fileID: 1201224148, guid: 3178df2b864fea243932d042d17ce347, type: 3}
+  - {fileID: 496923678, guid: 3178df2b864fea243932d042d17ce347, type: 3}
+  - {fileID: -1182533258, guid: 3178df2b864fea243932d042d17ce347, type: 3}
+  - {fileID: 951025903, guid: 3178df2b864fea243932d042d17ce347, type: 3}
+  - {fileID: -1510227561, guid: 3178df2b864fea243932d042d17ce347, type: 3}
+  - {fileID: 1068162542, guid: 3178df2b864fea243932d042d17ce347, type: 3}
+  - {fileID: 1459982800, guid: 3178df2b864fea243932d042d17ce347, type: 3}
+  launchVFXFPS: 11
+  launchVFXScale: 1
+  launchVFXColor: {r: 0.93333334, g: 0.8509804, b: 0.7176471, a: 1}
+  arrowTrailFrames:
+  - {fileID: -1147571340, guid: f9fa2346e65aab84e88cebca3f9b6f85, type: 3}
+  - {fileID: -1867088773, guid: f9fa2346e65aab84e88cebca3f9b6f85, type: 3}
+  - {fileID: 1044382329, guid: f9fa2346e65aab84e88cebca3f9b6f85, type: 3}
+  - {fileID: 1858588444, guid: f9fa2346e65aab84e88cebca3f9b6f85, type: 3}
+  - {fileID: -1421017529, guid: f9fa2346e65aab84e88cebca3f9b6f85, type: 3}
+  - {fileID: -632499951, guid: f9fa2346e65aab84e88cebca3f9b6f85, type: 3}
+  - {fileID: -1359307308, guid: f9fa2346e65aab84e88cebca3f9b6f85, type: 3}
+  - {fileID: 279575125, guid: f9fa2346e65aab84e88cebca3f9b6f85, type: 3}
+  - {fileID: -965091620, guid: f9fa2346e65aab84e88cebca3f9b6f85, type: 3}
+  - {fileID: 622539148, guid: f9fa2346e65aab84e88cebca3f9b6f85, type: 3}
+  arrowTrailFPS: 10
+  arrowTrailScale: 0.4
+  arrowTrailColor: {r: 0.06303301, g: 0.13996084, b: 0.85660374, a: 0.9490196}
+  trailInterval: 0.05
 --- !u!114 &4954093475629576477
 MonoBehaviour:
   m_ObjectHideFlags: 0

@@ -10,39 +10,54 @@ namespace Geneforge.Gameplay.Characters.Enemies.Habilidades
     {
         public float damage;
         public LayerMask hitMask;
-        public Color myColor = Color.white; // Guardamos a cor enviada pelo Painter
-        public GameObject puddlePrefab;    // Arraste aqui o Prefab da poça
+        public Color myColor = Color.white; 
+        public GameObject puddlePrefab;    
+        public GameObject vfxGenericPrefab; 
 
         [HideInInspector] public Sprite[] puddleFrames;
         [HideInInspector] public float puddleFPS = 10f;
         [HideInInspector] public Vector3 puddleScale = Vector3.one;
         [HideInInspector] public float puddleRotationY = 0f;
 
-        public float visualYawOffset = 90f; // Ajuste no Inspector se a mancha voar de lado
+        public float visualYawOffset = 90f; 
 
         private float _fixedYaw;
         private Rigidbody _rb;
         private float _spawnTime;
         private bool _isInitialized;
         private bool _hasImpacted;
+        private PoolIdentifier _poolId;
 
-        public void Init(float dmg, LayerMask mask, float yaw, Color color, bool useGravity)
+        private void Awake()
         {
+            EnsureComponents();
+        }
+
+        private void EnsureComponents()
+        {
+            if (_rb == null) _rb = GetComponent<Rigidbody>();
+            if (_poolId == null) _poolId = GetComponent<PoolIdentifier>();
+        }
+
+        public void Init(float dmg, LayerMask mask, float yaw, Color color, bool useGravity, GameObject vfxPrefab)
+        {
+            EnsureComponents();
             damage = dmg;
             hitMask = mask;
             myColor = color;
             _fixedYaw = yaw;
+            vfxGenericPrefab = vfxPrefab;
             _hasImpacted = false; 
-            _spawnTime = Time.time; // Marca o tempo de nascimento
+            _spawnTime = Time.time; 
             
-            _rb = GetComponent<Rigidbody>();
-            if (_rb == null) _rb = gameObject.AddComponent<Rigidbody>(); 
-
-            _rb.isKinematic = false;
-            _rb.useGravity = useGravity;
-            _rb.constraints = RigidbodyConstraints.FreezeRotation; 
-            _rb.interpolation = RigidbodyInterpolation.Interpolate;
-            _rb.collisionDetectionMode = CollisionDetectionMode.Continuous;
+            if (_rb != null)
+            {
+                _rb.isKinematic = false;
+                _rb.useGravity = useGravity;
+                _rb.constraints = RigidbodyConstraints.FreezeRotation; 
+                _rb.interpolation = RigidbodyInterpolation.Interpolate;
+                _rb.collisionDetectionMode = CollisionDetectionMode.Continuous;
+            }
 
             _isInitialized = true;
             
@@ -64,19 +79,21 @@ namespace Geneforge.Gameplay.Characters.Enemies.Habilidades
 
         private void OnTriggerEnter(Collider other)
         {
-            // SEGURANÇA: Impede explodir na mão/pé do inimigo segundos após nascer
-            if (_hasImpacted || (Time.time - _spawnTime < 0.05f) || other.GetComponentInParent<EnemyCore>() != null) return;
+            if (_hasImpacted || (Time.time - _spawnTime < 0.05f)) return;
 
+            // Use a faster check if possible
             if (((1 << other.gameObject.layer) & hitMask) != 0)
             {
-                _hasImpacted = true; // Marca imediatamente
                 var health = other.GetComponentInParent<PlayerHealth>();
-                if (health != null) health.ApplyDamage(damage);
-                Impact(true);
+                if (health != null)
+                {
+                    _hasImpacted = true; 
+                    health.ApplyDamage(damage);
+                    Impact(true);
+                }
             }
             else
             {
-                // Verifica se não é um Trigger ignorável (como zonas de câmera ou limites invisíveis)
                 if (other.isTrigger) return;
 
                 _hasImpacted = true;
@@ -94,21 +111,34 @@ namespace Geneforge.Gameplay.Characters.Enemies.Habilidades
 
                 if (Physics.Raycast(rayStart, Vector3.down, out RaycastHit hit, 10f, floorMask, QueryTriggerInteraction.Ignore))
                 {
-                    spawnPos = hit.point + new Vector3(0, 0.02f, 0); 
-                }
-                else
-                {
-                    spawnPos = new Vector3(transform.position.x, 0.05f, transform.position.z);
+                    spawnPos = hit.point + new Vector3(0, 0.05f, 0); 
                 }
 
-                GameObject puddle = PoolManager.Instance != null
-                    ? PoolManager.Instance.Spawn(puddlePrefab, spawnPos, Quaternion.Euler(90, 0, 0))
-                    : Instantiate(puddlePrefab, spawnPos, Quaternion.Euler(90, 0, 0));
-
-                var puddleScript = puddle.GetComponent<PaintPuddle>();
-                if (puddleScript != null) 
+                // 1. IMPACT LAYER
+                if (PoolManager.Instance != null && vfxGenericPrefab != null)
                 {
-                    puddleScript.Init(myColor, puddleFrames, puddleFPS, puddleScale, puddleRotationY);
+                    GameObject vfx = PoolManager.Instance.Spawn(vfxGenericPrefab, spawnPos + Vector3.up * 0.2f, Quaternion.identity);
+                    var bAnim = vfx.GetComponent<SpriteSheetAnimator>();
+                    if (bAnim != null)
+                    {
+                        bAnim.tintColor = myColor * 2.5f;
+                        bAnim.useSpawnScale = true;
+                        bAnim.useFadeOut = true;
+                        bAnim.scaleMultiplier = Vector3.one * 1.6f;
+                        bAnim.loop = false;
+                        bAnim.Initialize(puddleFrames, puddleFPS * 1.5f, SpriteSheetAnimator.AnimationMode.Billboard);
+                    }
+                }
+
+                // 2. POÇA (Floor)
+                if (PoolManager.Instance != null)
+                {
+                    GameObject puddle = PoolManager.Instance.Spawn(puddlePrefab, spawnPos, Quaternion.Euler(90, 0, 0));
+                    var puddleScript = puddle.GetComponent<PaintPuddle>();
+                    if (puddleScript != null) 
+                    {
+                        puddleScript.Init(myColor, puddleFrames, puddleFPS, puddleScale, puddleRotationY);
+                    }
                 }
             }
 
@@ -117,12 +147,11 @@ namespace Geneforge.Gameplay.Characters.Enemies.Habilidades
 
         private void ReturnToPool()
         {
-            if (PoolManager.Instance != null && GetComponent<Geneforge.Core.Pooling.PoolIdentifier>() != null)
+            if (PoolManager.Instance != null && _poolId != null)
                 PoolManager.Instance.Reclaim(gameObject);
-            else
+            else if (gameObject.activeInHierarchy)
                 Destroy(gameObject);
         }
-
-
     }
 }
+

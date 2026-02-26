@@ -401,6 +401,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: b106cd8e775364a4ab2512a551b43b56, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
+  vfxGenericPrefab: {fileID: 1657940832873615945, guid: 7f33b61444b7a7f438bec4e05f82d2b0, type: 3}
   weaponObject: {fileID: 3803185036958181235}
   damage: 10
   hitRange: 1.8

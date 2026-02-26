@@ -244,6 +244,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: a0cd342a82223e846be12e50957667a7, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
+  vfxGenericPrefab: {fileID: 0}
   buffRadius: 15
   allyMask:
     serializedVersion: 2
@@ -272,7 +273,7 @@ MonoBehaviour:
   shieldFPS: 14
   shieldScale: 2
   shieldYOffset: 1
-  shieldColor: {r: 0.041471392, g: 0.04150939, b: 0.040961154, a: 1}
+  shieldColor: {r: 0, g: 0.9372549, b: 0.17630127, a: 1}
   furyPrefab: {fileID: 3098376143577340443, guid: 6176381a2f004184e9f443951fbf54bc, type: 3}
   furyAnimationFrames:
   - {fileID: -1157193631, guid: bc9d7e6b6e2ca574c871282b12ed6b2f, type: 3}
@@ -294,7 +295,7 @@ MonoBehaviour:
   furyScale: 0.7
   furyYOffset: 0.05
   furyColor: {r: 2.7542999, g: 0, b: 0, a: 0.8}
-  indicatorPrefab: {fileID: 0}
+  indicatorPrefab: {fileID: 1657940832873615945, guid: 7f33b61444b7a7f438bec4e05f82d2b0, type: 3}
   indicatorAnimationFrames:
   - {fileID: -825528139, guid: 1079ae11ca68e45419cb1d55abf792c3, type: 3}
   - {fileID: 859085242, guid: 1079ae11ca68e45419cb1d55abf792c3, type: 3}
@@ -309,7 +310,7 @@ MonoBehaviour:
   - {fileID: 1944013882, guid: 1079ae11ca68e45419cb1d55abf792c3, type: 3}
   - {fileID: -1538754219, guid: 1079ae11ca68e45419cb1d55abf792c3, type: 3}
   indicatorFPS: 12
-  indicatorScale: 0.9
+  indicatorScale: 1.2
   indicatorYOffset: 0.04
   indicatorColor: {r: 0.96862745, g: 0.85758543, b: 0.05098037, a: 1}
 --- !u!4 &3782212650392415171 stripped

@@ -256,9 +256,20 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 02ce53b9e68bd0946a788fd9241c4d0d, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
+  vfxGenericPrefab: {fileID: 1657940832873615945, guid: 7f33b61444b7a7f438bec4e05f82d2b0, type: 3}
   throwSpeed: 22
   arcHeight: 0.8
   damage: 12
+  discRotationSpeed: 1500
+  auraFrames:
+  - {fileID: -555318538, guid: 6106cc3a4f9590f47bd789992c2ed0f0, type: 3}
+  - {fileID: -1390521703, guid: 6106cc3a4f9590f47bd789992c2ed0f0, type: 3}
+  - {fileID: 954642885, guid: 6106cc3a4f9590f47bd789992c2ed0f0, type: 3}
+  - {fileID: -1630941925, guid: 6106cc3a4f9590f47bd789992c2ed0f0, type: 3}
+  - {fileID: 206086636, guid: 6106cc3a4f9590f47bd789992c2ed0f0, type: 3}
+  auraFPS: 5
+  auraScale: {x: 0.4, y: 0.4, z: 0.4}
+  auraColor: {r: 0.7735849, g: 0.062762484, b: 0.08226174, a: 1}
   hitMask:
     serializedVersion: 2
     m_Bits: 8

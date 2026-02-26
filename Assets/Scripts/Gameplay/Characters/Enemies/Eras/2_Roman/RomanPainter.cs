@@ -34,8 +34,8 @@ namespace Geneforge.Gameplay.Characters.Enemies.Eras.Roman
 
         [Header("Ink Animation (Attack 1)")]
         public Sprite[] inkAnimationFrames; 
-        public float inkFPS = 12f;
-        public float inkScale = 1.0f;
+        public float inkFPS = 6f;
+        public float inkScale = 2.0f;
 
         [Header("Projectile Setting")]
         [Tooltip("Se a tinta voar de lado, mude o Y para 90 ou -90 aqui.")]
@@ -53,7 +53,7 @@ namespace Geneforge.Gameplay.Characters.Enemies.Eras.Roman
 
         [Header("Puddle Animation (Ground)")]
         public Sprite[] puddleAnimationFrames;
-        public float puddleFPS = 10f;
+        public float puddleFPS = 4f;
         public Vector3 puddleScale = new Vector3(2.0f, 2.0f, 1f);
         [Range(0, 360)] public float puddleRotationY = 0f;
 
@@ -175,6 +175,8 @@ namespace Geneforge.Gameplay.Characters.Enemies.Eras.Roman
 
                 animator.tintColor = randomColor * 2f; // Dobramos a intensidade para o Bloom (HDR)
                 animator.useSpawnScale = true; 
+                animator.useFadeOut = false; // Não some enquanto voa
+                animator.loop = true; // Repete os frames de tinta enquanto voa
                 animator.Initialize(inkAnimationFrames, inkFPS, SpriteSheetAnimator.AnimationMode.Billboard);
             }
 
@@ -182,7 +184,7 @@ namespace Geneforge.Gameplay.Characters.Enemies.Eras.Roman
             if (!projScript) projScript = projectile.AddComponent<PaintProjectile>();
             
             // Inicializa com o Yaw fixo para não girar/tremer (igual ao Archer)
-            projScript.Init(inkDamage, hitMask, spawnRot.eulerAngles.y, paintColors[Random.Range(0, paintColors.Length)], inkUseGravity);
+            projScript.Init(inkDamage, hitMask, spawnRot.eulerAngles.y, paintColors[Random.Range(0, paintColors.Length)], inkUseGravity, vfxGenericPrefab);
             
             projScript.puddleFrames = puddleAnimationFrames;
             projScript.puddleFPS = puddleFPS;
@@ -206,7 +208,7 @@ namespace Geneforge.Gameplay.Characters.Enemies.Eras.Roman
             if (projScript == null) projScript = bucket.AddComponent<PaintProjectile>();
             
             // Usamos a mesma lógica de Init, mandando 'true' para a gravidade do balde
-            projScript.Init(bucketDamage, hitMask, bucket.transform.eulerAngles.y, paintColor, true);
+            projScript.Init(bucketDamage, hitMask, bucket.transform.eulerAngles.y, paintColor, true, vfxGenericPrefab);
 
             // Passamos a animação da poça
             projScript.puddleFrames = puddleAnimationFrames;

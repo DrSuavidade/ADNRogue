@@ -3,6 +3,7 @@ using Geneforge.Gameplay.Characters.Player;
 using Geneforge.Gameplay.Characters.Enemies.Config;
 using Geneforge.Gameplay.Characters.Enemies.Habilidades;
 using Geneforge.Core.Pooling;
+using Geneforge.Gameplay.Visuals;
 
 namespace Geneforge.Gameplay.Characters.Enemies.Eras.Roman
 {
@@ -27,7 +28,7 @@ namespace Geneforge.Gameplay.Characters.Enemies.Eras.Roman
         [Header("Puddle Animation (Ground)")]
         [ColorUsage(true, true)] public Color puddleColor = new Color(0.5f, 0f, 0f, 0.8f); // Vinho tinto por padrão
         public Sprite[] puddleAnimationFrames;
-        public float puddleFPS = 10f;
+        public float puddleFPS = 4f;
         public Vector3 puddleScale = new Vector3(1.2f, 1.2f, 1f);
         [Range(0, 360)] public float puddleRotationY = 0f;
 
@@ -84,7 +85,7 @@ namespace Geneforge.Gameplay.Characters.Enemies.Eras.Roman
             dir.y = 0; 
             dir.Normalize();
             
-            proj.Init(type, impactDamage, splashRadius, hitMask, dir, throwSpeed, arcHeight, startPos);
+            proj.Init(type, impactDamage, splashRadius, hitMask, dir, throwSpeed, arcHeight, startPos, vfxGenericPrefab);
             
             if (type == RomanWineBottleProjectile.BottleType.Wobbly)
             {
@@ -111,6 +112,7 @@ namespace Geneforge.Gameplay.Characters.Enemies.Eras.Roman
         
         public BottleType type;
         public GameObject puddlePrefab;
+        public GameObject vfxGenericPrefab;
         
         [HideInInspector] public Color puddleColor;
         [HideInInspector] public Sprite[] puddleFrames;
@@ -135,7 +137,7 @@ namespace Geneforge.Gameplay.Characters.Enemies.Eras.Roman
         private Vector3 horizontalAxis;
         private bool _hasExploded;
 
-        public void Init(BottleType t, float dmg, float r, LayerMask mask, Vector3 dir, float s, float h, Vector3 start)
+        public void Init(BottleType t, float dmg, float r, LayerMask mask, Vector3 dir, float s, float h, Vector3 start, GameObject vfxPrefab)
         {
             type = t;
             damage = dmg;
@@ -145,6 +147,7 @@ namespace Geneforge.Gameplay.Characters.Enemies.Eras.Roman
             speed = s;
             arc = h;
             startPos = start;
+            vfxGenericPrefab = vfxPrefab;
             startTime = Time.time;
             _hasExploded = false; // Reset flag
             
@@ -232,36 +235,58 @@ namespace Geneforge.Gameplay.Characters.Enemies.Eras.Roman
 
             if (type == BottleType.Puddle && puddlePrefab != null)
             {
-                // Garante que a poça spawn no chão, ignorando o player (como no Painter)
-                Vector3 rayStart = transform.position + Vector3.up * 1.5f;
+                // 1. GARANTIR POSIÇÃO NO CHÃO (Raycast Robusto)
                 Vector3 spawnPos = transform.position;
-                
-                // Ignora Player (3), Triggers (2) e IgnoreRaycast (2)
-                int floorMask = ~((1 << 3) | (1 << 6) | (1 << 2)); 
+                int floorMask = ~((1 << 3) | (1 << 2) | (1 << 6)); // Ignora Player, IgnoreRaycast, Triggers
 
-                if (Physics.Raycast(rayStart, Vector3.down, out RaycastHit hit, 15f, floorMask, QueryTriggerInteraction.Ignore))
+                if (Physics.Raycast(transform.position + Vector3.up * 1.5f, Vector3.down, out RaycastHit hit, 15f, floorMask, QueryTriggerInteraction.Ignore))
                 {
                     spawnPos = hit.point + new Vector3(0, 0.05f, 0);
                 }
                 else
                 {
-                    // Fallback para o nível do chão se o raycast falhar
-                    spawnPos = new Vector3(transform.position.x, 0.1f, transform.position.z);
+                    // Fallback: força a altura do chão se o raycast falhar (assumindo Y=0 como base do cenário)
+                    spawnPos.y = 0.05f; 
                 }
-                
+
+                // 2. IMPACT LAYER (O "Splash" inicial)
+                if (PoolManager.Instance != null && vfxGenericPrefab != null)
+                {
+                    GameObject vfx = PoolManager.Instance.Spawn(vfxGenericPrefab, spawnPos + Vector3.up * 0.1f, Quaternion.identity);
+                    vfx.name = "Drunk_Wine_ImpactBurst";
+                    var bAnim = vfx.GetComponent<SpriteSheetAnimator>();
+                    if (bAnim == null) bAnim = vfx.AddComponent<SpriteSheetAnimator>();
+                    
+                    bAnim.tintColor = puddleColor * 3f;
+                    bAnim.useSpawnScale = true;
+                    bAnim.useFadeOut = true;
+                    bAnim.scaleMultiplier = Vector3.one * 1.5f;
+                    bAnim.loop = false; // AUTODESTRUIÇÃO
+                    bAnim.Initialize(puddleFrames, puddleFPS * 1.5f, SpriteSheetAnimator.AnimationMode.Billboard);
+                }
+                else
+                {
+                    GameObject burst = new GameObject("Drunk_Wine_ImpactBurst");
+                    burst.transform.position = spawnPos + Vector3.up * 0.1f;
+                    var bAnim = burst.AddComponent<SpriteSheetAnimator>();
+                    bAnim.tintColor = puddleColor * 3f;
+                    bAnim.useSpawnScale = true;
+                    bAnim.useFadeOut = true;
+                    bAnim.scaleMultiplier = Vector3.one * 1.5f;
+                    bAnim.loop = false;
+                    bAnim.Initialize(puddleFrames, puddleFPS * 1.5f, SpriteSheetAnimator.AnimationMode.Billboard);
+                }
+
+                // 3. POÇA NORMAL (Fica deitada no chão)
                 GameObject p = PoolManager.Instance != null 
                     ? PoolManager.Instance.Spawn(puddlePrefab, spawnPos, Quaternion.Euler(90, 0, 0))
                     : Instantiate(puddlePrefab, spawnPos, Quaternion.Euler(90, 0, 0));
                 
-                // Inicializamos como PaintPuddle (o script do Painter)
                 var paintPuddle = p.GetComponent<PaintPuddle>();
                 if (paintPuddle != null)
                 {
-                    // No Drunk, passamos o poison. O Painter continuará a passar apenas os defaults (poison=0)
                     paintPuddle.Init(puddleColor, puddleFrames, puddleFPS, puddleScale, puddleRotationY, poisonDps, poisonDuration);
-                    
-                    // Como queremos apenas Poison no Drunk, zeramos o Slow Amount
-                    paintPuddle.slowAmount = 0f; 
+                    paintPuddle.slowAmount = 0f; // No Drunk é apenas veneno
                 }
             }
 

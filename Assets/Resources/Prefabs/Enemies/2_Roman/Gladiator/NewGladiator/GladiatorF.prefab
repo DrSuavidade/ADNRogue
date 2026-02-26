@@ -203,8 +203,8 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: c300739f11fb7e948b1d6d1257d93b69, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
+  vfxGenericPrefab: {fileID: 1657940832873615945, guid: 7f33b61444b7a7f438bec4e05f82d2b0, type: 3}
   enrageDetectionRange: 12
-  enragePrefab: {fileID: 3098376143577340443, guid: 6176381a2f004184e9f443951fbf54bc, type: 3}
   enrageAnimationFrames:
   - {fileID: -1239957171, guid: a8213c4f6cd28d74b896adde3727886f, type: 3}
   - {fileID: -1330810826, guid: a8213c4f6cd28d74b896adde3727886f, type: 3}
@@ -221,7 +221,6 @@ MonoBehaviour:
   - {fileID: 1557035928, guid: a8213c4f6cd28d74b896adde3727886f, type: 3}
   enrageFPS: 12
   enrageScale: {x: 1, y: 2, z: 1}
-  enrageRotationY: 0
   enrageYOffset: 0.5
   enrageColor: {r: 2, g: 0.5, b: 0, a: 1}
   slashDamage: 16

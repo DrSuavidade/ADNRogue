@@ -5,6 +5,7 @@ using Geneforge.Core.UI;
 using Geneforge.Core.Pooling;
 using Geneforge.Gameplay.Characters.Enemies.AI;
 using Geneforge.Gameplay.Characters.UI;
+using Geneforge.Gameplay.Map;
 
 namespace Geneforge.Gameplay.Characters.Enemies
 {
@@ -72,10 +73,27 @@ namespace Geneforge.Gameplay.Characters.Enemies
         private Coroutine _knockbackCo;
         HealthBar _healthBarInstance;
 
+        // Caching
+        private Collider _collider;
+        private CharacterController _characterController;
+        private EnemyBrainBase _brain;
+        private EnemyDeathNotifier _deathNotifier;
+        private Rigidbody[] _rigidbodies;
+
         void Awake()
         {
             currentHealth = maxHealth;
             currentPoise = maxPoise;
+
+            // Cache components
+            _collider = GetComponent<Collider>();
+            _characterController = GetComponent<CharacterController>();
+            _brain = GetComponent<EnemyBrainBase>();
+            _deathNotifier = GetComponent<EnemyDeathNotifier>();
+            _rigidbodies = GetComponentsInChildren<Rigidbody>();
+
+            if (animator == null) animator = GetComponentInChildren<Animator>();
+
             SpawnHealthBarIfNeeded();
         }
 
@@ -86,6 +104,9 @@ namespace Geneforge.Gameplay.Characters.Enemies
             currentPoise = maxPoise;
             isDead = false;
             hasBeenHit = false;
+
+            if (_collider != null) _collider.enabled = true;
+            if (_characterController != null) _characterController.enabled = true;
 
             SpawnHealthBarIfNeeded();
         }
@@ -144,8 +165,7 @@ namespace Geneforge.Gameplay.Characters.Enemies
             // =====================================================
             if (currentHealth > 0f)
             {
-                var brain = GetComponent<EnemyBrainBase>();
-                bool canStagger = brain == null || !brain.HasHyperArmor;
+                bool canStagger = _brain == null || !_brain.HasHyperArmor;
 
                 if (canStagger)
                 {
@@ -175,35 +195,31 @@ namespace Geneforge.Gameplay.Characters.Enemies
             if (isDead) return;
             isDead = true;
 
-            // NEW: disable brain in a clean, centralized way
-            var brain = GetComponent<EnemyBrainBase>();
-            if (brain != null)
+            // Notify brain
+            if (_brain != null)
             {
-                // Let the brain clean itself up (states, timers, etc.)
-                brain.OnOwnerDied();
+                _brain.OnOwnerDied();
             }
 
-            var col = GetComponent<Collider>();
-            if (col != null) col.enabled = false;
+            if (_collider != null) _collider.enabled = false;
+            if (_characterController != null) _characterController.enabled = false;
 
-            var cc = GetComponent<CharacterController>();
-            if (cc != null) cc.enabled = false;
-
-            // Zerar velocidades apenas se NÃO forem cinemáticos
-            foreach (var rb in GetComponentsInChildren<Rigidbody>())
+            // Stop rigidbodies
+            if (_rigidbodies != null)
             {
-                if (rb == null) continue;
-
-                if (!rb.isKinematic)
+                foreach (var rb in _rigidbodies)
                 {
-                    rb.linearVelocity = Vector3.zero;
-                    rb.angularVelocity = Vector3.zero;
+                    if (rb == null) continue;
+                    if (!rb.isKinematic)
+                    {
+                        rb.linearVelocity = Vector3.zero;
+                        rb.angularVelocity = Vector3.zero;
+                    }
+                    rb.isKinematic = true;
                 }
-
-                rb.isKinematic = true;
             }
 
-            // 2) animação de morte
+            // Death animation
             if (animator != null)
             {
                 animator.ResetTrigger(damagedTrigger);
@@ -211,12 +227,15 @@ namespace Geneforge.Gameplay.Characters.Enemies
                 animator.SetTrigger(deathTrigger);
             }
 
-            // Notify listeners (brains, loot systems, etc.)
-            OnDied?.Invoke();   // NEW
+            // Notify listeners
+            OnDied?.Invoke();
 
-            GetComponent<Map.EnemyDeathNotifier>()?.ReportDeath();
+            if (_deathNotifier != null)
+            {
+                _deathNotifier.ReportDeath();
+            }
 
-            // 3) despawn em tempo REAL
+            // Despawn
             if (_despawnCo == null)
                 _despawnCo = StartCoroutine(DespawnAfterRealtime(5f));
         }
@@ -229,6 +248,10 @@ namespace Geneforge.Gameplay.Characters.Enemies
                 t += Time.unscaledDeltaTime;
                 yield return null;
             }
+            
+            _despawnCo = null;
+
+            // TODO: Use pooling for enemies if desired for even better performance
             Destroy(gameObject);
         }
 
@@ -240,7 +263,7 @@ namespace Geneforge.Gameplay.Characters.Enemies
 
             if (showText && damageTextPrefab != null)
             {
-                // optionally spawn green “+X” text; re-use pooled DamageText if needed
+                // optionally spawn green “+X” text
             }
         }
 
@@ -288,23 +311,18 @@ namespace Geneforge.Gameplay.Characters.Enemies
                 return;
             }
 
-            // Bind this bar to this enemy
             _healthBarInstance.Initialize(this);
         }
 
 
-        // Purely additive physical nudge. Very short and subtle for professional feel.
         public void ApplyKnockback(Vector3 direction, float force, float duration = 0.12f)
         {
             if (isDead || force <= 0f) return;
 
-            var brain = GetComponent<EnemyBrainBase>();
-            if (brain != null && brain.HasHyperArmor) return;
+            if (_brain != null && _brain.HasHyperArmor) return;
 
-            // Notify brain (events only, brain shouldn't pause anymore)
             OnKnockback?.Invoke(direction, duration);
 
-            // Subtle displacement multiplier (0.05 instead of 0.15)
             float totalDisplacement = 0.05f * force;
             Vector3 shiftVector = direction.normalized * totalDisplacement;
 
@@ -320,17 +338,15 @@ namespace Geneforge.Gameplay.Characters.Enemies
             while (elapsed < duration)
             {
                 float t = elapsed / duration;
-                // Ease out curve for snappy impact
                 float curve = 1f - Mathf.Pow(1f - t, 3);
                 float deltaCurve = curve - lastCurve;
                 lastCurve = curve;
 
                 Vector3 deltaMove = totalShift * deltaCurve;
 
-                var cc = GetComponent<CharacterController>();
-                if (cc != null && cc.enabled)
+                if (_characterController != null && _characterController.enabled)
                 {
-                    cc.Move(deltaMove);
+                    _characterController.Move(deltaMove);
                 }
                 else
                 {
@@ -344,3 +360,4 @@ namespace Geneforge.Gameplay.Characters.Enemies
         }
     }
 }
+

@@ -402,6 +402,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 686d79d8e66d2684c84cc167e9baf2ce, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
+  vfxGenericPrefab: {fileID: 1657940832873615945, guid: 7f33b61444b7a7f438bec4e05f82d2b0, type: 3}
   firePoint: {fileID: 2820032179221422656}
   inkSplashPrefab: {fileID: 4356832972467561043, guid: 7288930a702d4e0428704b68b0c7c5a1, type: 3}
   paintBucketPrefab: {fileID: 2020671304569565649, guid: d1675baeca730d94895c4557de259a13, type: 3}
@@ -414,13 +415,13 @@ MonoBehaviour:
   - {r: 1, g: 0.92156863, b: 0.015686275, a: 1}
   - {r: 0.1, g: 0.1, b: 0.1, a: 1}
   inkAnimationFrames:
-  - {fileID: 1169902826, guid: 47992b2fba3bfa444b07a83ec48594fc, type: 3}
-  - {fileID: 1638907063, guid: 47992b2fba3bfa444b07a83ec48594fc, type: 3}
-  - {fileID: -810556834, guid: 47992b2fba3bfa444b07a83ec48594fc, type: 3}
-  - {fileID: 72064876, guid: 47992b2fba3bfa444b07a83ec48594fc, type: 3}
-  - {fileID: 1838280536, guid: 47992b2fba3bfa444b07a83ec48594fc, type: 3}
+  - {fileID: 546950345, guid: 54b1ab34ea658714b9ebd136dcbfd6d0, type: 3}
+  - {fileID: -1541037093, guid: 54b1ab34ea658714b9ebd136dcbfd6d0, type: 3}
+  - {fileID: -48096278, guid: 54b1ab34ea658714b9ebd136dcbfd6d0, type: 3}
+  - {fileID: -1756133278, guid: 54b1ab34ea658714b9ebd136dcbfd6d0, type: 3}
+  - {fileID: -69049289, guid: 54b1ab34ea658714b9ebd136dcbfd6d0, type: 3}
   inkFPS: 12
-  inkScale: 0.6
+  inkScale: 0.7
   yawOffset: 90
   inkSpeed: 10
   inkUseGravity: 0

@@ -1,17 +1,24 @@
 using UnityEngine;
 using Geneforge.Gameplay.Characters.Player;
 using Geneforge.Gameplay.Progression;
+using Geneforge.Core.Pooling;
 
 namespace Geneforge.Gameplay.Characters.Enemies.Habilidades
 {
     public class WinePuddle : MonoBehaviour
     {
-        public float lifetime = 5f;
+        public float lifetime = 4f;
         public Color puddleColor = new Color(0.5f, 0, 0, 0.7f); // Deep Wine Red
 
         private float _poisonDps;
         private float _poisonDuration;
         private bool _playerInside = false;
+        private PoolIdentifier _poolId;
+
+        private void Awake()
+        {
+            _poolId = GetComponent<PoolIdentifier>();
+        }
 
         public void Init(Sprite[] frames = null, float fps = 10f, float scale = 2.5f, float dps = 2f, float duration = 3f)
         {
@@ -52,10 +59,27 @@ namespace Geneforge.Gameplay.Characters.Enemies.Habilidades
                 }
 
                 transform.localScale = Vector3.one * 0.1f;
+                StopAllCoroutines();
                 StartCoroutine(ScaleUp(scale));
             }
 
-            Destroy(gameObject, lifetime);
+            if (PoolManager.Instance != null && _poolId != null)
+            {
+                StartCoroutine(AutoReclaim(lifetime));
+            }
+            else
+            {
+                Destroy(gameObject, lifetime);
+            }
+        }
+
+        private System.Collections.IEnumerator AutoReclaim(float delay)
+        {
+            yield return new WaitForSeconds(delay);
+            if (PoolManager.Instance != null && _poolId != null)
+                PoolManager.Instance.Reclaim(gameObject);
+            else if (gameObject.activeInHierarchy)
+                Destroy(gameObject);
         }
 
         private System.Collections.IEnumerator ScaleUp(float targetScaleVal)
@@ -83,8 +107,6 @@ namespace Geneforge.Gameplay.Characters.Enemies.Habilidades
         {
             if (IsPlayer(other))
             {
-                // No caso do poison, aplicamos continuamente enquanto estiver na poça 
-                // para renovar a duração
                 ApplyPoison(other);
             }
         }
@@ -108,3 +130,4 @@ namespace Geneforge.Gameplay.Characters.Enemies.Habilidades
         }
     }
 }
+

@@ -10,6 +10,7 @@ namespace Geneforge.Gameplay.Map
     {
         [HideInInspector, SerializeField] private EnemySpawner ownerSpawner;
         bool _reported;
+        private static bool _isQuitting = false;
 
         public EnemySpawner OwnerSpawner
         {
@@ -17,10 +18,14 @@ namespace Geneforge.Gameplay.Map
             set => ownerSpawner = value;
         }
 
+        private void OnApplicationQuit()
+        {
+            _isQuitting = true;
+        }
 
         public void ReportDeath()
         {
-            if (_reported) return;
+            if (_reported || _isQuitting) return;
             _reported = true;
 
             Debug.Log($"[EnemyDeathNotifier] Death reported from {gameObject.name}", this);
@@ -31,10 +36,14 @@ namespace Geneforge.Gameplay.Map
             }
         }
 
-
         private void OnDestroy()
         {
-            ReportDeath();
+            // Only report if we aren't quitting the app/scene
+            if (!_isQuitting)
+            {
+                ReportDeath();
+            }
         }
     }
 }
+

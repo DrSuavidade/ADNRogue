@@ -71,11 +71,11 @@ MonoBehaviour:
     attackVariants: 0
   projectile:
     enabled: 0
-    projectilePrefab: {fileID: 0}
+    projectilePrefab: {fileID: 4356832972467561043, guid: 7288930a702d4e0428704b68b0c7c5a1, type: 3}
     spawnOffset: {x: 0, y: 0, z: 0}
     damage: 0
     speed: 0
     hitMask:
       serializedVersion: 2
-      m_Bits: 0
+      m_Bits: 8
     arcHeight: 0

@@ -1,6 +1,7 @@
 using UnityEngine;
 using Geneforge.Gameplay.Characters.Player;
 using Geneforge.Gameplay.Characters.Enemies.Config;
+using Geneforge.Core.Pooling;
 
 namespace Geneforge.Gameplay.Characters.Enemies.Eras.Roman
 {
@@ -9,10 +10,16 @@ namespace Geneforge.Gameplay.Characters.Enemies.Eras.Roman
     public class RomanDiscThrower : RomanEnemyAbilityBase
     {
         [Header("Tiro")]
-        public float throwSpeed = 22f;
+        public float throwSpeed = 15f;
         public float arcHeight = 0.5f; 
         public float damage = 12f;
         public float discRotationSpeed = 1500f; 
+
+        [Header("VFX da Aura")]
+        public Sprite[] auraFrames;
+        public float auraFPS = 6f;
+        public Vector3 auraScale = Vector3.one;
+        [ColorUsage(true, true)] public Color auraColor = Color.white;
 
         [Tooltip("Layers que o disco pode atingir.")]
         public LayerMask hitMask = ~0;
@@ -57,14 +64,15 @@ namespace Geneforge.Gameplay.Characters.Enemies.Eras.Roman
             if (flatDir.sqrMagnitude < 0.0001f) flatDir = transform.forward;
             
             // --- CORREÇÃO DE ORIENTAÇÃO ---
-            // Pegamos a rotação original do prefab para respeitar o "deitado" (Pitch/Roll)
             Vector3 prefabEuler = settings.projectilePrefab.transform.eulerAngles;
-            // Calculamos o ângulo para o player (Yaw)
             float targetYaw = Quaternion.LookRotation(flatDir).eulerAngles.y + angleOffset;
-            // Combinamos: X e Z do prefab (que o mantêm horizontal) com o Y do alvo
             Quaternion spawnRot = Quaternion.Euler(prefabEuler.x, targetYaw, prefabEuler.z);
 
-            GameObject obj = Instantiate(settings.projectilePrefab, origin.position, spawnRot);
+            GameObject obj = null;
+            if (PoolManager.Instance != null)
+                obj = PoolManager.Instance.Spawn(settings.projectilePrefab, origin.position, spawnRot);
+            else
+                obj = Instantiate(settings.projectilePrefab, origin.position, spawnRot);
 
             var rb = obj.GetComponent<Rigidbody>();
             if (rb)
@@ -83,7 +91,9 @@ namespace Geneforge.Gameplay.Characters.Enemies.Eras.Roman
 
             var proj = obj.GetComponent<RomanDiscProjectile>();
             if (!proj) proj = obj.AddComponent<RomanDiscProjectile>();
-            proj.Init(damage, hitMask, discRotationSpeed);
+            
+            // Passamos as referências do VFX para o projétil
+            proj.Init(damage, hitMask, discRotationSpeed, this);
         }
     }
 
@@ -98,40 +108,90 @@ namespace Geneforge.Gameplay.Characters.Enemies.Eras.Roman
         private Rigidbody _rb;
         private bool _isInitialized;
 
-        public void Init(float dmg, LayerMask mask, float rotSpeed)
+        private GameObject _activeAura;
+
+        public void Init(float dmg, LayerMask mask, float rotSpeed, RomanDiscThrower owner)
         {
             damage = dmg;
             hitMask = mask;
             rotationSpeed = rotSpeed;
             _rb = GetComponent<Rigidbody>();
             
-            // Guardamos a rotação inicial (que já veio correta do spawn respeitando o prefab)
             _fixedX = transform.eulerAngles.x;
             _fixedZ = transform.eulerAngles.z;
             _currentYaw = transform.eulerAngles.y;
             
             if (_rb != null)
             {
-                // Travamos os eixos de física para o disco não "tropeçar" ou capotar
                 _rb.constraints = RigidbodyConstraints.FreezeRotationX | RigidbodyConstraints.FreezeRotationZ;
                 _rb.interpolation = RigidbodyInterpolation.Interpolate;
                 _rb.collisionDetectionMode = CollisionDetectionMode.ContinuousDynamic;
             }
 
+            // --- LIMPEZA DE AURAS ANTIGAS (POOLING SAFETY) ---
+            if (_activeAura != null)
+            {
+                if (PoolManager.Instance != null) PoolManager.Instance.Reclaim(_activeAura);
+                else Destroy(_activeAura);
+                _activeAura = null;
+            }
+
+            // --- SPAWN DA AURA ---
+            if (owner != null && owner.auraFrames != null && owner.auraFrames.Length > 0)
+            {
+                // Criamos o VFX como FILHO do projétil para ele seguir o movimento
+                _activeAura = owner.SpawnVFXLayer_Public(
+                    "DiscGlow", 
+                    transform.position, 
+                    owner.auraScale, 
+                    owner.auraFrames, 
+                    owner.auraFPS, 
+                    owner.auraColor, 
+                    1f, 0f, 0f, true, transform, 
+                    Visuals.SpriteSheetAnimator.AnimationMode.Billboard, 
+                    true // Loop = true
+                );
+
+                if (_activeAura != null)
+                {
+                    _activeAura.transform.localPosition = Vector3.zero;
+                }
+            }
+
             _isInitialized = true;
-            Destroy(gameObject, 6f);
+            StopAllCoroutines();
+            StartCoroutine(AutoReclaim(6f));
+        }
+
+        private System.Collections.IEnumerator AutoReclaim(float delay)
+        {
+            yield return new WaitForSeconds(delay);
+            Reclaim();
+        }
+
+        private void Reclaim()
+        {
+            // Reclamamos a aura também para não vazar memória/objetos
+            if (_activeAura != null)
+            {
+                if (PoolManager.Instance != null) PoolManager.Instance.Reclaim(_activeAura);
+                else Destroy(_activeAura);
+                _activeAura = null;
+            }
+
+            if (PoolManager.Instance != null)
+                PoolManager.Instance.Reclaim(gameObject);
+            else
+                Destroy(gameObject);
         }
 
         void FixedUpdate()
         {
             if (!_isInitialized || _rb == null) return;
 
-            // ROTAÇÃO HORIZONTAL (Yaw) Preservando o roll/pitch horizontal
             _currentYaw += rotationSpeed * Time.fixedDeltaTime;
-            // Aplicamos a rotação mantendo o X e Z que o deixam "deitado"
             _rb.MoveRotation(Quaternion.Euler(_fixedX, _currentYaw, _fixedZ));
 
-            // SUSTENTAÇÃO (LIFT)
             Vector3 hVel = _rb.linearVelocity;
             hVel.y = 0;
             float horizontalSpeed = hVel.magnitude;
@@ -151,13 +211,13 @@ namespace Geneforge.Gameplay.Characters.Enemies.Eras.Roman
             if (hp != null)
             {
                 hp.ApplyDamage(damage);
-                Destroy(gameObject);
+                Reclaim();
                 return;
             }
 
             if (!other.isTrigger && ((hitMask.value & (1 << other.gameObject.layer)) != 0))
             {
-                Destroy(gameObject);
+                Reclaim();
             }
         }
     }

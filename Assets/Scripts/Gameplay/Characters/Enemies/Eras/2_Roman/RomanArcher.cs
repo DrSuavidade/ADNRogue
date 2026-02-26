@@ -1,6 +1,7 @@
 using UnityEngine;
 using Geneforge.Gameplay.Characters.Player;
-///Develop
+using Geneforge.Core.Pooling;
+
 namespace Geneforge.Gameplay.Characters.Enemies.Eras.Roman
 {
     [RequireComponent(typeof(EnemyCore))]
@@ -9,10 +10,14 @@ namespace Geneforge.Gameplay.Characters.Enemies.Eras.Roman
         [Header("Projectile Settings")]
         public GameObject arrowPrefab;
         public Transform shootOrigin;
-        public float arrowSpeed = 26f;
-        public float arcHeight = 1.5f; // Aumentado para um arco mais visível
+        public float arrowSpeed = 15f; 
+        public float arcHeight = 1.5f; 
         public float damage = 8f;
         public bool useGravity = true;
+
+        [Header("Fan Shot Settings")]
+        [Tooltip("Ângulo lateral entre cada flecha no disparo triplo.")]
+        public float fanSpreadAngle = 15f;
 
         [Header("Visual Correction")]
         [Tooltip("Se a seta voa de lado, mude o Y para 90. Se voa de costas, 180.")]
@@ -27,13 +32,26 @@ namespace Geneforge.Gameplay.Characters.Enemies.Eras.Roman
         [Tooltip("Que layers a seta pode atingir.")]
         public LayerMask hitMask = ~0;
 
+        [Header("VFX - Launch (Shockwave)")]
+        public Sprite[] launchVFXFrames;
+        public float launchVFXFPS = 5f;
+        public float launchVFXScale = 2.0f;
+        [ColorUsage(true, true)] public Color launchVFXColor = Color.white;
+
+        [Header("VFX - Arrow Trail")]
+        public Sprite[] arrowTrailFrames;
+        public float arrowTrailFPS = 4f;
+        public float arrowTrailScale = 0.8f;
+        [ColorUsage(true, true)] public Color arrowTrailColor = new Color(1f, 1f, 1f, 0.4f);
+        [Tooltip("Segundos entre cada spawn de rastro enquanto a flecha voa.")]
+        public float trailInterval = 0.08f;
+
         protected virtual void Update()
         {
             if (target != null)
             {
-                // Rotação suave em direção ao player (apenas no eixo Y)
                 Vector3 lookPos = target.position - transform.position;
-                lookPos.y = 0; // Mantém o inimigo em pé
+                lookPos.y = 0; 
                 
                 if (lookPos.sqrMagnitude > 0.01f)
                 {
@@ -43,12 +61,35 @@ namespace Geneforge.Gameplay.Characters.Enemies.Eras.Roman
             }
         }
 
-        // Chamado por evento de animação
         public void AnimEvent_ShootArrow()
         {
-            if (!arrowPrefab || !shootOrigin || !target) return;
+            PrepareShoot();
+            FireArrow(0f);
+        }
 
-            // SNAP: Ajuste instantâneo para não sair de lado se o player se moveu rápido
+        public void AnimEvent_ShootTripleArrow()
+        {
+            PrepareShoot();
+            SpawnLaunchVFX();
+            FireArrow(-fanSpreadAngle);
+            FireArrow(0f);
+            FireArrow(fanSpreadAngle);
+        }
+
+        private void SpawnLaunchVFX()
+        {
+            if (launchVFXFrames == null || launchVFXFrames.Length == 0) return;
+
+            Vector3 spawnPos = transform.position + Vector3.up * 0.05f;
+
+            SpawnVFXLayer("Archer_Launch_Shockwave", spawnPos, Vector3.one * launchVFXScale, launchVFXFrames, launchVFXFPS, launchVFXColor, 1.2f, 0f, 0.7f, true, null, Visuals.SpriteSheetAnimator.AnimationMode.Floor);
+            SpawnVFXLayer("Archer_Launch_Flash", spawnPos + Vector3.up * 0.02f, Vector3.one * launchVFXScale * 0.5f, new Sprite[] { launchVFXFrames[0] }, 10f, launchVFXColor * 2.5f, 1.5f, 180f, 0.2f, false, null, Visuals.SpriteSheetAnimator.AnimationMode.Floor);
+        }
+
+        private void PrepareShoot()
+        {
+            if (!target) return;
+
             if (snapToTargetOnFire)
             {
                 Vector3 finalLook = target.position - transform.position;
@@ -58,31 +99,45 @@ namespace Geneforge.Gameplay.Characters.Enemies.Eras.Roman
                     transform.rotation = Quaternion.LookRotation(finalLook);
                 }
             }
+        }
 
-            // Alvo na altura do peito/centro
+        private void FireArrow(float lateralAngleOffset)
+        {
+            if (!arrowPrefab || !shootOrigin || !target) return;
+
             Vector3 targetPos = target.position + Vector3.up * 1.0f;
             Vector3 toTarget = targetPos - shootOrigin.position;
             
-            // Direção horizontal para orientação
             Vector3 flatDir = toTarget;
             flatDir.y = 0;
             if (flatDir.sqrMagnitude < 0.001f) flatDir = transform.forward;
             
-            // Calculamos o ângulo Y (Yaw) para o player e somamos o offset do modelo
-            float angleY = Quaternion.LookRotation(flatDir).eulerAngles.y + yawOffset;
-            Quaternion spawnRot = Quaternion.Euler(0, angleY, 0);
+            float baseAngleY = Quaternion.LookRotation(flatDir).eulerAngles.y;
+            float finalAngleY = baseAngleY + lateralAngleOffset + yawOffset;
+            Quaternion spawnRot = Quaternion.Euler(0, finalAngleY, 0);
 
-            var obj = Instantiate(arrowPrefab, shootOrigin.position, spawnRot);
+            GameObject obj = null;
+            if (PoolManager.Instance != null)
+                obj = PoolManager.Instance.Spawn(arrowPrefab, shootOrigin.position, spawnRot);
+            else
+                obj = Instantiate(arrowPrefab, shootOrigin.position, spawnRot);
             
-            var rb = obj.GetComponent<Rigidbody>();
-            if (rb)
+            var proj = obj.GetComponent<RomanArrowProjectile>();
+            if (proj == null) proj = obj.AddComponent<RomanArrowProjectile>();
+            
+            proj.Init(damage, hitMask, finalAngleY, baseAngleY + lateralAngleOffset, this, arrowTrailFrames, arrowTrailFPS, arrowTrailScale, arrowTrailColor, trailInterval);
+            
+            Rigidbody rb = proj.CachedRigidbody;
+            if (rb == null) rb = obj.GetComponent<Rigidbody>();
+
+            if (rb != null)
             {
                 rb.useGravity = useGravity;
-                // Travamos rotações para evitar capotamento físico
                 rb.constraints = RigidbodyConstraints.FreezeRotation;
                 rb.collisionDetectionMode = CollisionDetectionMode.Continuous;
 
-                Vector3 velocity = toTarget.normalized * arrowSpeed;
+                Vector3 velocityDir = Quaternion.Euler(0, lateralAngleOffset, 0) * toTarget.normalized;
+                Vector3 velocity = velocityDir * arrowSpeed;
                 if (useGravity) velocity.y += arcHeight;
 
 #if UNITY_6000_0_OR_NEWER
@@ -91,10 +146,6 @@ namespace Geneforge.Gameplay.Characters.Enemies.Eras.Roman
                 rb.velocity = velocity;
 #endif
             }
-
-            var proj = obj.GetComponent<RomanArrowProjectile>();
-            if (!proj) proj = obj.AddComponent<RomanArrowProjectile>();
-            proj.Init(damage, hitMask, spawnRot.eulerAngles.y);
         }
     }
 
@@ -103,25 +154,110 @@ namespace Geneforge.Gameplay.Characters.Enemies.Eras.Roman
         private float damage;
         private LayerMask hitMask;
         private float _fixedYaw;
+        private float _flightYaw;
         private Rigidbody _rb;
-        private bool _isInitialized;
+        public Rigidbody CachedRigidbody => _rb;
 
-        public void Init(float dmg, LayerMask mask, float yaw)
+        private bool _isInitialized;
+        private PoolIdentifier _poolId;
+
+        private RomanEnemyAbilityBase _source; 
+        private Sprite[] _trailFrames;
+        private float _trailFPS;
+        private float _trailScale;
+        private Color _trailColor;
+        private float _trailInterval;
+        private float _trailTimer;
+
+        private void Awake()
         {
+            EnsureComponents();
+        }
+
+        private void EnsureComponents()
+        {
+            if (_rb == null) _rb = GetComponent<Rigidbody>();
+            if (_poolId == null) _poolId = GetComponent<PoolIdentifier>();
+        }
+
+        public void Init(float dmg, LayerMask mask, float yaw, float flightYaw, RomanEnemyAbilityBase source, Sprite[] trailFrames, float trailFPS, float trailScale, Color trailColor, float trailInterval)
+        {
+            EnsureComponents();
             damage = dmg;
             hitMask = mask;
             _fixedYaw = yaw;
-            _rb = GetComponent<Rigidbody>();
+            _flightYaw = flightYaw;
+            
+            _source = source;
+            _trailFrames = trailFrames;
+            _trailFPS = trailFPS;
+            _trailScale = trailScale;
+            _trailColor = trailColor;
+            _trailInterval = trailInterval;
+
             _isInitialized = true;
-            Destroy(gameObject, 6f);
+            _trailTimer = 0f;
+            StopAllCoroutines();
+            StartCoroutine(AutoReclaim(6f));
+        }
+
+        private System.Collections.IEnumerator AutoReclaim(float delay)
+        {
+            yield return new WaitForSeconds(delay);
+            Reclaim();
+        }
+
+        private void Reclaim()
+        {
+            if (PoolManager.Instance != null && _poolId != null)
+                PoolManager.Instance.Reclaim(gameObject);
+            else if (gameObject.activeInHierarchy)
+                Destroy(gameObject);
+        }
+
+        void Update()
+        {
+            if (!_isInitialized) return;
+
+            if (_trailFrames != null && _trailFrames.Length > 0 && _trailInterval > 0)
+            {
+                _trailTimer += Time.deltaTime;
+                if (_trailTimer >= _trailInterval)
+                {
+                    _trailTimer = 0f;
+                    SpawnTrailSegment();
+                }
+            }
+        }
+
+        private void SpawnTrailSegment()
+        {
+            if (_source == null) return;
+
+            GameObject trail = _source.SpawnVFXLayer_Public(
+                "Arrow_Trail_Segment", 
+                transform.position, 
+                Vector3.one * _trailScale, 
+                _trailFrames, 
+                _trailFPS, 
+                _trailColor, 
+                1.0f, 
+                0f, 
+                0.3f, 
+                false, 
+                null, 
+                Visuals.SpriteSheetAnimator.AnimationMode.Billboard 
+            );
+
+            if (trail != null)
+            {
+                trail.transform.rotation = Quaternion.Euler(0, _flightYaw + 90f, 0);
+            }
         }
 
         void FixedUpdate()
         {
             if (!_isInitialized || _rb == null) return;
-
-            // Mantém a seta sempre horizontal e apontando para a mesma direção Y (estilo Disco)
-            // Isso remove qualquer tremor ou rotação estranha da física
             _rb.MoveRotation(Quaternion.Euler(0, _fixedYaw, 0));
         }
 
@@ -129,7 +265,6 @@ namespace Geneforge.Gameplay.Characters.Enemies.Eras.Roman
         {
             if (!_isInitialized) return;
 
-            // Filtrar layers
             if ((hitMask.value & (1 << other.gameObject.layer)) == 0)
                 return;
 
@@ -137,7 +272,8 @@ namespace Geneforge.Gameplay.Characters.Enemies.Eras.Roman
             if (hp != null)
                 hp.ApplyDamage(damage);
 
-            Destroy(gameObject);
+            Reclaim();
         }
     }
 }
+

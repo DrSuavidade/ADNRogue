@@ -373,8 +373,33 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 2fb92e2bc1924a24daf75dedb8bdf1ee, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
+  vfxGenericPrefab: {fileID: 1657940832873615945, guid: 7f33b61444b7a7f438bec4e05f82d2b0, type: 3}
   slamDamage: 20
   slamRadius: 2.4
+  slamFrames: []
+  craterFrames:
+  - {fileID: -1555496899, guid: 9cd4cad32157e1e4ea631a007b1899fa, type: 3}
+  - {fileID: 1245677157, guid: 9cd4cad32157e1e4ea631a007b1899fa, type: 3}
+  - {fileID: 1676587304, guid: 9cd4cad32157e1e4ea631a007b1899fa, type: 3}
+  - {fileID: -788833869, guid: 9cd4cad32157e1e4ea631a007b1899fa, type: 3}
+  - {fileID: 1704913195, guid: 9cd4cad32157e1e4ea631a007b1899fa, type: 3}
+  - {fileID: -1594422686, guid: 9cd4cad32157e1e4ea631a007b1899fa, type: 3}
+  - {fileID: 219500797, guid: 9cd4cad32157e1e4ea631a007b1899fa, type: 3}
+  - {fileID: -2097986059, guid: 9cd4cad32157e1e4ea631a007b1899fa, type: 3}
+  - {fileID: -864173781, guid: 9cd4cad32157e1e4ea631a007b1899fa, type: 3}
+  - {fileID: -1001999629, guid: 9cd4cad32157e1e4ea631a007b1899fa, type: 3}
+  - {fileID: 1621907090, guid: 9cd4cad32157e1e4ea631a007b1899fa, type: 3}
+  - {fileID: 1290697305, guid: 9cd4cad32157e1e4ea631a007b1899fa, type: 3}
+  - {fileID: -1106217790, guid: 9cd4cad32157e1e4ea631a007b1899fa, type: 3}
+  - {fileID: 497945637, guid: 9cd4cad32157e1e4ea631a007b1899fa, type: 3}
+  - {fileID: 35596355, guid: 9cd4cad32157e1e4ea631a007b1899fa, type: 3}
+  - {fileID: 1361145049, guid: 9cd4cad32157e1e4ea631a007b1899fa, type: 3}
+  - {fileID: 1829069259, guid: 9cd4cad32157e1e4ea631a007b1899fa, type: 3}
+  - {fileID: -1277496340, guid: 9cd4cad32157e1e4ea631a007b1899fa, type: 3}
+  vfxFPS: 19
+  slamScale: {x: 2.5, y: 2.5, z: 2.5}
+  craterScale: {x: 3.5, y: 3.5, z: 3.5}
+  impactColor: {r: 1, g: 1, b: 1, a: 1}
 --- !u!4 &9020263470902132244 stripped
 Transform:
   m_CorrespondingSourceObject: {fileID: -1812909498023395591, guid: a71d402a94060404c9845ad78f48d871, type: 3}
