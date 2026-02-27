@@ -248,9 +248,6 @@ PrefabInstance:
       addedObject: {fileID: 6201851591488493211}
     - targetCorrespondingSourceObject: {fileID: 919132149155446097, guid: 76ffd723cccab234ca008bc77788990b, type: 3}
       insertIndex: -1
-      addedObject: {fileID: 9191989367258985479}
-    - targetCorrespondingSourceObject: {fileID: 919132149155446097, guid: 76ffd723cccab234ca008bc77788990b, type: 3}
-      insertIndex: -1
       addedObject: {fileID: 4237957670728964908}
     - targetCorrespondingSourceObject: {fileID: 919132149155446097, guid: 76ffd723cccab234ca008bc77788990b, type: 3}
       insertIndex: -1
@@ -261,6 +258,12 @@ PrefabInstance:
     - targetCorrespondingSourceObject: {fileID: 919132149155446097, guid: 76ffd723cccab234ca008bc77788990b, type: 3}
       insertIndex: -1
       addedObject: {fileID: 4647059508944450443}
+    - targetCorrespondingSourceObject: {fileID: 919132149155446097, guid: 76ffd723cccab234ca008bc77788990b, type: 3}
+      insertIndex: -1
+      addedObject: {fileID: 6833642321230621260}
+    - targetCorrespondingSourceObject: {fileID: 7264123868244890452, guid: 76ffd723cccab234ca008bc77788990b, type: 3}
+      insertIndex: -1
+      addedObject: {fileID: 1775939174045197199}
   m_SourcePrefab: {fileID: 100100000, guid: 76ffd723cccab234ca008bc77788990b, type: 3}
 --- !u!4 &21326125336416817 stripped
 Transform:
@@ -272,6 +275,32 @@ Transform:
   m_CorrespondingSourceObject: {fileID: -1812909498023395591, guid: 76ffd723cccab234ca008bc77788990b, type: 3}
   m_PrefabInstance: {fileID: 5984854205635824948}
   m_PrefabAsset: {fileID: 0}
+--- !u!1 &4017530941667892832 stripped
+GameObject:
+  m_CorrespondingSourceObject: {fileID: 7264123868244890452, guid: 76ffd723cccab234ca008bc77788990b, type: 3}
+  m_PrefabInstance: {fileID: 5984854205635824948}
+  m_PrefabAsset: {fileID: 0}
+--- !u!65 &1775939174045197199
+BoxCollider:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 4017530941667892832}
+  m_Material: {fileID: 0}
+  m_IncludeLayers:
+    serializedVersion: 2
+    m_Bits: 0
+  m_ExcludeLayers:
+    serializedVersion: 2
+    m_Bits: 0
+  m_LayerOverridePriority: 0
+  m_IsTrigger: 0
+  m_ProvidesContacts: 0
+  m_Enabled: 1
+  serializedVersion: 3
+  m_Size: {x: 0.017903479, y: 0.005216448, z: 0.017984549}
+  m_Center: {x: 0.0000129920245, y: -0.00019574225, z: 0.009698056}
 --- !u!1 &6903755313332105317 stripped
 GameObject:
   m_CorrespondingSourceObject: {fileID: 919132149155446097, guid: 76ffd723cccab234ca008bc77788990b, type: 3}
@@ -299,27 +328,6 @@ Animator:
   m_AllowConstantClipSamplingOptimization: 1
   m_KeepAnimatorStateOnDisable: 0
   m_WriteDefaultValuesOnDisable: 0
---- !u!65 &9191989367258985479
-BoxCollider:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 6903755313332105317}
-  m_Material: {fileID: 0}
-  m_IncludeLayers:
-    serializedVersion: 2
-    m_Bits: 0
-  m_ExcludeLayers:
-    serializedVersion: 2
-    m_Bits: 0
-  m_LayerOverridePriority: 0
-  m_IsTrigger: 0
-  m_ProvidesContacts: 0
-  m_Enabled: 1
-  serializedVersion: 3
-  m_Size: {x: 0.50478745, y: 1.7169847, z: 0.5309448}
-  m_Center: {x: -0.00409317, y: 1.1409225, z: 0.04107666}
 --- !u!114 &4237957670728964908
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -447,6 +455,31 @@ MonoBehaviour:
   puddleLifetime: 4
   puddleScale: {x: 1, y: 1, z: 1}
   puddleRotationY: 0
+--- !u!143 &6833642321230621260
+CharacterController:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 6903755313332105317}
+  m_Material: {fileID: 0}
+  m_IncludeLayers:
+    serializedVersion: 2
+    m_Bits: 0
+  m_ExcludeLayers:
+    serializedVersion: 2
+    m_Bits: 0
+  m_LayerOverridePriority: 0
+  m_ProvidesContacts: 0
+  m_Enabled: 1
+  serializedVersion: 3
+  m_Height: 2
+  m_Radius: 0.5
+  m_SlopeLimit: 45
+  m_StepOffset: 0.3
+  m_SkinWidth: 0.08
+  m_MinMoveDistance: 0.001
+  m_Center: {x: 0, y: 1.1, z: 0}
 --- !u!1001 &8910932676761197094
 PrefabInstance:
   m_ObjectHideFlags: 0

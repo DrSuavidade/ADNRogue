@@ -54,10 +54,21 @@ namespace Geneforge.Gameplay.Characters.Enemies.AI
 
         void Hover(float dt)
         {
-            Vector3 pos = transform.position;
             float targetY = hoverHeight;
-            pos.y = Mathf.Lerp(pos.y, targetY, hoverLerpSpeed * dt);
-            transform.position = pos;
+            float currentY = transform.position.y;
+            float nextY = Mathf.Lerp(currentY, targetY, hoverLerpSpeed * dt);
+            float deltaY = nextY - currentY;
+
+            if (cc != null && cc.enabled)
+            {
+                cc.Move(new Vector3(0f, deltaY, 0f));
+            }
+            else
+            {
+                Vector3 pos = transform.position;
+                pos.y = nextY;
+                transform.position = pos;
+            }
         }
 
         void OrbitTarget(float dt)

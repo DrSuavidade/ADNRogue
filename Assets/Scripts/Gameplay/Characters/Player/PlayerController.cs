@@ -179,9 +179,6 @@ namespace Geneforge.Gameplay.Characters.Player
                 speedMult = Geneforge.Gameplay.Progression.RunSession.Instance.Run.MoveSpeedMultiplier;
             }
 
-            if (moveWorld.sqrMagnitude > 0f)
-                cc.Move(moveWorld * (moveSpeed * speedMult) * Time.deltaTime);
-
             if (cc.isGrounded)
             {
                 if (verticalVelocityY < 0f) verticalVelocityY = groundedGravityY;
@@ -191,7 +188,10 @@ namespace Geneforge.Gameplay.Characters.Player
                 verticalVelocityY += gravityY * Time.deltaTime;
             }
 
-            cc.Move(new Vector3(0f, verticalVelocityY, 0f) * Time.deltaTime);
+            Vector3 finalMove = moveWorld * (moveSpeed * speedMult);
+            finalMove.y = verticalVelocityY;
+
+            cc.Move(finalMove * Time.deltaTime);
 
             if (!isRolling)
             {
@@ -371,7 +371,10 @@ namespace Geneforge.Gameplay.Characters.Player
                 verticalVelocityY += gravityY * Time.deltaTime;
             }
 
-            cc.Move(rollDirection * rollSpeed * Time.deltaTime);
+            Vector3 finalMove = rollDirection * rollSpeed;
+            finalMove.y = verticalVelocityY;
+
+            cc.Move(finalMove * Time.deltaTime);
 
             if (faceToCameraForward)
             {

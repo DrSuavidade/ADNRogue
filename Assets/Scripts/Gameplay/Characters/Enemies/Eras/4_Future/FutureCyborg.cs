@@ -98,6 +98,8 @@ namespace Geneforge.Gameplay.Characters.Enemies.Eras.Future
 
         void Update()
         {
+            if (enemy != null && enemy.IsDead) return;
+
             // --- COOLDOWN DO BLOCK ---
             if (_blockCooldownTimer > 0f)
             {

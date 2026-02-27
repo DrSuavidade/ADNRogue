@@ -66,6 +66,8 @@ namespace Geneforge.Gameplay.Characters.Enemies.Eras.Roman
 
         protected virtual void Update()
         {
+            if (enemy != null && enemy.IsDead) return;
+
             if (target != null)
             {
                 // Rotação suave em direção ao player (apenas no eixo Y)

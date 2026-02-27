@@ -39,6 +39,8 @@ namespace Geneforge.Gameplay.Characters.Enemies.AI
         bool spawnPositionInitialized;
 
         protected bool isDead;
+        protected CharacterController cc;
+
 
         private static readonly int SpeedHash = Animator.StringToHash("Speed");
         private static readonly int HitTagHash = Animator.StringToHash("Hit");
@@ -95,6 +97,8 @@ namespace Geneforge.Gameplay.Characters.Enemies.AI
                 spawnPosition = transform.position;
                 spawnPositionInitialized = true;
             }
+
+            cc = GetComponent<CharacterController>();
         }
 
         protected virtual void OnEnable()
@@ -201,7 +205,15 @@ namespace Geneforge.Gameplay.Characters.Enemies.AI
 
             Vector3 dir = to.normalized;
             float step = speed * Time.deltaTime;
-            transform.position = pos + dir * step;
+            
+            if (cc != null && cc.enabled)
+            {
+                cc.Move(dir * step);
+            }
+            else
+            {
+                transform.position = pos + dir * step;
+            }
 
             if (faceTargetWhileMoving)
             {

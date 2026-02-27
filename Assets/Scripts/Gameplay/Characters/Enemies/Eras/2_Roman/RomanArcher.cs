@@ -48,6 +48,8 @@ namespace Geneforge.Gameplay.Characters.Enemies.Eras.Roman
 
         protected virtual void Update()
         {
+            if (enemy != null && enemy.IsDead) return;
+
             if (target != null)
             {
                 Vector3 lookPos = target.position - transform.position;

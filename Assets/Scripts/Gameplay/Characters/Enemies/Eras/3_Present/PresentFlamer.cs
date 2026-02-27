@@ -44,6 +44,8 @@ namespace Geneforge.Gameplay.Characters.Enemies.Eras.Present
 
         void Update()
         {
+            if (enemy != null && enemy.IsDead) return;
+
             if (!isFiring || playerHealth == null || !target)
                 return;
 

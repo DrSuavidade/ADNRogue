@@ -104,9 +104,6 @@ PrefabInstance:
       addedObject: {fileID: 8123862138704388462}
     - targetCorrespondingSourceObject: {fileID: 919132149155446097, guid: 6cc7968a8db41fd49ba18ffb5a346463, type: 3}
       insertIndex: -1
-      addedObject: {fileID: 2733868556962693070}
-    - targetCorrespondingSourceObject: {fileID: 919132149155446097, guid: 6cc7968a8db41fd49ba18ffb5a346463, type: 3}
-      insertIndex: -1
       addedObject: {fileID: 4504804286247544833}
     - targetCorrespondingSourceObject: {fileID: 919132149155446097, guid: 6cc7968a8db41fd49ba18ffb5a346463, type: 3}
       insertIndex: -1
@@ -117,6 +114,12 @@ PrefabInstance:
     - targetCorrespondingSourceObject: {fileID: 919132149155446097, guid: 6cc7968a8db41fd49ba18ffb5a346463, type: 3}
       insertIndex: -1
       addedObject: {fileID: 4591137255413470257}
+    - targetCorrespondingSourceObject: {fileID: 919132149155446097, guid: 6cc7968a8db41fd49ba18ffb5a346463, type: 3}
+      insertIndex: -1
+      addedObject: {fileID: 3668528895666511171}
+    - targetCorrespondingSourceObject: {fileID: 7264123868244890452, guid: 6cc7968a8db41fd49ba18ffb5a346463, type: 3}
+      insertIndex: -1
+      addedObject: {fileID: 7327979495792085535}
   m_SourcePrefab: {fileID: 100100000, guid: 6cc7968a8db41fd49ba18ffb5a346463, type: 3}
 --- !u!1 &2380674973863127386 stripped
 GameObject:
@@ -145,27 +148,6 @@ Animator:
   m_AllowConstantClipSamplingOptimization: 1
   m_KeepAnimatorStateOnDisable: 0
   m_WriteDefaultValuesOnDisable: 0
---- !u!65 &2733868556962693070
-BoxCollider:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 2380674973863127386}
-  m_Material: {fileID: 0}
-  m_IncludeLayers:
-    serializedVersion: 2
-    m_Bits: 0
-  m_ExcludeLayers:
-    serializedVersion: 2
-    m_Bits: 0
-  m_LayerOverridePriority: 0
-  m_IsTrigger: 0
-  m_ProvidesContacts: 0
-  m_Enabled: 1
-  serializedVersion: 3
-  m_Size: {x: 0.46228027, y: 1.5272387, z: 0.5309448}
-  m_Center: {x: 0.017160416, y: 1.0460494, z: 0.04107666}
 --- !u!114 &4504804286247544833
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -313,11 +295,62 @@ MonoBehaviour:
   indicatorScale: 2
   indicatorYOffset: 0.04
   indicatorColor: {r: 0.96862745, g: 0.85758543, b: 0.05098037, a: 1}
+--- !u!143 &3668528895666511171
+CharacterController:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 2380674973863127386}
+  m_Material: {fileID: 0}
+  m_IncludeLayers:
+    serializedVersion: 2
+    m_Bits: 0
+  m_ExcludeLayers:
+    serializedVersion: 2
+    m_Bits: 0
+  m_LayerOverridePriority: 0
+  m_ProvidesContacts: 0
+  m_Enabled: 1
+  serializedVersion: 3
+  m_Height: 2
+  m_Radius: 0.5
+  m_SlopeLimit: 45
+  m_StepOffset: 0.3
+  m_SkinWidth: 0.08
+  m_MinMoveDistance: 0.001
+  m_Center: {x: 0, y: 1.1, z: 0}
 --- !u!4 &3782212650392415171 stripped
 Transform:
   m_CorrespondingSourceObject: {fileID: 1852576806548013000, guid: 6cc7968a8db41fd49ba18ffb5a346463, type: 3}
   m_PrefabInstance: {fileID: 3299083091255694347}
   m_PrefabAsset: {fileID: 0}
+--- !u!1 &5262430584997103455 stripped
+GameObject:
+  m_CorrespondingSourceObject: {fileID: 7264123868244890452, guid: 6cc7968a8db41fd49ba18ffb5a346463, type: 3}
+  m_PrefabInstance: {fileID: 3299083091255694347}
+  m_PrefabAsset: {fileID: 0}
+--- !u!65 &7327979495792085535
+BoxCollider:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 5262430584997103455}
+  m_Material: {fileID: 0}
+  m_IncludeLayers:
+    serializedVersion: 2
+    m_Bits: 0
+  m_ExcludeLayers:
+    serializedVersion: 2
+    m_Bits: 0
+  m_LayerOverridePriority: 0
+  m_IsTrigger: 0
+  m_ProvidesContacts: 0
+  m_Enabled: 1
+  serializedVersion: 3
+  m_Size: {x: 0.017141653, y: 0.0033750606, z: 0.017095495}
+  m_Center: {x: -0.0000037294626, y: -0.00028150142, z: 0.009281515}
 --- !u!1001 &7267227854921115214
 PrefabInstance:
   m_ObjectHideFlags: 0
