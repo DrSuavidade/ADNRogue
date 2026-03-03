@@ -1,5 +1,5 @@
 fileFormatVersion: 2
-guid: 10aa1cc20558fd54289c0cecf14a2da7
+guid: 4bab0f95134663b4c9c3dd73939c0ff1
 NativeFormatImporter:
   externalObjects: {}
   mainObjectFileID: 2100000
@@ -11,5 +11,5 @@ AssetOrigin:
   productId: 247933
   packageName: Magic Effects FREE
   packageVersion: 1.6
-  assetPath: Assets/Resources/Effects/EffectsAnimation/GroundEffect/CraterFree1.mat
+  assetPath: Assets/Hovl Studio/Magic effects pack/Materials/Circle.mat
   uploadId: 762116

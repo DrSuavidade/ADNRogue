@@ -10,6 +10,5 @@ AssetOrigin:
   productId: 247933
   packageName: Magic Effects FREE
   packageVersion: 1.6
-  assetPath: Assets/Hovl Studio/Magic effects pack/Prefabs/AoE effects/Smoke AOE
-    explosion.prefab
+  assetPath: Assets/Resources/Effects/EffectsAnimation/GroundEffect/Smoke AOE explosion.prefab
   uploadId: 762116
