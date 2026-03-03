@@ -1,7 +1,8 @@
 fileFormatVersion: 2
-guid: 1eb833340b41fb444b576c4dced8d4dc
-PrefabImporter:
+guid: 96d60590d2a3f0143a9a84d4568d9de8
+NativeFormatImporter:
   externalObjects: {}
+  mainObjectFileID: 2100000
   userData: 
   assetBundleName: 
   assetBundleVariant: 
@@ -10,5 +11,5 @@ AssetOrigin:
   productId: 247933
   packageName: Magic Effects FREE
   packageVersion: 1.6
-  assetPath: Assets/Resources/Effects/EffectsAnimation/Teleport/Teleport.prefab
+  assetPath: Assets/Resources/Effects/EffectsAnimation/AuraLevelInsane/Mask1.mat
   uploadId: 762116

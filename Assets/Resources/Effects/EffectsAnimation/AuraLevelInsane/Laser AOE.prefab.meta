@@ -1,5 +1,5 @@
 fileFormatVersion: 2
-guid: 1eb833340b41fb444b576c4dced8d4dc
+guid: 4d3c8045dd8857a4b8d34c2361c61045
 PrefabImporter:
   externalObjects: {}
   userData: 
@@ -10,5 +10,5 @@ AssetOrigin:
   productId: 247933
   packageName: Magic Effects FREE
   packageVersion: 1.6
-  assetPath: Assets/Resources/Effects/EffectsAnimation/Teleport/Teleport.prefab
+  assetPath: Assets/Resources/Effects/EffectsAnimation/AuraLevelInsane/Laser AOE.prefab
   uploadId: 762116
