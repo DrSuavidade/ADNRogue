@@ -1,5 +1,5 @@
 fileFormatVersion: 2
-guid: 58de58939a6067c46bf0e5ddd893bd04
+guid: 20d17741cdc10b549be9fb9e40666a2a
 TextureImporter:
   internalIDToNameTable: []
   externalObjects: {}
@@ -125,10 +125,3 @@ TextureImporter:
   userData: 
   assetBundleName: 
   assetBundleVariant: 
-AssetOrigin:
-  serializedVersion: 1
-  productId: 247933
-  packageName: Magic Effects FREE
-  packageVersion: 1.6
-  assetPath: Assets/Resources/Effects/EffectsAnimation/CrystalAttack/FlashFree2.png
-  uploadId: 762116

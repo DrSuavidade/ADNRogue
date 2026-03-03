@@ -1,5 +1,5 @@
 fileFormatVersion: 2
-guid: 58de58939a6067c46bf0e5ddd893bd04
+guid: bbc32c56102b32f4dafa718b4e782d9d
 TextureImporter:
   internalIDToNameTable: []
   externalObjects: {}
@@ -130,5 +130,5 @@ AssetOrigin:
   productId: 247933
   packageName: Magic Effects FREE
   packageVersion: 1.6
-  assetPath: Assets/Resources/Effects/EffectsAnimation/CrystalAttack/FlashFree2.png
+  assetPath: Assets/Hovl Studio/Magic effects pack/Textures/SmokeFree1.png
   uploadId: 762116

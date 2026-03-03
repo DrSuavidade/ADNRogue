@@ -1,8 +1,7 @@
 fileFormatVersion: 2
-guid: 8d24eed57b7238948b376d5f465fe635
-NativeFormatImporter:
+guid: 9de2fa19f0390d44491264d9cab8cec5
+PrefabImporter:
   externalObjects: {}
-  mainObjectFileID: 2100000
   userData: 
   assetBundleName: 
   assetBundleVariant: 
@@ -11,5 +10,6 @@ AssetOrigin:
   productId: 247933
   packageName: Magic Effects FREE
   packageVersion: 1.6
-  assetPath: Assets/Resources/Effects/EffectsAnimation/CrystalAttack/FlashFree2.mat
+  assetPath: Assets/Hovl Studio/Magic effects pack/Prefabs/AoE effects/Smoke AOE
+    explosion.prefab
   uploadId: 762116
