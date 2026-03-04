@@ -1,8 +1,7 @@
 fileFormatVersion: 2
-guid: 7fd9558895b67494eb2f7f39156609d4
-NativeFormatImporter:
+guid: 48c5715f9603c3842a353516a8baefbb
+PrefabImporter:
   externalObjects: {}
-  mainObjectFileID: 2100000
   userData: 
   assetBundleName: 
   assetBundleVariant: 
@@ -11,5 +10,5 @@ AssetOrigin:
   productId: 247933
   packageName: Magic Effects FREE
   packageVersion: 1.6
-  assetPath: Assets/Resources/Effects/EffectsAnimation/AuraLevelInsane/FlashFree3.mat
+  assetPath: Assets/Resources/Effects/EffectsAnimation/MagicCircle/Magic circle 2.prefab
   uploadId: 762116
