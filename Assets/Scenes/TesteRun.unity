@@ -751,6 +751,37 @@ BoxCollider:
   serializedVersion: 3
   m_Size: {x: 6.85237, y: 12.202992, z: 96.78866}
   m_Center: {x: -34.6, y: 5.601496, z: -34.65233}
+--- !u!1 &537664927
+GameObject:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  serializedVersion: 6
+  m_Component:
+  - component: {fileID: 537664928}
+  m_Layer: 0
+  m_Name: Orb_Root
+  m_TagString: Untagged
+  m_Icon: {fileID: 0}
+  m_NavMeshLayer: 0
+  m_StaticEditorFlags: 0
+  m_IsActive: 1
+--- !u!4 &537664928
+Transform:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 537664927}
+  serializedVersion: 2
+  m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
+  m_LocalPosition: {x: 0.62903583, y: 2.7631257, z: -4.3101196}
+  m_LocalScale: {x: 1, y: 1, z: 1}
+  m_ConstrainProportionsScale: 0
+  m_Children: []
+  m_Father: {fileID: 0}
+  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
 --- !u!1 &543193781
 GameObject:
   m_ObjectHideFlags: 0
@@ -2348,3 +2379,4 @@ SceneRoots:
   - {fileID: 1666462699}
   - {fileID: 764815259}
   - {fileID: 929210905}
+  - {fileID: 537664928}
