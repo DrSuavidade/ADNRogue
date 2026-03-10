@@ -1,6 +1,8 @@
 using UnityEngine;
 using UnityEngine.UI;
+using System.Collections;
 using Geneforge.Gameplay.Characters.Enemies;
+using Geneforge.Gameplay.Characters.Enemies.AI;
 
 namespace Geneforge.Gameplay.Characters.UI
 {
@@ -12,6 +14,12 @@ namespace Geneforge.Gameplay.Characters.UI
         [SerializeField] private Vector3 offset = Vector3.up * 1.2f;
         [SerializeField] private bool autoHeightFromEnemy = true;
         [SerializeField] private float extraHeight = 0.15f; // how far above the top of the enemy
+        
+        [Header("UI Mode")]
+        [Tooltip("Check this if you placed this prefab directly on your HUD/Canvas overlay. It will skip world-space tracking.")]
+        public bool isScreenSpaceUI = false;
+        [SerializeField] private GameObject visualRoot;
+        
         float cachedHeight = -1f;
 
         public EnemyCore Enemy
@@ -25,6 +33,7 @@ namespace Geneforge.Gameplay.Characters.UI
                 if (_subscribed && enemy != null)
                 {
                     enemy.OnFirstHit -= OnEnemyFirstHit;
+                    enemy.OnIntroFinished -= OnIntroFinished;
                     _subscribed = false;
                 }
 
@@ -34,24 +43,32 @@ namespace Geneforge.Gameplay.Characters.UI
                 if (isActiveAndEnabled && enemy != null)
                 {
                     enemy.OnFirstHit += OnEnemyFirstHit;
+                    enemy.OnIntroFinished += OnIntroFinished;
                     _subscribed = true;
 
                     // If enemy was already hit before we attached, show bar immediately
-                    if (enemy.HasBeenHit)
-                        canvas.enabled = true;
+                    if (enemy.HasBeenHit || isScreenSpaceUI)
+                        SetVisible(true);
                 }
             }
         }
 
         Camera mainCam;
         Canvas canvas;
+        CanvasGroup group;
         bool _subscribed;
 
         void Awake()
         {
             mainCam = Camera.main;
             canvas = GetComponent<Canvas>();
-            canvas.enabled = false;
+            group = GetComponent<CanvasGroup>();
+            if (group == null) group = gameObject.AddComponent<CanvasGroup>();
+
+            if (visualRoot == null && transform.childCount > 0)
+                visualRoot = transform.GetChild(0).gameObject;
+
+            SetVisible(false);
 
             if (fillImage == null)
                 Debug.LogWarning($"HealthBar on {name} has no fillImage assigned.", this);
@@ -74,6 +91,7 @@ namespace Geneforge.Gameplay.Characters.UI
             if (isActiveAndEnabled && enemy != null && !_subscribed)
             {
                 enemy.OnFirstHit += OnEnemyFirstHit;
+                enemy.OnIntroFinished += OnIntroFinished;
                 _subscribed = true;
             }
         }
@@ -83,14 +101,27 @@ namespace Geneforge.Gameplay.Characters.UI
             if (enemy == null)
                 enemy = GetComponentInParent<EnemyCore>();
 
-            if (enemy != null && !_subscribed)
+            if (enemy != null)
             {
-                enemy.OnFirstHit += OnEnemyFirstHit;
-                _subscribed = true;
-                RecomputeOffset();
+                if (isScreenSpaceUI)
+                {
+                    // For Boss HUD, start hidden and wait for the intro event
+                    SetVisible(false);
+                }
 
-                if (enemy.HasBeenHit)
-                    canvas.enabled = true;
+                if (!_subscribed)
+                {
+                    enemy.OnFirstHit += OnEnemyFirstHit;
+                    enemy.OnIntroFinished += OnIntroFinished;
+                    _subscribed = true;
+                    RecomputeOffset();
+
+                    // Auto-show logic
+                    if (!isScreenSpaceUI && enemy.HasBeenHit)
+                    {
+                        SetVisible(true);
+                    }
+                }
             }
         }
 
@@ -99,30 +130,82 @@ namespace Geneforge.Gameplay.Characters.UI
             if (_subscribed && enemy != null)
             {
                 enemy.OnFirstHit -= OnEnemyFirstHit;
+                enemy.OnIntroFinished -= OnIntroFinished;
                 _subscribed = false;
             }
 
-            if (canvas != null)
-                canvas.enabled = false;
+            SetVisible(false);
         }
 
 
         void OnEnemyFirstHit()
         {
-            canvas.enabled = true;
+            if (!isScreenSpaceUI) SetVisible(true);
+            else 
+            {
+                // Backup: if they hit the boss before intro finishes, fade in anyway
+                if (visualRoot != null && !visualRoot.activeInHierarchy)
+                    OnIntroFinished();
+            }
+        }
+
+        void OnIntroFinished()
+        {
+            if (isScreenSpaceUI)
+            {
+                StopAllCoroutines();
+                StartCoroutine(FadeInRoutine());
+            }
+        }
+
+        private void SetVisible(bool visible)
+        {
+            if (visualRoot != null) visualRoot.SetActive(visible);
+            
+            // If we are world space, we might still want to enable/disable canvas for performance 
+            // but for ScreenSpace HUD we keep the canvas ON so it doesn't kill the whole HUD.
+            if (!isScreenSpaceUI && canvas != null) canvas.enabled = visible;
+            
+            if (group != null) group.alpha = visible ? 1f : 0f;
+        }
+
+        private IEnumerator FadeInRoutine()
+        {
+            if (visualRoot == null) yield break;
+            
+            if (group == null) group = gameObject.GetComponent<CanvasGroup>();
+            if (group == null) group = gameObject.AddComponent<CanvasGroup>();
+            
+            visualRoot.SetActive(true);
+            group.alpha = 0f;
+            
+            float duration = 1f;
+            float elapsed = 0f;
+            
+            while (elapsed < duration)
+            {
+                elapsed += Time.deltaTime;
+                group.alpha = Mathf.Clamp01(elapsed / duration);
+                yield return null;
+            }
+            
+            group.alpha = 1f;
         }
 
         void LateUpdate()
         {
             if (enemy == null || fillImage == null) return;
 
-            if (mainCam == null)
-                mainCam = Camera.main;
-            if (mainCam == null) return;
+            if (!isScreenSpaceUI)
+            {
+                if (mainCam == null)
+                    mainCam = Camera.main;
+                if (mainCam == null) return;
 
-            // 1) Position above head and face camera
-            transform.position = enemy.transform.position + offset;
-            transform.rotation = Quaternion.LookRotation(transform.position - mainCam.transform.position);
+                // 1) Position above head and face camera
+                transform.position = enemy.transform.position + offset;
+                transform.rotation = Quaternion.LookRotation(transform.position - mainCam.transform.position);
+            }
 
             // 2) Update fill
             float maxHp = Mathf.Max(enemy.MaxHealth, 0.0001f);

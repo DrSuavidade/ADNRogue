@@ -20,6 +20,7 @@ namespace Geneforge.Gameplay.Characters.Enemies
         [SerializeField] private string damagedTrigger = "Damaged";
         [SerializeField] private string deathTrigger = "Death";
         [SerializeField] private float deathAnimDuration = 1f;
+        [SerializeField] private float deathDespawnTime = 5f;
 
         [Header("Feedback")]
         [SerializeField] private GameObject damageTextPrefab;
@@ -51,6 +52,7 @@ namespace Geneforge.Gameplay.Characters.Enemies
         public GameObject DamageTextPrefab => damageTextPrefab;
         public Vector3 DamageTextOffset => damageTextOffset;
         public float HealthBarHeightOverride => healthBarHeightOverride;
+        public float DeathDespawnTime { get => deathDespawnTime; set => deathDespawnTime = value; }
 
 
         // Events
@@ -59,6 +61,8 @@ namespace Geneforge.Gameplay.Characters.Enemies
         public event Action OnStaggered;   // triggered only when poise is broken
         public event Action<Vector3, float> OnKnockback; // NEW: event for brains
         public event Action OnDied;        // NEW: death event for brains / systems
+        public Func<bool> OnDeathIntercept; // NEW: intercept death to trigger phase changes!
+        public event Action OnIntroFinished; // NEW: for UI/Cinematics
 
         private bool hasBeenHit = false;
         private bool isDead = false;
@@ -210,7 +214,7 @@ namespace Geneforge.Gameplay.Characters.Enemies
                     if (currentPoise <= 0f)
                     {
                         // THE BIG BREAK: This is where we reward the player
-                        if (animator != null)
+                        if (animator != null && HasParameter(damagedTrigger))
                         {
                             animator.SetTrigger(damagedTrigger);
                         }
@@ -223,7 +227,13 @@ namespace Geneforge.Gameplay.Characters.Enemies
             // =====================================================
 
             if (currentHealth <= 0f)
+            {
+                if (OnDeathIntercept != null && OnDeathIntercept.Invoke())
+                {
+                    return; // Death bypassed (Phase change handled it)
+                }
                 Die();
+            }
         }
 
         void Die()
@@ -258,9 +268,9 @@ namespace Geneforge.Gameplay.Characters.Enemies
             // Death animation
             if (animator != null)
             {
-                animator.ResetTrigger(damagedTrigger);
-                animator.SetFloat("Speed", 0f);
-                animator.SetTrigger(deathTrigger);
+                if (HasParameter(damagedTrigger)) animator.ResetTrigger(damagedTrigger);
+                if (HasParameter("Speed")) animator.SetFloat("Speed", 0f);
+                if (HasParameter(deathTrigger)) animator.SetTrigger(deathTrigger);
             }
 
             // Notify listeners
@@ -274,7 +284,12 @@ namespace Geneforge.Gameplay.Characters.Enemies
 
             // Despawn
             if (_despawnCo == null)
-                _despawnCo = StartCoroutine(DespawnAfterRealtime(5f));
+                _despawnCo = StartCoroutine(DespawnAfterRealtime(deathDespawnTime));
+        }
+
+        public void NotifyIntroFinished()
+        {
+            OnIntroFinished?.Invoke();
         }
 
         IEnumerator DespawnAfterRealtime(float seconds)
@@ -439,6 +454,16 @@ namespace Geneforge.Gameplay.Characters.Enemies
                 // Nuclear reset: removes all overrides and returns to the base material state
                 _renderers[i].SetPropertyBlock(null);
             }
+        }
+
+        private bool HasParameter(string paramName)
+        {
+            if (animator == null || string.IsNullOrEmpty(paramName)) return false;
+            foreach (var parameter in animator.parameters)
+            {
+                if (parameter.name == paramName) return true;
+            }
+            return false;
         }
     }
 }

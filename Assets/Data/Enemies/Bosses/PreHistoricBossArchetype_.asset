@@ -1,0 +1,90 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 6f1abd48729aa824691aa7a5dff2dd2f, type: 3}
+  m_Name: PreHistoricBossArchetype_
+  m_EditorClassIdentifier: 
+  displayName: PreHistoricBoss
+  maxHealth: 100
+  baseMoveSpeed: 4
+  maxPoise: 20
+  poiseRecoveryRate: 5
+  hasHyperArmor: 1
+  animatorController: {fileID: 9100000, guid: fedcb991834209649bbbd33c0541fa38, type: 2}
+  melee:
+    detectionRadius: 0
+    chaseSpeed: 0
+    wanderRadius: 0
+    wanderInterval: 0
+    wanderSpeed: 0
+    attackRange: 0
+    attackRate: 0
+    damagePerHit: 0
+    attackVariants: 0
+  ranged:
+    detectionRadius: 0
+    wanderRadius: 0
+    wanderInterval: 0
+    wanderSpeed: 0
+    preferredRange: 0
+    minRange: 0
+    strafeSpeed: 0
+    attackRate: 0
+    attackVariants: 1
+  support:
+    followRadiusFromSpawn: 0
+    repositionSpeed: 0
+    detectionRadius: 0
+    supportInterval: 0
+    attackVariants: 0
+  animal:
+    roamRadius: 0
+    roamInterval: 0
+    roamSpeed: 0
+    detectionRadius: 0
+    pounceRange: 0
+    chaseSpeed: 0
+    attackRate: 0
+    attackVariants: 0
+  flying:
+    hoverHeight: 0
+    hoverLerpSpeed: 0
+    orbitRadius: 0
+    orbitAngularSpeedDeg: 0
+    attackRate: 0
+    preferredRange: 0
+    attackVariants: 0
+  boss:
+    phase2Threshold: 0.496
+    phase3Threshold: 0
+    phase1AttackRate: 1
+    phase2AttackRate: 1.5
+    phase3AttackRate: 0
+    meleeRange: 5
+    melee1Damage: 20
+    melee1HitRadius: 4
+    melee2Damage: 15
+    melee2HitRadius: 6
+    range1Damage: 10
+    range2Damage: 5
+    danceDamage: 0
+    danceRadius: 0
+    attackVariants: 4
+  projectile:
+    enabled: 1
+    projectilePrefab: {fileID: 2277336885906337509, guid: bc3c7085857c40b40bc215c20bec0d39, type: 3}
+    spawnOffset: {x: 0, y: 0, z: 0}
+    damage: 0
+    speed: 10
+    hitMask:
+      serializedVersion: 2
+      m_Bits: 0
+    arcHeight: 0

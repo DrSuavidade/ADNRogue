@@ -39,6 +39,9 @@ namespace Geneforge.Gameplay.Map
         [Tooltip("Weighted non-key reward pool used on all floors of this timeline.")]
         public List<WeightedPrefab> floorRewardPrefabs = new List<WeightedPrefab>();
 
+        [Tooltip("Weighted boss reward pool used when a boss is defeated in this timeline.")]
+        public List<WeightedPrefab> bossRewardPrefabs = new List<WeightedPrefab>();
+
         [Header("Enemies")]
         [Tooltip("Weighted enemy prefabs used in combat rooms for this timeline.")]
         public List<WeightedPrefab> enemyPrefabs = new List<WeightedPrefab>();

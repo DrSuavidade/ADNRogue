@@ -39,6 +39,7 @@ namespace Geneforge.Gameplay.Map
             new Dictionary<RoomDirection, RoomInstance>();
 
         private List<WeightedPrefab> currentFloorRewardPool;
+        private List<WeightedPrefab> currentFloorBossRewardPool;
         private List<WeightedPrefab> currentFloorEnemyPool;
         private GameObject currentFloorKeyPrefab;
         private int globalVisitCounter;
@@ -142,6 +143,7 @@ namespace Geneforge.Gameplay.Map
 
             // Per-floor pools
             currentFloorRewardPool = set.floorRewardPrefabs;
+            currentFloorBossRewardPool = set.bossRewardPrefabs;
             currentFloorEnemyPool = set.enemyPrefabs;
             currentFloorKeyPrefab = set.keyPickupPrefab != null
                 ? set.keyPickupPrefab
@@ -383,6 +385,21 @@ namespace Geneforge.Gameplay.Map
             {
                 return;
             }
+
+            Instantiate(prefab, spawner.transform.position, spawner.transform.rotation);
+        }
+
+        public void SpawnBossRewardAt(RewardSpawner spawner)
+        {
+            if (spawner == null) return;
+
+            // Use the boss pool if available, fallback to floor pool
+            var pool = (currentFloorBossRewardPool != null && currentFloorBossRewardPool.Count > 0)
+                ? currentFloorBossRewardPool
+                : currentFloorRewardPool;
+
+            GameObject prefab = ChooseWeightedPrefab(pool);
+            if (prefab == null) return;
 
             Instantiate(prefab, spawner.transform.position, spawner.transform.rotation);
         }

@@ -4,6 +4,9 @@ namespace Geneforge.Gameplay.Map
 {
     public class RewardSpawner : MonoBehaviour
     {
+        [Header("Settings")]
+        [SerializeField] private bool representsBossReward;
+
         [Header("State (runtime)")]
         [SerializeField] private bool spawnKey;
         [SerializeField] private bool hasSpawned;
@@ -35,6 +38,10 @@ namespace Geneforge.Gameplay.Map
             if (spawnKey)
             {
                 DungeonMapManager.Instance.SpawnKeyAt(this);
+            }
+            else if (representsBossReward)
+            {
+                DungeonMapManager.Instance.SpawnBossRewardAt(this);
             }
             else
             {

@@ -141,6 +141,7 @@ namespace Geneforge.Gameplay.Characters.Enemies.Config
             brain.phase1AttackRate  = c.phase1AttackRate;
             brain.phase2AttackRate  = c.phase2AttackRate;
             brain.phase3AttackRate  = c.phase3AttackRate;
+            brain.meleeRange        = c.meleeRange;
             brain.attackVariants    = c.attackVariants;
         }
 

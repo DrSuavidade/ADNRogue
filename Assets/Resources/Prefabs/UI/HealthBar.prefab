@@ -84,7 +84,7 @@ MonoBehaviour:
   m_FallbackScreenDPI: 96
   m_DefaultSpriteDPI: 96
   m_DynamicPixelsPerUnit: 1
-  m_PresetInfoIsWorld: 1
+  m_PresetInfoIsWorld: 0
 --- !u!1 &1510222503352748911
 GameObject:
   m_ObjectHideFlags: 0
@@ -312,6 +312,9 @@ MonoBehaviour:
   enemy: {fileID: 0}
   fillImage: {fileID: 1446227172416350503}
   offset: {x: 0, y: 1.2, z: 0}
+  autoHeightFromEnemy: 1
+  extraHeight: 0.15
+  isScreenSpaceUI: 0
 --- !u!114 &8974565322503708854
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -324,4 +327,3 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 781cdc936ea01b343a9b5713c6112736, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  sourcePrefab: {fileID: 0}

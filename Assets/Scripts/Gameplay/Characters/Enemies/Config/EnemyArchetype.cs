@@ -119,7 +119,27 @@ namespace Geneforge.Gameplay.Characters.Enemies.Config
             public float phase1AttackRate;
             public float phase2AttackRate;
             public float phase3AttackRate;
-            [Range(1, 3)] public int attackVariants;
+            public float meleeRange;
+            
+            [Header("Attack 1 (Melee)")]
+            public float melee1Damage;
+            public float melee1HitRadius;
+
+            [Header("Attack 2 (Melee)")]
+            public float melee2Damage;
+            public float melee2HitRadius;
+
+            [Header("Attack 3 (Ranged)")]
+            public float range1Damage;
+
+            [Header("Attack 4 (Ranged)")]
+            public float range2Damage;
+
+            [Header("Utility")]
+            public float danceDamage;
+            public float danceRadius;
+
+            [Range(1, 4)] public int attackVariants;
         }
 
         [Header("Brains")]

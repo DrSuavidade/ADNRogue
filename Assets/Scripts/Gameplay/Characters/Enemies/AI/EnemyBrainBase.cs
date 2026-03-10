@@ -40,6 +40,13 @@ namespace Geneforge.Gameplay.Characters.Enemies.AI
 
         protected bool isDead;
         protected CharacterController cc;
+        protected float verticalVelocityY = 0f;
+        protected float groundedGravityY = -2f;
+        protected float gravityY = -35f;
+        private Vector3 _lastFrameMove;
+        private int _lastMoveFrame = -1;
+
+
 
 
         private static readonly int SpeedHash = Animator.StringToHash("Speed");
@@ -164,12 +171,41 @@ namespace Geneforge.Gameplay.Characters.Enemies.AI
                         FaceTarget();
                     }
 
+                    ApplyGravity(Time.deltaTime);
                     return;
                 }
             }
 
             TickBrain(Time.deltaTime);
+            ApplyGravity(Time.deltaTime);
         }
+
+        private void ApplyGravity(float dt)
+        {
+            if (cc == null || !cc.enabled) return;
+
+            // Only apply gravity once per frame to avoid stacking
+            if (Time.frameCount == _lastMoveFrame)
+            {
+                // If we already moved horizontally this frame, only apply the vertical component if CC.Move wasn't used for gravity
+                // Actually, CharacterController.Move is relative. If we call it again, it adds.
+                // To keep it simple and avoid "fighting" with MoveTowards, we only apply separate gravity if not moved.
+                return;
+            }
+
+            if (cc.isGrounded)
+            {
+                if (verticalVelocityY < 0f) verticalVelocityY = groundedGravityY;
+            }
+            else
+            {
+                verticalVelocityY += gravityY * dt;
+            }
+
+            cc.Move(new Vector3(0, verticalVelocityY * dt, 0));
+            _lastMoveFrame = Time.frameCount;
+        }
+
 
         protected abstract void TickBrain(float deltaTime);
 
@@ -208,12 +244,26 @@ namespace Geneforge.Gameplay.Characters.Enemies.AI
             
             if (cc != null && cc.enabled)
             {
-                cc.Move(dir * step);
+                if (cc.isGrounded)
+                {
+                    if (verticalVelocityY < 0f) verticalVelocityY = groundedGravityY;
+                }
+                else
+                {
+                    verticalVelocityY += gravityY * Time.deltaTime;
+                }
+
+                Vector3 finalMove = dir * step;
+                finalMove.y = verticalVelocityY * Time.deltaTime;
+                cc.Move(finalMove);
+                _lastMoveFrame = Time.frameCount;
             }
             else
             {
                 transform.position = pos + dir * step;
             }
+
+
 
             if (faceTargetWhileMoving)
             {

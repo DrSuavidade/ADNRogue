@@ -56,7 +56,20 @@ namespace Geneforge.Gameplay.Characters.Player
         float rollSpeed;
         bool isRolling = false;
         bool canRoll = true;
+        public bool IsInCutscene { get; set; } = false;
+        public float MoveSpeed => moveSpeed;
+        public float CurrentMovementSpeed 
+        {
+            get 
+            {
+                float mult = 1f;
+                if (Geneforge.Gameplay.Progression.RunSession.Instance != null && Geneforge.Gameplay.Progression.RunSession.Instance.Run != null)
+                    mult = Geneforge.Gameplay.Progression.RunSession.Instance.Run.MoveSpeedMultiplier;
+                return moveSpeed * mult;
+            }
+        }
         float rollTimer = 0f;
+
         float cooldownTimer = 0f;
         int playerLayer;
         int enemyLayer;
@@ -141,6 +154,16 @@ namespace Geneforge.Gameplay.Characters.Player
         {
             UpdateRollTimers();
 
+            if (IsInCutscene)
+            {
+                // In cutscene, we don't automatically clear currentMoveWorld 
+                // because it might be set externally via SetCutsceneMovement
+                UpdateAnimator();
+                ApplyCutsceneMovement();
+                return;
+            }
+
+
             if (isRolling)
             {
                 HandleRollingMovement();
@@ -155,6 +178,7 @@ namespace Geneforge.Gameplay.Characters.Player
             if (attackAction != null && attackAction.WasPressedThisFrame()) gunSlots?.OnFireHeldStart();
             if (attackAction != null && attackAction.WasReleasedThisFrame()) gunSlots?.OnFireHeldStop();
         }
+
 
 
         // -------------------- Movement --------------------
@@ -218,6 +242,7 @@ namespace Geneforge.Gameplay.Characters.Player
         {
             if (attackAction == null || !attackAction.IsPressed()) return; // contínuo
             if (Time.time < nextFireTime) return;
+            if (Geneforge.Gameplay.Characters.Enemies.AI.BossBrain.IsAnyBossSpawning) return;
 
             gunSlots?.OnAboutToFire();
             var active = (gunSlots != null && gunSlots.ActiveStats != null) ? gunSlots.ActiveStats : stats;
@@ -416,6 +441,37 @@ namespace Geneforge.Gameplay.Characters.Player
             if (playerLayer >= 0 && enemyLayer >= 0)
                 Physics.IgnoreLayerCollision(playerLayer, enemyLayer, false);
         }
+
+        public void SetCutsceneMovement(Vector3 worldMoveDir)
+        {
+            currentMoveWorld = worldMoveDir;
+        }
+
+        void ApplyCutsceneMovement()
+        {
+            if (currentMoveWorld.sqrMagnitude < 0.0001f) return;
+
+            if (cc.isGrounded)
+            {
+                if (verticalVelocityY < 0f) verticalVelocityY = groundedGravityY;
+            }
+            else
+            {
+                verticalVelocityY += gravityY * Time.deltaTime;
+            }
+
+            Vector3 finalMove = currentMoveWorld;
+            finalMove.y = verticalVelocityY;
+
+            cc.Move(finalMove * Time.deltaTime);
+
+            if (currentMoveWorld.sqrMagnitude > 0.0001f)
+            {
+                Quaternion targetRot = Quaternion.LookRotation(currentMoveWorld, Vector3.up);
+                transform.rotation = Quaternion.Slerp(transform.rotation, targetRot, faceCameraTurnSpeed * Time.deltaTime);
+            }
+        }
+
 
 
         // -------------------- Animator --------------------

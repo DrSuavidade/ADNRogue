@@ -45,6 +45,9 @@ MonoBehaviour:
       weight: 1
     - prefab: {fileID: 3127517845568862864, guid: 08e886791beb087418d99ab208bd5bb8, type: 3}
       weight: 6
+    bossRewardPrefabs:
+    - prefab: {fileID: 1714695668134714555, guid: 3467938649e56404a94dff219afe3899, type: 3}
+      weight: 1
     enemyPrefabs:
     - prefab: {fileID: 1673158105172721084, guid: 29014882d36e9b648bd2bd98faa6530f, type: 3}
       weight: 1
@@ -74,6 +77,7 @@ MonoBehaviour:
     eventRoomsSE: []
     keyPickupPrefab: {fileID: 0}
     floorRewardPrefabs: []
+    bossRewardPrefabs: []
     enemyPrefabs: []
     commonRate: 60
     rareRate: 30
@@ -89,6 +93,7 @@ MonoBehaviour:
     eventRoomsSE: []
     keyPickupPrefab: {fileID: 0}
     floorRewardPrefabs: []
+    bossRewardPrefabs: []
     enemyPrefabs: []
     commonRate: 40
     rareRate: 35
@@ -104,6 +109,7 @@ MonoBehaviour:
     eventRoomsSE: []
     keyPickupPrefab: {fileID: 0}
     floorRewardPrefabs: []
+    bossRewardPrefabs: []
     enemyPrefabs: []
     commonRate: 25
     rareRate: 40
