@@ -16,21 +16,15 @@ namespace Geneforge.Gameplay.Characters.Enemies.Eras.Roman
         public float damage = 12f;
         public float discRotationSpeed = 1500f; 
 
-        [Header("VFX da Aura")]
-        public Sprite[] auraFrames;
-        public float auraFPS = 6f;
-        public Vector3 auraScale = Vector3.one;
-        [ColorUsage(true, true)] public Color auraColor = Color.white;
+        [Header("VFX Prefabs")]
+        public GameObject auraPrefab;
+        public float auraScaleMult = 1.0f;
+        public GameObject trailPrefab;
+        public float trailScaleMult = 1.0f;
+        public float trailInterval = 0.05f;
 
         [Tooltip("Layers que o disco pode atingir.")]
         public LayerMask hitMask = ~0;
-
-        [Header("VFX do Rastro (Trail)")]
-        public Sprite[] trailFrames;
-        public float trailFPS = 24f;
-        public float trailInterval = 0.05f;
-        public Vector3 trailScale = Vector3.one;
-        [ColorUsage(true, true)] public Color trailColor = new Color(2f, 1.2f, 0.5f, 1f); // HDR Orangeish
 
         EnemyConfigurator _config;
 
@@ -143,31 +137,27 @@ namespace Geneforge.Gameplay.Characters.Enemies.Eras.Roman
             // --- LIMPEZA DE AURAS E RASTROS ANTIGOS (POOLING SAFETY) ---
             CleanupActiveVFX();
 
-            // --- SPAWN DA AURA (Brilho constante no disco) ---
-            if (owner != null && owner.auraFrames != null && owner.auraFrames.Length > 0)
+            // --- SPAWN DA AURA ---
+            if (owner != null && owner.auraPrefab != null)
             {
-                _activeAura = owner.SpawnVFXLayer_Public(
-                    "DiscGlow", 
+                _activeAura = owner.SpawnVFX_Public(
+                    owner.auraPrefab, 
                     transform.position, 
-                    owner.auraScale, 
-                    owner.auraFrames, 
-                    owner.auraFPS, 
-                    owner.auraColor, 
-                    1f, 0f, 0f, true, transform, 
-                    Visuals.SpriteSheetAnimator.AnimationMode.Billboard, 
-                    true // Loop = true
+                    Quaternion.identity, 
+                    transform, 
+                    owner.auraScaleMult
                 );
 
                 if (_activeAura != null)
                 {
-                    _activeAura.transform.localPosition = Vector3.zero;
+                    var anim = _activeAura.GetComponent<Geneforge.Gameplay.Visuals.SpriteSheetAnimator>();
+                    if (anim != null) anim.loop = true;
                 }
             }
 
-            // --- INICIAR RASTRO (SPRITES LARGADAS NO AR) ---
-            if (owner != null && owner.trailFrames != null && owner.trailFrames.Length > 0)
+            // --- INICIAR RASTRO ---
+            if (owner != null && owner.trailPrefab != null)
             {
-                // CACHE: Criamos o objeto de espera aqui uma vez
                 _trailWait = new WaitForSeconds(_owner.trailInterval);
                 _trailCoroutine = StartCoroutine(TrailRoutine());
             }
@@ -185,20 +175,12 @@ namespace Geneforge.Gameplay.Characters.Enemies.Eras.Roman
                 
                 // Spawna o rastro no ESPAÇO DO MUNDO (parent = null)
                 // Usamos Loop = false para ele tocar a animação uma vez e sumir (pooling automático)
-                _owner.SpawnVFXLayer_Public(
-                    "DiscTrail",
+                _owner.SpawnVFX_Public(
+                    _owner.trailPrefab,
                     transform.position,
-                    _owner.trailScale,
-                    _owner.trailFrames,
-                    _owner.trailFPS,
-                    _owner.trailColor,
-                    1f, 
-                    15f, // Rotação aleatória leve para variação
-                    0.4f, // Fade começa mais cedo para dissipar rápido
-                    false, // Pulse
-                    null, // SEM PARENT (Fica no ar)
-                    Visuals.SpriteSheetAnimator.AnimationMode.Billboard,
-                    false // SEM LOOP
+                    Quaternion.Euler(0, Random.Range(0, 360f), 0),
+                    null, 
+                    _owner.trailScaleMult
                 );
             }
         }

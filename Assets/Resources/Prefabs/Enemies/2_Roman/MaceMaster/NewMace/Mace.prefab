@@ -287,6 +287,7 @@ MonoBehaviour:
   damagedTrigger: Damaged
   deathTrigger: Death
   deathAnimDuration: 1
+  deathDespawnTime: 5
   damageTextPrefab: {fileID: 8104875995613135839, guid: 51bfa69456bef62438805f10c2608f9f, type: 3}
   damageTextOffset: {x: 0, y: 2.5, z: 0}
   maxPoise: 45
@@ -358,30 +359,10 @@ MonoBehaviour:
   vfxGenericPrefab: {fileID: 1657940832873615945, guid: 7f33b61444b7a7f438bec4e05f82d2b0, type: 3}
   slamDamage: 20
   slamRadius: 2.4
-  slamFrames: []
-  craterFrames:
-  - {fileID: -1555496899, guid: 9cd4cad32157e1e4ea631a007b1899fa, type: 3}
-  - {fileID: 1245677157, guid: 9cd4cad32157e1e4ea631a007b1899fa, type: 3}
-  - {fileID: 1676587304, guid: 9cd4cad32157e1e4ea631a007b1899fa, type: 3}
-  - {fileID: -788833869, guid: 9cd4cad32157e1e4ea631a007b1899fa, type: 3}
-  - {fileID: 1704913195, guid: 9cd4cad32157e1e4ea631a007b1899fa, type: 3}
-  - {fileID: -1594422686, guid: 9cd4cad32157e1e4ea631a007b1899fa, type: 3}
-  - {fileID: 219500797, guid: 9cd4cad32157e1e4ea631a007b1899fa, type: 3}
-  - {fileID: -2097986059, guid: 9cd4cad32157e1e4ea631a007b1899fa, type: 3}
-  - {fileID: -864173781, guid: 9cd4cad32157e1e4ea631a007b1899fa, type: 3}
-  - {fileID: -1001999629, guid: 9cd4cad32157e1e4ea631a007b1899fa, type: 3}
-  - {fileID: 1621907090, guid: 9cd4cad32157e1e4ea631a007b1899fa, type: 3}
-  - {fileID: 1290697305, guid: 9cd4cad32157e1e4ea631a007b1899fa, type: 3}
-  - {fileID: -1106217790, guid: 9cd4cad32157e1e4ea631a007b1899fa, type: 3}
-  - {fileID: 497945637, guid: 9cd4cad32157e1e4ea631a007b1899fa, type: 3}
-  - {fileID: 35596355, guid: 9cd4cad32157e1e4ea631a007b1899fa, type: 3}
-  - {fileID: 1361145049, guid: 9cd4cad32157e1e4ea631a007b1899fa, type: 3}
-  - {fileID: 1829069259, guid: 9cd4cad32157e1e4ea631a007b1899fa, type: 3}
-  - {fileID: -1277496340, guid: 9cd4cad32157e1e4ea631a007b1899fa, type: 3}
-  vfxFPS: 19
-  slamScale: {x: 2.5, y: 2.5, z: 2.5}
-  craterScale: {x: 1, y: 1, z: 1}
-  impactColor: {r: 1, g: 1, b: 1, a: 1}
+  slamPrefab: {fileID: 0}
+  craterPrefab: {fileID: 5034656251238326012, guid: 9de2fa19f0390d44491264d9cab8cec5, type: 3}
+  slamScaleMult: 1
+  craterScaleMult: 1
 --- !u!143 &5005144137474176113
 CharacterController:
   m_ObjectHideFlags: 0

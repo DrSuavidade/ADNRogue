@@ -165,6 +165,7 @@ MonoBehaviour:
   damagedTrigger: Damaged
   deathTrigger: Death
   deathAnimDuration: 1
+  deathDespawnTime: 5
   damageTextPrefab: {fileID: 8104875995613135839, guid: 51bfa69456bef62438805f10c2608f9f, type: 3}
   damageTextOffset: {x: 0, y: 2.5, z: 0}
   maxPoise: 8
@@ -226,7 +227,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: a0cd342a82223e846be12e50957667a7, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  vfxGenericPrefab: {fileID: 0}
+  vfxGenericPrefab: {fileID: 1657940832873615945, guid: 7f33b61444b7a7f438bec4e05f82d2b0, type: 3}
   buffRadius: 15
   allyMask:
     serializedVersion: 2
@@ -236,65 +237,15 @@ MonoBehaviour:
   shieldDuration: 4
   furyDuration: 5
   attackSpeedMultiplier: 1.4
-  shieldPrefab: {fileID: 3098376143577340443, guid: 6176381a2f004184e9f443951fbf54bc, type: 3}
-  shieldAnimationFrames:
-  - {fileID: -146228828, guid: e6b14413343fdaf4b81bb85f370867cc, type: 3}
-  - {fileID: -1208750005, guid: e6b14413343fdaf4b81bb85f370867cc, type: 3}
-  - {fileID: 1864886725, guid: e6b14413343fdaf4b81bb85f370867cc, type: 3}
-  - {fileID: -850537350, guid: e6b14413343fdaf4b81bb85f370867cc, type: 3}
-  - {fileID: 157970785, guid: e6b14413343fdaf4b81bb85f370867cc, type: 3}
-  - {fileID: 720977453, guid: e6b14413343fdaf4b81bb85f370867cc, type: 3}
-  - {fileID: -934016120, guid: e6b14413343fdaf4b81bb85f370867cc, type: 3}
-  - {fileID: -1792001266, guid: e6b14413343fdaf4b81bb85f370867cc, type: 3}
-  - {fileID: -693941343, guid: e6b14413343fdaf4b81bb85f370867cc, type: 3}
-  - {fileID: 2093375183, guid: e6b14413343fdaf4b81bb85f370867cc, type: 3}
-  - {fileID: 1111953241, guid: e6b14413343fdaf4b81bb85f370867cc, type: 3}
-  - {fileID: -1125269124, guid: e6b14413343fdaf4b81bb85f370867cc, type: 3}
-  - {fileID: -79001777, guid: e6b14413343fdaf4b81bb85f370867cc, type: 3}
-  - {fileID: -571411082, guid: e6b14413343fdaf4b81bb85f370867cc, type: 3}
-  shieldFPS: 14
-  shieldScale: 2
+  shieldPrefab: {fileID: 6604559808587926515, guid: 0de8c816a42c27f47af185e6d655577b, type: 3}
   shieldYOffset: 1
-  shieldColor: {r: 0, g: 0.9372549, b: 0.17630127, a: 1}
-  furyPrefab: {fileID: 3098376143577340443, guid: 6176381a2f004184e9f443951fbf54bc, type: 3}
-  furyAnimationFrames:
-  - {fileID: -1157193631, guid: bc9d7e6b6e2ca574c871282b12ed6b2f, type: 3}
-  - {fileID: -225073900, guid: bc9d7e6b6e2ca574c871282b12ed6b2f, type: 3}
-  - {fileID: 318584510, guid: bc9d7e6b6e2ca574c871282b12ed6b2f, type: 3}
-  - {fileID: 953399796, guid: bc9d7e6b6e2ca574c871282b12ed6b2f, type: 3}
-  - {fileID: -2131718175, guid: bc9d7e6b6e2ca574c871282b12ed6b2f, type: 3}
-  - {fileID: -1437281283, guid: bc9d7e6b6e2ca574c871282b12ed6b2f, type: 3}
-  - {fileID: 1818135234, guid: bc9d7e6b6e2ca574c871282b12ed6b2f, type: 3}
-  - {fileID: -1745366816, guid: bc9d7e6b6e2ca574c871282b12ed6b2f, type: 3}
-  - {fileID: -1547192808, guid: bc9d7e6b6e2ca574c871282b12ed6b2f, type: 3}
-  - {fileID: 1501142754, guid: bc9d7e6b6e2ca574c871282b12ed6b2f, type: 3}
-  - {fileID: -1715219012, guid: bc9d7e6b6e2ca574c871282b12ed6b2f, type: 3}
-  - {fileID: -1834138796, guid: bc9d7e6b6e2ca574c871282b12ed6b2f, type: 3}
-  - {fileID: -2033940042, guid: bc9d7e6b6e2ca574c871282b12ed6b2f, type: 3}
-  - {fileID: -1109270551, guid: bc9d7e6b6e2ca574c871282b12ed6b2f, type: 3}
-  - {fileID: 1459640454, guid: bc9d7e6b6e2ca574c871282b12ed6b2f, type: 3}
-  furyFPS: 7
-  furyScale: 0.7
+  shieldScaleMult: 1
+  furyPrefab: {fileID: 7478731271839673279, guid: ba5ca8760d2951b47be25fe92deffb84, type: 3}
   furyYOffset: 0.05
-  furyColor: {r: 2.7542999, g: 0, b: 0, a: 0.8}
-  indicatorPrefab: {fileID: 1657940832873615945, guid: 7f33b61444b7a7f438bec4e05f82d2b0, type: 3}
-  indicatorAnimationFrames:
-  - {fileID: -825528139, guid: 1079ae11ca68e45419cb1d55abf792c3, type: 3}
-  - {fileID: 859085242, guid: 1079ae11ca68e45419cb1d55abf792c3, type: 3}
-  - {fileID: 457980886, guid: 1079ae11ca68e45419cb1d55abf792c3, type: 3}
-  - {fileID: -678380369, guid: 1079ae11ca68e45419cb1d55abf792c3, type: 3}
-  - {fileID: 796732470, guid: 1079ae11ca68e45419cb1d55abf792c3, type: 3}
-  - {fileID: 893665730, guid: 1079ae11ca68e45419cb1d55abf792c3, type: 3}
-  - {fileID: 2090207915, guid: 1079ae11ca68e45419cb1d55abf792c3, type: 3}
-  - {fileID: -339185239, guid: 1079ae11ca68e45419cb1d55abf792c3, type: 3}
-  - {fileID: 1248321660, guid: 1079ae11ca68e45419cb1d55abf792c3, type: 3}
-  - {fileID: -1098874446, guid: 1079ae11ca68e45419cb1d55abf792c3, type: 3}
-  - {fileID: 1944013882, guid: 1079ae11ca68e45419cb1d55abf792c3, type: 3}
-  - {fileID: -1538754219, guid: 1079ae11ca68e45419cb1d55abf792c3, type: 3}
-  indicatorFPS: 3
-  indicatorScale: 2
+  furyScaleMult: 1
+  indicatorPrefab: {fileID: 3377181292992421420, guid: 48c5715f9603c3842a353516a8baefbb, type: 3}
   indicatorYOffset: 0.04
-  indicatorColor: {r: 0.96862745, g: 0.85758543, b: 0.05098037, a: 1}
+  indicatorScaleMult: 1
 --- !u!143 &3668528895666511171
 CharacterController:
   m_ObjectHideFlags: 0

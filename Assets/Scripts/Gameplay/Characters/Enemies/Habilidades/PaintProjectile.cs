@@ -14,11 +14,8 @@ namespace Geneforge.Gameplay.Characters.Enemies.Habilidades
         public GameObject puddlePrefab;    
         public GameObject vfxGenericPrefab; 
 
-        [HideInInspector] public Sprite[] puddleFrames;
-        [HideInInspector] public float puddleFPS = 10f;
         [HideInInspector] public float puddleLifetime = 10f;
-        [HideInInspector] public Vector3 puddleScale = Vector3.one;
-        [HideInInspector] public float puddleRotationY = 0f;
+        [HideInInspector] public float puddleScaleMult = 1f;
 
         public float visualYawOffset = 90f; 
 
@@ -118,18 +115,7 @@ namespace Geneforge.Gameplay.Characters.Enemies.Habilidades
                 // 1. IMPACT LAYER
                 if (PoolManager.Instance != null && vfxGenericPrefab != null)
                 {
-                    GameObject vfx = PoolManager.Instance.Spawn(vfxGenericPrefab, spawnPos + Vector3.up * 0.2f, Quaternion.identity);
-                    var bAnim = vfx.GetComponent<SpriteSheetAnimator>();
-                    if (bAnim != null)
-                    {
-                        bAnim.tintColor = myColor * 2.5f;
-                        bAnim.useSpawnScale = true;
-                        bAnim.useFadeOut = true;
-                        bAnim.scaleMultiplier = Vector3.one * 1.6f;
-                        bAnim.loop = false;
-                        // Slowed down splash and forced 1.2s duration
-                        bAnim.Initialize(puddleFrames, puddleFPS * 0.7f, SpriteSheetAnimator.AnimationMode.Billboard, 1.2f);
-                    }
+                    PoolManager.Instance.Spawn(vfxGenericPrefab, spawnPos + Vector3.up * 0.2f, Quaternion.identity);
                 }
 
                 // 2. POÇA (Floor)
@@ -139,7 +125,7 @@ namespace Geneforge.Gameplay.Characters.Enemies.Habilidades
                     var puddleScript = puddle.GetComponent<PaintPuddle>();
                     if (puddleScript != null) 
                     {
-                        puddleScript.Init(myColor, puddleFrames, puddleFPS, puddleScale, puddleRotationY, 0f, 0f, puddleLifetime);
+                        puddleScript.Init(myColor, null, 1f, Vector3.one * puddleScaleMult, 0f, 0f, 0f, puddleLifetime);
                     }
                 }
             }

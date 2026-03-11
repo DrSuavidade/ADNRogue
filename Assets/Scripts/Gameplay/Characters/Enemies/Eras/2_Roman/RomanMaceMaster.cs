@@ -10,14 +10,12 @@ namespace Geneforge.Gameplay.Characters.Enemies.Eras.Roman
         public float slamRadius = 2.4f;
 
         [Header("Slam VFX (Professional)")]
-        [Tooltip("Frames de impacto e poeira (Billboard)")]
-        public Sprite[] slamFrames;      
-        [Tooltip("Frames de cratera/rachadura (Floor)")]
-        public Sprite[] craterFrames;    
-        public float vfxFPS = 8f;
-        public Vector3 slamScale = new Vector3(2.5f, 2.5f, 2.5f);
-        public Vector3 craterScale = new Vector3(3.5f, 3.5f, 3.5f);
-        [ColorUsage(true, true)] public Color impactColor = Color.white;
+        [Tooltip("Prefab de impacto e poeira (ex: Particle System)")]
+        public GameObject slamPrefab;
+        [Tooltip("Prefab de cratera/rachadura")]
+        public GameObject craterPrefab;
+        public float slamScaleMult = 1f;
+        public float craterScaleMult = 1f;
 
         /// <summary>
         /// Evento Profissional de Impacto: Aplica dano e spawna camadas de VFX.
@@ -48,60 +46,16 @@ namespace Geneforge.Gameplay.Characters.Enemies.Eras.Roman
                 spawnPos.y = 0.05f; // Fallback para altura mínima do chão
             }
 
-            // CAMADA 1: CRATERA (Ground Layer)
-            if (craterFrames != null && craterFrames.Length > 0)
+            // CAMADA 1: CRATERA
+            if (craterPrefab != null)
             {
-                SpawnVFXLayer(
-                    "Mace_Crater_Floor", 
-                    spawnPos, 
-                    craterScale, 
-                    craterFrames, 
-                    vfxFPS * 0.7f, 
-                    impactColor, 
-                    1.1f, 
-                    360f, 
-                    0.4f, 
-                    false, 
-                    null, 
-                    Visuals.SpriteSheetAnimator.AnimationMode.Floor,
-                    false, // Loop
-                    false  // useSpawnScale = false (Aparece instantâneo para impacto)
-                );
+                SpawnVFX(craterPrefab, spawnPos, Quaternion.Euler(0, Random.Range(0, 360f), 0), null, craterScaleMult);
             }
 
-            // CAMADA 2: IMPACTO SÍSMICO (Billboard Layer)
-            // Eleva ligeiramente (0.1f) para evitar Z-fighting com o chão
-            if (slamFrames != null && slamFrames.Length > 0)
+            // CAMADA 2: IMPACTO SÍSMICO
+            if (slamPrefab != null)
             {
-                SpawnVFXLayer(
-                    "Mace_Slam_Impact", 
-                    impactPos + Vector3.up * 0.1f, 
-                    slamScale, 
-                    slamFrames, 
-                    vfxFPS, 
-                    impactColor * 2f, // Brilho extra (HDR)
-                    1.4f, 
-                    180f, 
-                    0.7f, 
-                    true // Pulsação para dar "peso"
-                );
-            }
-
-            // CAMADA 3: GLOW RESIDUAL (Flash Rápido)
-            if (slamFrames != null && slamFrames.Length > 0)
-            {
-                SpawnVFXLayer(
-                    "Mace_Slam_Glow", 
-                    impactPos + Vector3.up * 0.2f, 
-                    slamScale * 1.5f, 
-                    new Sprite[] { slamFrames[0] }, 
-                    1f, 
-                    impactColor * 0.5f, 
-                    1.0f, 
-                    0f, 
-                    0.2f, 
-                    true
-                );
+                SpawnVFX(slamPrefab, impactPos + Vector3.up * 0.1f, Quaternion.identity, null, slamScaleMult);
             }
         }
     }

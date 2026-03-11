@@ -25,13 +25,12 @@ namespace Geneforge.Gameplay.Characters.Enemies.Eras.Roman
         [Tooltip("Velocidade do balanço para a Trajetória Ébria")]
         public float wobbleFrequency = 5f;
 
-        [Header("Puddle Animation (Ground)")]
-        [ColorUsage(true, true)] public Color puddleColor = new Color(0.5f, 0f, 0f, 0.8f); // Vinho tinto por padrão
-        public Sprite[] puddleAnimationFrames;
-        public float puddleFPS = 1.2f;
+        [Header("VFX Prefabs")]
+        [ColorUsage(true, true)] public Color puddleColor = new Color(0.5f, 0f, 0f, 0.8f);
+        public GameObject impactPrefab;
+        public float impactScaleMult = 1.0f;
         public float puddleLifetime = 15f;
-        public Vector3 puddleScale = new Vector3(1.2f, 1.2f, 1f);
-        [Range(0, 360)] public float puddleRotationY = 0f;
+        public float puddleScaleMult = 1.0f;
 
         [Header("Poison Settings")]
         public float poisonDps = 2.0f;
@@ -86,7 +85,7 @@ namespace Geneforge.Gameplay.Characters.Enemies.Eras.Roman
             dir.y = 0; 
             dir.Normalize();
             
-            proj.Init(type, impactDamage, splashRadius, hitMask, dir, throwSpeed, arcHeight, startPos, vfxGenericPrefab);
+            proj.Init(type, impactDamage, splashRadius, hitMask, dir, throwSpeed, arcHeight, startPos, impactPrefab);
             
             if (type == RomanWineBottleProjectile.BottleType.Wobbly)
             {
@@ -97,10 +96,7 @@ namespace Geneforge.Gameplay.Characters.Enemies.Eras.Roman
             {
                 proj.puddlePrefab = puddlePrefab;
                 proj.puddleColor = puddleColor;
-                proj.puddleFrames = puddleAnimationFrames;
-                proj.puddleFPS = puddleFPS;
-                proj.puddleScale = puddleScale;
-                proj.puddleRotationY = puddleRotationY;
+                proj.puddleScaleMult = puddleScaleMult;
                 proj.puddleLifetime = puddleLifetime;
                 proj.poisonDps = poisonDps;
                 proj.poisonDuration = poisonDuration;
@@ -117,11 +113,8 @@ namespace Geneforge.Gameplay.Characters.Enemies.Eras.Roman
         public GameObject vfxGenericPrefab;
         
         [HideInInspector] public Color puddleColor;
-        [HideInInspector] public Sprite[] puddleFrames;
-        [HideInInspector] public float puddleFPS = 10f;
         [HideInInspector] public float puddleLifetime = 10f;
-        [HideInInspector] public Vector3 puddleScale = Vector3.one;
-        [HideInInspector] public float puddleRotationY = 0f;
+        [HideInInspector] public float puddleScaleMult = 1f;
         [HideInInspector] public float poisonDps;
         [HideInInspector] public float poisonDuration;
 
@@ -252,38 +245,16 @@ namespace Geneforge.Gameplay.Characters.Enemies.Eras.Roman
                     spawnPos.y = 0.05f; 
                 }
 
-                // 2. IMPACT LAYER (O "Splash" inicial)
-                if (PoolManager.Instance != null && vfxGenericPrefab != null)
+                // 2. IMPACT LAYER
+                if (vfxGenericPrefab != null)
                 {
-                    GameObject vfx = PoolManager.Instance.Spawn(vfxGenericPrefab, spawnPos + Vector3.up * 0.1f, Quaternion.identity);
-                    vfx.name = "Drunk_Wine_ImpactBurst";
-                    var bAnim = vfx.GetComponent<SpriteSheetAnimator>();
-                    if (bAnim == null) bAnim = vfx.AddComponent<SpriteSheetAnimator>();
-                    
-                    bAnim.tintColor = puddleColor * 3f;
-                    bAnim.useSpawnScale = true;
-                    bAnim.useFadeOut = true;
-                    bAnim.scaleMultiplier = Vector3.one * 1.5f;
-                    bAnim.scaleMultiplier = Vector3.one * 1.5f;
-                    bAnim.loop = false; // AUTODESTRUIÇÃO
-                    // Slowed down splash (0.7f multiplier instead of 1.5f) and forced 1.2s duration
-                    bAnim.Initialize(puddleFrames, puddleFPS * 0.7f, SpriteSheetAnimator.AnimationMode.Billboard, 1.2f);
-                }
-                else
-                {
-                    GameObject burst = new GameObject("Drunk_Wine_ImpactBurst");
-                    burst.transform.position = spawnPos + Vector3.up * 0.1f;
-                    var bAnim = burst.AddComponent<SpriteSheetAnimator>();
-                    bAnim.tintColor = puddleColor * 3f;
-                    bAnim.useSpawnScale = true;
-                    bAnim.useFadeOut = true;
-                    bAnim.scaleMultiplier = Vector3.one * 1.5f;
-                    bAnim.loop = false;
-                    // Slowed down splash
-                    bAnim.Initialize(puddleFrames, puddleFPS * 0.7f, SpriteSheetAnimator.AnimationMode.Billboard, 1.2f);
+                    if (PoolManager.Instance != null)
+                        PoolManager.Instance.Spawn(vfxGenericPrefab, spawnPos + Vector3.up * 0.1f, Quaternion.identity);
+                    else
+                        Instantiate(vfxGenericPrefab, spawnPos + Vector3.up * 0.1f, Quaternion.identity);
                 }
 
-                // 3. POÇA NORMAL (Fica deitada no chão)
+                // 3. POÇA NORMAL
                 GameObject p = PoolManager.Instance != null 
                     ? PoolManager.Instance.Spawn(puddlePrefab, spawnPos, Quaternion.Euler(90, 0, 0))
                     : Instantiate(puddlePrefab, spawnPos, Quaternion.Euler(90, 0, 0));
@@ -291,8 +262,8 @@ namespace Geneforge.Gameplay.Characters.Enemies.Eras.Roman
                 var paintPuddle = p.GetComponent<PaintPuddle>();
                 if (paintPuddle != null)
                 {
-                    paintPuddle.Init(puddleColor, puddleFrames, puddleFPS, puddleScale, puddleRotationY, poisonDps, poisonDuration, puddleLifetime);
-                    paintPuddle.slowAmount = 0f; // No Drunk é apenas veneno
+                    paintPuddle.Init(puddleColor, null, 1f, Vector3.one * puddleScaleMult, 0f, poisonDps, poisonDuration, puddleLifetime);
+                    paintPuddle.slowAmount = 0f; 
                 }
             }
 

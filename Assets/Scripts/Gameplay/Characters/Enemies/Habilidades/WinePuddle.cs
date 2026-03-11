@@ -12,7 +12,6 @@ namespace Geneforge.Gameplay.Characters.Enemies.Habilidades
 
         private float _poisonDps;
         private float _poisonDuration;
-        private bool _playerInside = false;
         private PoolIdentifier _poolId;
 
         private void Awake()
@@ -29,11 +28,6 @@ namespace Geneforge.Gameplay.Characters.Enemies.Habilidades
 
             if (frames != null && frames.Length > 0)
             {
-                foreach (var r in GetComponentsInChildren<Renderer>())
-                {
-                    if (r != null && !(r is SpriteRenderer)) r.enabled = false;
-                }
-
                 var animator = GetComponent<Visuals.SpriteSheetAnimator>();
                 if (animator == null) animator = gameObject.AddComponent<Visuals.SpriteSheetAnimator>();
                 

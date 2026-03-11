@@ -24,27 +24,18 @@ namespace Geneforge.Gameplay.Characters.Enemies.Eras.Roman
 
         [Header("Shield Visuals")]
         public GameObject shieldPrefab;
-        public Sprite[] shieldAnimationFrames;
-        public float shieldFPS = 8f;
-        public float shieldScale = 1.5f;
         public float shieldYOffset = 1.0f;
-        [ColorUsage(true, true)] public Color shieldColor = Color.white; // Cor do escudo (HDR)
+        public float shieldScaleMult = 1.0f;
 
         [Header("Fury Visuals")]
-        public GameObject furyPrefab; // Podes usar o mesmo prefab da esfera ou outro
-        public Sprite[] furyAnimationFrames; // Os teus 10 frames para o chão
-        public float furyFPS = 8f;
-        public float furyScale = 2.0f;
-        public float furyYOffset = 0.05f; // Quase rente ao chão
-        [ColorUsage(true, true)] public Color furyColor = new Color(2.0f, 0.2f, 0.2f, 0.8f); // Vermelho Fúria (HDR) por padrão
+        public GameObject furyPrefab;
+        public float furyYOffset = 0.05f;
+        public float furyScaleMult = 1.0f;
 
         [Header("Attack Indicator Visuals")]
-        public GameObject indicatorPrefab; 
-        public Sprite[] indicatorAnimationFrames;
-        public float indicatorFPS = 8f;
-        public float indicatorScale = 2.0f;
+        public GameObject indicatorPrefab;
         public float indicatorYOffset = 0.02f;
-        [ColorUsage(true, true)] public Color indicatorColor = new Color(1.5f, 0.2f, 2.0f, 0.8f); // Roxo Místico (HDR) por padrão
+        public float indicatorScaleMult = 1.0f;
 
         private void OnDrawGizmosSelected()
         {
@@ -58,15 +49,10 @@ namespace Geneforge.Gameplay.Characters.Enemies.Eras.Roman
         /// </summary>
         public void AnimEvent_StartAttackIndicator()
         {
-            if (indicatorAnimationFrames == null || indicatorAnimationFrames.Length == 0) return;
+            if (indicatorPrefab == null) return;
 
-            // Aumentamos ligeiramente o offset (0.1f) para evitar clipping com o chão 
-            Vector3 spawnPos = transform.position + Vector3.up * 0.1f; 
-            
-            // USAR AnimationMode.Floor para ficar deitado no chão
-            SpawnVFXLayer("Priest_Indicator_Main", spawnPos, Vector3.one * indicatorScale, indicatorAnimationFrames, indicatorFPS, indicatorColor, 1.05f, 0f, 0.7f, true, transform, SpriteSheetAnimator.AnimationMode.Floor);
-            
-            SpawnVFXLayer("Priest_Indicator_Flash", spawnPos, Vector3.one * indicatorScale * 1.2f, new Sprite[] { indicatorAnimationFrames[0] }, 1f, indicatorColor * 2f, 1.0f, 0f, 0.1f, false, null, SpriteSheetAnimator.AnimationMode.Floor);
+            Vector3 spawnPos = transform.position + Vector3.up * indicatorYOffset; 
+            SpawnVFX(indicatorPrefab, spawnPos, Quaternion.identity, transform, indicatorScaleMult);
         }
 
         public void AnimEvent_PriestLogic()
@@ -136,42 +122,28 @@ namespace Geneforge.Gameplay.Characters.Enemies.Eras.Roman
 
             ally.IsInvulnerable = true;
 
-            // 1. CAMADA CORE (A bolha principal em LOOP)
-            // Passamos 'true' no último parâmetro para ativar o loop
-            GameObject core = SpawnVFXLayer(coreName, ally.transform.position + Vector3.up * shieldYOffset, Vector3.one * shieldScale, shieldAnimationFrames, shieldFPS, shieldColor, 1.05f, 0f, 0.8f, true, ally.transform, SpriteSheetAnimator.AnimationMode.Billboard, true);
+            // 1. CAMADA CORE (A bolha principal em LOOP - assume que o prefab já tem o loop)
+            GameObject vfx = SpawnVFX(shieldPrefab, ally.transform.position + Vector3.up * shieldYOffset, Quaternion.identity, ally.transform, shieldScaleMult);
             
-            // GARANTIA: Se o objeto não foi criado (ex: limite de pool), sai para não travar invulnerabilidade
-            if (core == null) 
+            if (vfx == null) 
             {
                 ally.IsInvulnerable = false;
                 yield break;
             }
             
-            // 2. CAMADA "RIPPLE" (Ondas de energia que expandem em intervalos)
-            float elapsed = 0f;
-            while (elapsed < shieldDuration)
-            {
-                if (ally == null || ally.IsDead) break;
-                
-                // Spawn ripple periódico (não é loop, morre sozinho)
-                SpawnVFXLayer("PriestShield_Ripple", ally.transform.position + Vector3.up * shieldYOffset, Vector3.one * shieldScale * 0.8f, shieldAnimationFrames, shieldFPS * 1.5f, shieldColor * 1.5f, 1.8f, 180f, 0.4f, false, ally.transform);
-                
-                yield return Geneforge.Core.Utils.WaitCache.Get(1.0f);
-                elapsed += 1.0f;
-            }
+            yield return Geneforge.Core.Utils.WaitCache.Get(shieldDuration);
 
             if (ally != null)
             {
                 ally.IsInvulnerable = false;
             }
 
-            // Limpeza manual do CORE que estava em loop
-            if (core != null)
+            if (vfx != null)
             {
-                if (PoolManager.Instance != null && core.GetComponent<PoolIdentifier>() != null)
-                    PoolManager.Instance.Reclaim(core);
+                if (PoolManager.Instance != null && vfx.GetComponent<PoolIdentifier>() != null)
+                    PoolManager.Instance.Reclaim(vfx);
                 else
-                    Destroy(core);
+                    Destroy(vfx);
             }
         }
 
@@ -190,14 +162,10 @@ namespace Geneforge.Gameplay.Characters.Enemies.Eras.Roman
             float oldSpeed = 1f; // Assumindo 1f como base saudável, ou capturar o atual se for garantido único
             ally.Animator.speed = oldSpeed * attackSpeedMultiplier;
 
-            // Offset ligeiramente maior e AnimationMode.Floor
-            Vector3 groundPos = ally.transform.position + Vector3.up * 0.1f;
+            // USAR MODO FLOOR E BILLBOARD BASEADO NO PREFAB AGORA
+            Vector3 groundPos = ally.transform.position + Vector3.up * furyYOffset;
 
-            // 1. CAMADA CHÃO (Glow por baixo) - Modo Floor
-            SpawnVFXLayer("PriestFuryFX_Main", groundPos, Vector3.one * furyScale, furyAnimationFrames, furyFPS, furyColor, 1.0f, 0f, 0.7f, true, ally.transform, SpriteSheetAnimator.AnimationMode.Floor);
-
-            // 2. CAMADA BURST (Esfera expandindo no centro do corpo) - Modo Billboard (3D)
-            SpawnVFXLayer("PriestFury_Burst", ally.transform.position + Vector3.up * 0.8f, Vector3.one * furyScale * 0.5f, furyAnimationFrames, furyFPS * 0.8f, furyColor * 2f, 2.5f, 0f, 0.3f, false, ally.transform, SpriteSheetAnimator.AnimationMode.Billboard);
+            SpawnVFX(furyPrefab, groundPos, Quaternion.identity, ally.transform, furyScaleMult);
 
             yield return Geneforge.Core.Utils.WaitCache.Get(furyDuration);
             

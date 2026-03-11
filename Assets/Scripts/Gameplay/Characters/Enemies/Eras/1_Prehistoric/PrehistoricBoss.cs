@@ -3,6 +3,7 @@ using UnityEngine.UI;
 using Geneforge.Gameplay.Characters.Enemies;
 using Geneforge.Gameplay.Characters.Enemies.Config;
 using Geneforge.Gameplay.Characters.Enemies.AI;
+using Geneforge.Gameplay.Characters.Enemies.Abilities;
 
 namespace Geneforge.Gameplay.Characters.Enemies.Eras.Prehistoric
 {
@@ -13,6 +14,10 @@ namespace Geneforge.Gameplay.Characters.Enemies.Eras.Prehistoric
         [Header("Visual Effects")]
         [SerializeField] private GameObject meleeAoEPrefab;
         [SerializeField] private GameObject meleeSlashPrefab;
+        [SerializeField] private GameObject melee2VFXPrefab;
+        [SerializeField] private GameObject range1ProjectilePrefab;
+        [SerializeField] private GameObject range2ProjectilePrefab;
+        [SerializeField] private GameObject teleportVFXPrefab;
         [SerializeField] private Image flashImage;
         [SerializeField] private float flashInDuration = 0.2f;
         [SerializeField] private float flashOutDuration = 1.0f;
@@ -20,6 +25,7 @@ namespace Geneforge.Gameplay.Characters.Enemies.Eras.Prehistoric
         private EnemyConfigurator _config;
         private BossBrain _brain;
         private Coroutine _flashCoroutine;
+        private Geneforge.Gameplay.Characters.Enemies.Abilities.BossOrbiter _orbiter;
 
         protected override void Awake()
         {
@@ -28,6 +34,7 @@ namespace Geneforge.Gameplay.Characters.Enemies.Eras.Prehistoric
                 _config = GetComponent<EnemyConfigurator>();
             
             _brain = GetComponent<BossBrain>();
+            _orbiter = GetComponent<Geneforge.Gameplay.Characters.Enemies.Abilities.BossOrbiter>();
             
             if (flashImage != null)
             {
@@ -111,11 +118,65 @@ namespace Geneforge.Gameplay.Characters.Enemies.Eras.Prehistoric
             float damage = _brain != null && _brain.CurrentPhase >= 2 ? bossConfig.melee2Damage * 1.3f : bossConfig.melee2Damage;
 
             DealDamageToPlayer(damage, radius);
-            SpawnMeleeVisual(radius, false, strikeIndex);
+
+            // Spawn visual
+            GameObject prefab = melee2VFXPrefab != null ? melee2VFXPrefab : meleeAoEPrefab;
+            if (prefab != null)
+            {
+                // Position at feet
+                Vector3 spawnPos = transform.position + Vector3.up * 0.05f;
+
+                // Find player if reference is lost
+                if (target == null)
+                {
+                    var player = Object.FindAnyObjectByType<Geneforge.Gameplay.Characters.Player.PlayerHealth>();
+                    if (player != null) target = player.transform;
+                }
+
+                // Direction towards the player
+                Vector3 direction = transform.forward;
+                if (target != null)
+                {
+                    direction = (target.position - transform.position);
+                    direction.y = 0;
+                    if (direction.sqrMagnitude > 0.001f) direction.Normalize();
+                    else direction = transform.forward;
+                }
+                else
+                {
+                    Debug.LogWarning("Boss Melee2: Target (Player) not found! Using Boss forward.");
+                }
+
+                // Instantiate with the PREFAB's default rotation first.
+                var obj = Instantiate(prefab, spawnPos, prefab.transform.rotation);
+                
+                var mover = obj.GetComponent<Geneforge.Gameplay.Characters.Enemies.Abilities.BossMovingEffect>();
+                if (mover == null) mover = obj.AddComponent<Geneforge.Gameplay.Characters.Enemies.Abilities.BossMovingEffect>();
+                
+                mover.flatOnGround = false;
+                
+                // Se o teu prefab precisa de estar rodado (ex: -180 ou 90) para estar "de frente", 
+                // passamos essa rotação original como offset para o mover.
+                mover.rotationOffset = prefab.transform.rotation.eulerAngles;
+                
+                // Prevent the Boss from being pushed/dragged by the VFX physics
+                var bossColliders = GetComponentsInChildren<Collider>();
+                var vfxColliders = obj.GetComponentsInChildren<Collider>();
+                foreach (var bc in bossColliders)
+                {
+                    foreach (var vc in vfxColliders)
+                    {
+                        vc.isTrigger = true; // Prevents player from climbing/walking on crystals
+                        Physics.IgnoreCollision(bc, vc);
+                    }
+                }
+                
+                mover.Init(direction, 12f, 0.7f);
+            }
         }
 
         // ==========================================
-        // RANGE 1 (E.g. sequential fireballs)
+        // RANGE 1 (Sequential Orbs)
         // ==========================================
 
         public void AnimEvent_Range1_1() { ExecuteRange1(); }
@@ -124,59 +185,55 @@ namespace Geneforge.Gameplay.Characters.Enemies.Eras.Prehistoric
 
         private void ExecuteRange1()
         {
-            if (_config == null || _config.Archetype == null || !target) return;
+            if (_config == null || _config.Archetype == null || !target || _orbiter == null) return;
             var bossConfig = _config.Archetype.boss;
-            var projConfig = _config.Archetype.projectile;
             
-            if (projConfig.projectilePrefab == null) return;
-
-            Transform spawnPoint = transform.Find("ProjectileSpawnPoint");
-            if (spawnPoint == null) spawnPoint = transform;
-
             float damage = _brain != null && _brain.CurrentPhase >= 2 ? bossConfig.range1Damage * 1.3f : bossConfig.range1Damage;
 
-            if (_brain != null && _brain.CurrentPhase >= 2)
-            {
-                // Shoot 3 projectiles per burst
-                SpawnBossBullet(spawnPoint, projConfig.projectilePrefab, projConfig.speed, damage, projConfig.hitMask, -10f);
-                SpawnBossBullet(spawnPoint, projConfig.projectilePrefab, projConfig.speed, damage, projConfig.hitMask, 0f);
-                SpawnBossBullet(spawnPoint, projConfig.projectilePrefab, projConfig.speed, damage, projConfig.hitMask, 10f);
-            }
-            else
-            {
-                SpawnBossBullet(spawnPoint, projConfig.projectilePrefab, projConfig.speed, damage, projConfig.hitMask, 0f);
-            }
+            // Launches 1 orb from the spiral. If in Phase 2, we could launch more, but let's keep it clean
+            // since the AnimEvents handle the sequence.
+            _orbiter.LaunchOrb(target, damage);
         }
 
         // ==========================================
-        // RANGE 2 (E.g. big AOE or Fan shot)
+        // RANGE 2 (Fan/Rapid Orbs)
         // ==========================================
 
         public void AnimEvent_Range2_1() { ExecuteRange2(); }
 
         private void ExecuteRange2()
         {
-            if (_config == null || _config.Archetype == null || !target) return;
+            if (_config == null || _config.Archetype == null || !target || _orbiter == null) return;
             var bossConfig = _config.Archetype.boss;
-            var projConfig = _config.Archetype.projectile;
             
-            if (projConfig.projectilePrefab == null) return;
-
             // Trigger Flash
             if (_flashCoroutine != null) StopCoroutine(_flashCoroutine);
             _flashCoroutine = StartCoroutine(FlashRoutine());
 
-            Transform spawnPoint = transform.Find("ProjectileSpawnPoint");
-            if (spawnPoint == null) spawnPoint = transform;
-
             float damage = _brain != null && _brain.CurrentPhase >= 2 ? bossConfig.range2Damage * 1.3f : bossConfig.range2Damage;
             bool isHoming = _brain != null && _brain.CurrentPhase >= 2;
 
-            // Spawn 3 shots in a fan
-            SpawnBossBullet(spawnPoint, projConfig.projectilePrefab, projConfig.speed, damage, projConfig.hitMask, -15f, isHoming);
-            SpawnBossBullet(spawnPoint, projConfig.projectilePrefab, projConfig.speed, damage, projConfig.hitMask, 0f, isHoming);
-            SpawnBossBullet(spawnPoint, projConfig.projectilePrefab, projConfig.speed, damage, projConfig.hitMask, 15f, isHoming);
+            // Phase 2: Rapid burst of 3 orbs from the spiral
+            if (_brain != null && _brain.CurrentPhase >= 2)
+            {
+                StartCoroutine(BurstLaunchOrbs(3, damage, isHoming));
+            }
+            else
+            {
+                _orbiter.LaunchOrb(target, damage, null, isHoming);
+            }
         }
+
+        private System.Collections.IEnumerator BurstLaunchOrbs(int count, float damage, bool homing)
+        {
+            for (int i = 0; i < count; i++)
+            {
+                if (target == null) break;
+                _orbiter.LaunchOrb(target, damage, null, homing);
+                yield return new WaitForSeconds(0.15f);
+            }
+        }
+
 
         // ==========================================
         // UTILITY MOVES
@@ -186,12 +243,18 @@ namespace Geneforge.Gameplay.Characters.Enemies.Eras.Prehistoric
         {
             if (!target) return;
 
+            // Spawn VFX at old position
+            if (teleportVFXPrefab != null) Instantiate(teleportVFXPrefab, transform.position, transform.rotation);
+
             // Finds a spot randomly nearby
             Vector2 randomCircle = Random.insideUnitCircle * 5f;
             Vector3 teleportSpot = target.position + new Vector3(randomCircle.x, 0, randomCircle.y);
             
             // Actually teleport
             transform.position = teleportSpot;
+
+            // Spawn VFX at new position
+            if (teleportVFXPrefab != null) Instantiate(teleportVFXPrefab, transform.position, transform.rotation);
             
             // Face the player immediately
             Vector3 lookData = target.position - transform.position;

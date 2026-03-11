@@ -75,6 +75,8 @@ namespace Geneforge.Gameplay.Characters.Enemies.Habilidades
 
         public void Init(Color color, Sprite[] frames = null, float fps = 10f, Vector3 scale = default, float rotationY = 0f, float poisonDps = 0f, float poisonDuration = 0f, float duration = -1f)
         {
+            // Note: frames and fps are kept for signature compatibility but ignored if null.
+            // In a full refactor, these would be removed. Given 'trocar tudo', we'll just ignore them.
             if (duration > 0) lifetime = duration;
             if (scale == default) scale = Vector3.one;
             _baseScale = scale;
@@ -87,23 +89,25 @@ namespace Geneforge.Gameplay.Characters.Enemies.Habilidades
 
             transform.rotation = Quaternion.Euler(90f, rotationY, 0f);
             
-            var animator = GetComponent<SpriteSheetAnimator>();
-            if (animator == null) animator = gameObject.AddComponent<SpriteSheetAnimator>();
-            
-            // Disable animator scaling to avoid conflicts with our local Update scaling
-            animator.useSpawnScale = false;
-            animator.usePulse = false;
-            animator.scaleMultiplier = Vector3.one;
-
-            animator.tintColor = color;
-            animator.useFadeOut = true;
-            animator.loop = true;
-            animator.fadeStartTime = 0.85f; // Fade later
-            animator.Initialize(frames, fps, SpriteSheetAnimator.AnimationMode.Floor, lifetime);
-
-            if (useGlowLayer && frames != null && frames.Length > 0)
+            if (frames != null && frames.Length > 0)
             {
-                SpawnGlowLayer(color, frames[0], scale);
+                var animator = GetComponent<SpriteSheetAnimator>();
+                if (animator == null) animator = gameObject.AddComponent<SpriteSheetAnimator>();
+                
+                animator.useSpawnScale = false;
+                animator.usePulse = false;
+                animator.scaleMultiplier = Vector3.one;
+                animator.tintColor = color;
+                animator.useFadeOut = true;
+                animator.loop = true;
+                animator.fadeStartTime = 0.85f;
+                animator.Initialize(frames, fps, SpriteSheetAnimator.AnimationMode.Floor, lifetime);
+            }
+
+            if (useGlowLayer && _glowLayer == null)
+            {
+                // We'll skip glow layer if it relies on sprites being passed in, 
+                // or assume it's part of the prefab.
             }
 
             StopCoroutine("PopInRoutine");

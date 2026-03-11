@@ -33,16 +33,12 @@ namespace Geneforge.Gameplay.Characters.Enemies.Eras.Roman
         public LayerMask hitMask = ~0;
 
         [Header("VFX - Launch (Shockwave)")]
-        public Sprite[] launchVFXFrames;
-        public float launchVFXFPS = 5f;
-        public float launchVFXScale = 2.0f;
-        [ColorUsage(true, true)] public Color launchVFXColor = Color.white;
+        public GameObject launchVFXPrefab;
+        public float launchVFXScale = 1.0f;
 
         [Header("VFX - Arrow Trail")]
-        public Sprite[] arrowTrailFrames;
-        public float arrowTrailFPS = 4f;
-        public float arrowTrailScale = 0.8f;
-        [ColorUsage(true, true)] public Color arrowTrailColor = new Color(1f, 1f, 1f, 0.4f);
+        public GameObject arrowTrailPrefab;
+        public float arrowTrailScale = 1.0f;
         [Tooltip("Segundos entre cada spawn de rastro enquanto a flecha voa.")]
         public float trailInterval = 0.08f;
 
@@ -80,12 +76,10 @@ namespace Geneforge.Gameplay.Characters.Enemies.Eras.Roman
 
         private void SpawnLaunchVFX()
         {
-            if (launchVFXFrames == null || launchVFXFrames.Length == 0) return;
+            if (launchVFXPrefab == null) return;
 
             Vector3 spawnPos = transform.position + Vector3.up * 0.05f;
-
-            SpawnVFXLayer("Archer_Launch_Shockwave", spawnPos, Vector3.one * launchVFXScale, launchVFXFrames, launchVFXFPS, launchVFXColor, 1.2f, 0f, 0.7f, true, null, Visuals.SpriteSheetAnimator.AnimationMode.Floor);
-            SpawnVFXLayer("Archer_Launch_Flash", spawnPos + Vector3.up * 0.02f, Vector3.one * launchVFXScale * 0.5f, new Sprite[] { launchVFXFrames[0] }, 10f, launchVFXColor * 2.5f, 1.5f, 180f, 0.2f, false, null, Visuals.SpriteSheetAnimator.AnimationMode.Floor);
+            SpawnVFX(launchVFXPrefab, spawnPos, Quaternion.identity, null, launchVFXScale);
         }
 
         private void PrepareShoot()
@@ -127,7 +121,7 @@ namespace Geneforge.Gameplay.Characters.Enemies.Eras.Roman
             var proj = obj.GetComponent<RomanArrowProjectile>();
             if (proj == null) proj = obj.AddComponent<RomanArrowProjectile>();
             
-            proj.Init(damage, hitMask, finalAngleY, baseAngleY + lateralAngleOffset, this, arrowTrailFrames, arrowTrailFPS, arrowTrailScale, arrowTrailColor, trailInterval);
+            proj.Init(damage, hitMask, finalAngleY, baseAngleY + lateralAngleOffset, this, arrowTrailPrefab, arrowTrailScale, trailInterval);
             
             Rigidbody rb = proj.CachedRigidbody;
             if (rb == null) rb = obj.GetComponent<Rigidbody>();
@@ -164,10 +158,8 @@ namespace Geneforge.Gameplay.Characters.Enemies.Eras.Roman
         private PoolIdentifier _poolId;
 
         private RomanEnemyAbilityBase _source; 
-        private Sprite[] _trailFrames;
-        private float _trailFPS;
+        private GameObject _trailPrefab;
         private float _trailScale;
-        private Color _trailColor;
         private float _trailInterval;
         private float _trailTimer;
 
@@ -182,7 +174,7 @@ namespace Geneforge.Gameplay.Characters.Enemies.Eras.Roman
             if (_poolId == null) _poolId = GetComponent<PoolIdentifier>();
         }
 
-        public void Init(float dmg, LayerMask mask, float yaw, float flightYaw, RomanEnemyAbilityBase source, Sprite[] trailFrames, float trailFPS, float trailScale, Color trailColor, float trailInterval)
+        public void Init(float dmg, LayerMask mask, float yaw, float flightYaw, RomanEnemyAbilityBase source, GameObject trailPrefab, float trailScale, float trailInterval)
         {
             EnsureComponents();
             damage = dmg;
@@ -191,10 +183,8 @@ namespace Geneforge.Gameplay.Characters.Enemies.Eras.Roman
             _flightYaw = flightYaw;
             
             _source = source;
-            _trailFrames = trailFrames;
-            _trailFPS = trailFPS;
+            _trailPrefab = trailPrefab;
             _trailScale = trailScale;
-            _trailColor = trailColor;
             _trailInterval = trailInterval;
 
             _isInitialized = true;
@@ -219,42 +209,27 @@ namespace Geneforge.Gameplay.Characters.Enemies.Eras.Roman
 
         void Update()
         {
-            if (!_isInitialized) return;
+            if (_trailPrefab == null || _trailInterval <= 0) return;
 
-            if (_trailFrames != null && _trailFrames.Length > 0 && _trailInterval > 0)
+            _trailTimer += Time.deltaTime;
+            if (_trailTimer >= _trailInterval)
             {
-                _trailTimer += Time.deltaTime;
-                if (_trailTimer >= _trailInterval)
-                {
-                    _trailTimer = 0f;
-                    SpawnTrailSegment();
-                }
+                _trailTimer = 0f;
+                SpawnTrailSegment();
             }
         }
 
         private void SpawnTrailSegment()
         {
-            if (_source == null) return;
+            if (_source == null || _trailPrefab == null) return;
 
-            GameObject trail = _source.SpawnVFXLayer_Public(
-                "Arrow_Trail_Segment", 
+            GameObject trail = _source.SpawnVFX_Public(
+                _trailPrefab, 
                 transform.position, 
-                Vector3.one * _trailScale, 
-                _trailFrames, 
-                _trailFPS, 
-                _trailColor, 
-                1.0f, 
-                0f, 
-                0.3f, 
-                false, 
+                Quaternion.Euler(0, _flightYaw + 90f, 0), 
                 null, 
-                Visuals.SpriteSheetAnimator.AnimationMode.Billboard 
+                _trailScale
             );
-
-            if (trail != null)
-            {
-                trail.transform.rotation = Quaternion.Euler(0, _flightYaw + 90f, 0);
-            }
         }
 
         void FixedUpdate()

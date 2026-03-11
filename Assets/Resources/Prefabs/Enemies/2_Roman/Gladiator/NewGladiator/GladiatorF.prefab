@@ -130,6 +130,7 @@ MonoBehaviour:
   damagedTrigger: Damaged
   deathTrigger: Death
   deathAnimDuration: 1
+  deathDespawnTime: 5
   damageTextPrefab: {fileID: 8104875995613135839, guid: 51bfa69456bef62438805f10c2608f9f, type: 3}
   damageTextOffset: {x: 0, y: 2.5, z: 0}
   maxPoise: 20
@@ -187,24 +188,9 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   vfxGenericPrefab: {fileID: 1657940832873615945, guid: 7f33b61444b7a7f438bec4e05f82d2b0, type: 3}
   enrageDetectionRange: 12
-  enrageAnimationFrames:
-  - {fileID: -1239957171, guid: a8213c4f6cd28d74b896adde3727886f, type: 3}
-  - {fileID: -1330810826, guid: a8213c4f6cd28d74b896adde3727886f, type: 3}
-  - {fileID: 332075399, guid: a8213c4f6cd28d74b896adde3727886f, type: 3}
-  - {fileID: -181798850, guid: a8213c4f6cd28d74b896adde3727886f, type: 3}
-  - {fileID: 1410452964, guid: a8213c4f6cd28d74b896adde3727886f, type: 3}
-  - {fileID: -456759818, guid: a8213c4f6cd28d74b896adde3727886f, type: 3}
-  - {fileID: 1256188871, guid: a8213c4f6cd28d74b896adde3727886f, type: 3}
-  - {fileID: 55565905, guid: a8213c4f6cd28d74b896adde3727886f, type: 3}
-  - {fileID: -1791632206, guid: a8213c4f6cd28d74b896adde3727886f, type: 3}
-  - {fileID: 1030268088, guid: a8213c4f6cd28d74b896adde3727886f, type: 3}
-  - {fileID: -1318971553, guid: a8213c4f6cd28d74b896adde3727886f, type: 3}
-  - {fileID: -198976787, guid: a8213c4f6cd28d74b896adde3727886f, type: 3}
-  - {fileID: 1557035928, guid: a8213c4f6cd28d74b896adde3727886f, type: 3}
-  enrageFPS: 12
-  enrageScale: {x: 0.6, y: 1, z: 0.6}
+  enragePrefab: {fileID: 3461502860297497161, guid: f06a087fad5bf9c499511b6daa8383df, type: 3}
+  enrageScaleMult: 1
   enrageYOffset: 0.5
-  enrageColor: {r: 2, g: 0.5, b: 0, a: 1}
   slashDamage: 16
   slashRange: 2.6
   slashAngle: 80
@@ -280,6 +266,34 @@ PrefabInstance:
     serializedVersion: 3
     m_TransformParent: {fileID: 2682246499139310496}
     m_Modifications:
+    - target: {fileID: 101900826140453957, guid: 4ab5710aa8722524281711e8f079b3a4, type: 3}
+      propertyPath: m_LocalScale.x
+      value: 0.1
+      objectReference: {fileID: 0}
+    - target: {fileID: 101900826140453957, guid: 4ab5710aa8722524281711e8f079b3a4, type: 3}
+      propertyPath: m_LocalScale.y
+      value: 0.1
+      objectReference: {fileID: 0}
+    - target: {fileID: 101900826140453957, guid: 4ab5710aa8722524281711e8f079b3a4, type: 3}
+      propertyPath: m_LocalScale.z
+      value: 0.1
+      objectReference: {fileID: 0}
+    - target: {fileID: 101900826140453957, guid: 4ab5710aa8722524281711e8f079b3a4, type: 3}
+      propertyPath: m_LocalRotation.w
+      value: 1
+      objectReference: {fileID: 0}
+    - target: {fileID: 101900826140453957, guid: 4ab5710aa8722524281711e8f079b3a4, type: 3}
+      propertyPath: m_LocalRotation.z
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 101900826140453957, guid: 4ab5710aa8722524281711e8f079b3a4, type: 3}
+      propertyPath: m_LocalEulerAnglesHint.z
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 101900826140453957, guid: 4ab5710aa8722524281711e8f079b3a4, type: 3}
+      propertyPath: m_ConstrainProportionsScale
+      value: 0
+      objectReference: {fileID: 0}
     - target: {fileID: 1341112178316809705, guid: 4ab5710aa8722524281711e8f079b3a4, type: 3}
       propertyPath: m_IsKinematic
       value: 1
@@ -343,6 +357,10 @@ PrefabInstance:
     - target: {fileID: 4373314185983925983, guid: 4ab5710aa8722524281711e8f079b3a4, type: 3}
       propertyPath: m_ConstrainProportionsScale
       value: 1
+      objectReference: {fileID: 0}
+    - target: {fileID: 6849573245138896903, guid: 4ab5710aa8722524281711e8f079b3a4, type: 3}
+      propertyPath: m_ProvidesContacts
+      value: 0
       objectReference: {fileID: 0}
     m_RemovedComponents: []
     m_RemovedGameObjects: []

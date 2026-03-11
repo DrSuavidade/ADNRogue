@@ -9,7 +9,6 @@ namespace Geneforge.Gameplay.Environment
 
         [Header("Settings")]
         [SerializeField] private Transform playerTransform;
-        [SerializeField] private float globalFogDensity = 1f;
 
         private List<FogLightSource> lightSources = new List<FogLightSource>();
         

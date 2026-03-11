@@ -308,6 +308,7 @@ MonoBehaviour:
   damagedTrigger: Damaged
   deathTrigger: Death
   deathAnimDuration: 1
+  deathDespawnTime: 5
   damageTextPrefab: {fileID: 8104875995613135839, guid: 51bfa69456bef62438805f10c2608f9f, type: 3}
   damageTextOffset: {x: 0, y: 2.5, z: 0}
   maxPoise: 20
@@ -374,35 +375,10 @@ MonoBehaviour:
   hitMask:
     serializedVersion: 2
     m_Bits: 8
-  launchVFXFrames:
-  - {fileID: -911033396, guid: 3178df2b864fea243932d042d17ce347, type: 3}
-  - {fileID: -1526311169, guid: 3178df2b864fea243932d042d17ce347, type: 3}
-  - {fileID: 1397611758, guid: 3178df2b864fea243932d042d17ce347, type: 3}
-  - {fileID: -1582653648, guid: 3178df2b864fea243932d042d17ce347, type: 3}
-  - {fileID: 1201224148, guid: 3178df2b864fea243932d042d17ce347, type: 3}
-  - {fileID: 496923678, guid: 3178df2b864fea243932d042d17ce347, type: 3}
-  - {fileID: -1182533258, guid: 3178df2b864fea243932d042d17ce347, type: 3}
-  - {fileID: 951025903, guid: 3178df2b864fea243932d042d17ce347, type: 3}
-  - {fileID: -1510227561, guid: 3178df2b864fea243932d042d17ce347, type: 3}
-  - {fileID: 1068162542, guid: 3178df2b864fea243932d042d17ce347, type: 3}
-  - {fileID: 1459982800, guid: 3178df2b864fea243932d042d17ce347, type: 3}
-  launchVFXFPS: 11
+  launchVFXPrefab: {fileID: 0}
   launchVFXScale: 0.6
-  launchVFXColor: {r: 0.93333334, g: 0.8509804, b: 0.7176471, a: 1}
-  arrowTrailFrames:
-  - {fileID: -1147571340, guid: f9fa2346e65aab84e88cebca3f9b6f85, type: 3}
-  - {fileID: -1867088773, guid: f9fa2346e65aab84e88cebca3f9b6f85, type: 3}
-  - {fileID: 1044382329, guid: f9fa2346e65aab84e88cebca3f9b6f85, type: 3}
-  - {fileID: 1858588444, guid: f9fa2346e65aab84e88cebca3f9b6f85, type: 3}
-  - {fileID: -1421017529, guid: f9fa2346e65aab84e88cebca3f9b6f85, type: 3}
-  - {fileID: -632499951, guid: f9fa2346e65aab84e88cebca3f9b6f85, type: 3}
-  - {fileID: -1359307308, guid: f9fa2346e65aab84e88cebca3f9b6f85, type: 3}
-  - {fileID: 279575125, guid: f9fa2346e65aab84e88cebca3f9b6f85, type: 3}
-  - {fileID: -965091620, guid: f9fa2346e65aab84e88cebca3f9b6f85, type: 3}
-  - {fileID: 622539148, guid: f9fa2346e65aab84e88cebca3f9b6f85, type: 3}
-  arrowTrailFPS: 10
+  arrowTrailPrefab: {fileID: 5913968536035121396, guid: 6a9b20446f3ae14499fd35a56b5b32cd, type: 3}
   arrowTrailScale: 0.1
-  arrowTrailColor: {r: 0.06303301, g: 0.13996084, b: 0.85660374, a: 0.9490196}
   trailInterval: 0.05
 --- !u!114 &4954093475629576477
 MonoBehaviour:

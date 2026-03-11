@@ -14,7 +14,7 @@ namespace Geneforge.Gameplay.Visuals
         
         [Header("Settings")]
         public AnimationMode mode = AnimationMode.Billboard;
-        public bool loop = true;
+        public bool loop = false;
         
         [Header("Juice (Professional Polish)")]
         public bool useSpawnScale = true;
@@ -25,9 +25,11 @@ namespace Geneforge.Gameplay.Visuals
         public float randomRotationRange = 0f;
         [ColorUsage(true, true)] public Color tintColor = Color.white;
         
+        [Header("Frames Data")]
+        [SerializeField] private Sprite[] _frames;
+        [SerializeField] private float _fps = 10f;
+        
         private SpriteRenderer _sr;
-        private Sprite[] _frames;
-        private float _fps;
         private float _timer;
         private int _currentIndex;
         private Vector3 _baseScale;
@@ -70,15 +72,38 @@ namespace Geneforge.Gameplay.Visuals
             if (_mainCam == null) _mainCam = Camera.main;
         }
 
+        private void OnEnable()
+        {
+            // Se já tivermos frames setados (via Inspector ou Initialize anterior), resetamos o estado
+            if (_frames != null && _frames.Length > 0)
+            {
+                ResetAnimationState();
+                SetupReclaimLogic();
+            }
+        }
+
         private float _overriddenDuration = -1f;
 
         public void Initialize(Sprite[] frames, float fps, AnimationMode animationMode, float customDuration = -1f)
         {
             // Reset state for pooling
-            _frames = frames;
-            _fps = fps;
+            if (frames != null) _frames = frames;
+            if (fps > 0) _fps = fps;
+            
             mode = animationMode;
             _overriddenDuration = customDuration;
+            
+            ResetAnimationState();
+            SetupReclaimLogic();
+
+            if (randomRotationRange > 0)
+            {
+                transform.rotation *= Quaternion.Euler(0, 0, Random.Range(-randomRotationRange, randomRotationRange));
+            }
+        }
+
+        private void ResetAnimationState()
+        {
             _timer = 0f;
             _currentIndex = 0;
             _normalizedLife = 0f;
@@ -90,20 +115,22 @@ namespace Geneforge.Gameplay.Visuals
                 _sr.sprite = _frames[0];
                 ApplyJuiceTint(tintColor);
             }
+        }
 
-            if (randomRotationRange > 0)
-            {
-                transform.rotation *= Quaternion.Euler(0, 0, Random.Range(-randomRotationRange, randomRotationRange));
-            }
-
-            // AUTO-RECLAIM LOGIC
+        private void SetupReclaimLogic()
+        {
             if (!loop)
             {
-                float duration = _overriddenDuration > 0 ? _overriddenDuration : (frames != null ? frames.Length / (fps > 0 ? fps : 10f) : 1f);
-                if (frames != null && frames.Length == 1 && _overriddenDuration <= 0) duration = 1.0f;
+                float duration = _overriddenDuration > 0 ? _overriddenDuration : (_frames != null ? _frames.Length / (_fps > 0 ? _fps : 10f) : 1f);
+                if (_frames != null && _frames.Length == 1 && _overriddenDuration <= 0) duration = 1.0f;
                 
                 if (_reclaimCooldown != null) StopCoroutine(_reclaimCooldown);
                 _reclaimCooldown = StartCoroutine(AutoReclaimRoutine(duration + 0.2f));
+            }
+            else
+            {
+                if (_reclaimCooldown != null) StopCoroutine(_reclaimCooldown);
+                _reclaimCooldown = null;
             }
         }
 

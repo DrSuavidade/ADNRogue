@@ -31,10 +31,8 @@ namespace Geneforge.Gameplay.Characters.Enemies.Eras.Roman
         public float abilityRadius = 6f; 
 
         [Header("Explosion VFX (Normal Bread)")]
-        public Sprite[] explosionFrames;
-        public float explosionFPS = 8f;
-        public Vector3 explosionScale = new Vector3(3f, 3f, 3f);
-        public float explosionRotationY = 0f;
+        public GameObject explosionPrefab;
+        public float explosionScaleMult = 1f;
 
         [Header("Effects Visuals (Color)")]
         public Color croissantColor = new Color(1f, 0.8f, 0.4f); 
@@ -211,19 +209,12 @@ namespace Geneforge.Gameplay.Characters.Enemies.Eras.Roman
 
         private void SpawnExplosionVFX()
         {
-            if (explosionFrames == null || explosionFrames.Length == 0) return;
+            if (explosionPrefab == null) return;
 
             // Posição central da explosão (levemente acima do chão para parecer volumosa)
             Vector3 spawnPos = (target != null) ? target.position + Vector3.up * 0.5f : transform.position + Vector3.up * 0.5f;
 
-            // 1. CAMADA CORE (A explosão principal)
-            SpawnVFXLayer("Baker_Explosion_Core", spawnPos, explosionScale, explosionFrames, explosionFPS, normalColor * 4f, 1.2f, 180f);
-
-            // 2. CAMADA "ESFERA" (O Blast que expande e cobre o 3D)
-            SpawnVFXLayer("Baker_Explosion_Sphere", spawnPos, explosionScale * 0.5f, explosionFrames, explosionFPS * 0.8f, normalColor * 2f, 2.5f, 0f, 0.4f);
-
-            // 3. CAMADA GLOW (Brilho residual)
-            SpawnVFXLayer("Baker_Explosion_Glow", spawnPos, explosionScale * 1.5f, new Sprite[] { explosionFrames[0] }, 1f, normalColor * 0.5f, 1.0f, 0f, 0.2f, true);
+            SpawnVFX(explosionPrefab, spawnPos, Quaternion.identity, null, explosionScaleMult);
         }
 
 

@@ -41,8 +41,6 @@ namespace Geneforge.UI.Hub
 
         [Header("Settings")]
         [SerializeField] private string targetSceneName = "WorldGen1";
-        [Tooltip("Slower is better. Try 0.2 or 0.3 for a more natural look.")]
-        [SerializeField] private float mouthAnimSpeed = 0.25f;
 
         private GameObject playerRef;
         private enum NextAction { OpenConfirmation, OpenShop, OpenIncubator, OpenLibrary }

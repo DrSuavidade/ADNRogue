@@ -32,10 +32,8 @@ namespace Geneforge.Gameplay.Characters.Enemies.Eras.Roman
             new Color(1f, 0f, 1f) // Magenta
         };
 
-        [Header("Ink Animation (Attack 1)")]
-        public Sprite[] inkAnimationFrames; 
-        public float inkFPS = 6f;
-        public float inkScale = 2.0f;
+        [Header("Ink VFX (Attack 1)")]
+        public float inkScaleMult = 1.0f;
 
         [Header("Projectile Setting")]
         [Tooltip("Se a tinta voar de lado, mude o Y para 90 ou -90 aqui.")]
@@ -51,12 +49,9 @@ namespace Geneforge.Gameplay.Characters.Enemies.Eras.Roman
         [Tooltip("Se ativado, o pintor vira instantaneamente para o player no momento da pintura.")]
         public bool snapToTargetOnFire = true;
 
-        [Header("Puddle Animation (Ground)")]
-        public Sprite[] puddleAnimationFrames;
-        public float puddleFPS = 1.2f;
+        [Header("Puddle VFX (Ground)")]
         public float puddleLifetime = 15f;
-        public Vector3 puddleScale = new Vector3(2.0f, 2.0f, 1f);
-        [Range(0, 360)] public float puddleRotationY = 0f;
+        public float puddleScaleMult = 1.0f;
 
         private void OnDrawGizmosSelected()
         {
@@ -164,35 +159,19 @@ namespace Geneforge.Gameplay.Characters.Enemies.Eras.Roman
 #endif
             }
 
-            // Lógica da Animação por Frames
-            if (inkAnimationFrames != null && inkAnimationFrames.Length > 0)
+            // O prefab inkSplashPrefab já deve ter seus visuais e logic
+            if (projectile != null)
             {
-                foreach (var r in projectile.GetComponentsInChildren<Renderer>())
-                    if (!(r is SpriteRenderer)) r.enabled = false;
-
-                var animator = projectile.GetComponent<SpriteSheetAnimator>();
-                if (animator == null) animator = projectile.AddComponent<SpriteSheetAnimator>();
-                
-                // --- AJUSTE: Definir escala ANTES da inicialização ---
-                animator.transform.localScale = Vector3.one * inkScale;
-
-                animator.tintColor = randomColor * 2f; // Dobramos a intensidade para o Bloom (HDR)
-                animator.useSpawnScale = true; 
-                animator.useFadeOut = false; // Não some enquanto voa
-                animator.loop = true; // Repete os frames de tinta enquanto voa
-                animator.Initialize(inkAnimationFrames, inkFPS, SpriteSheetAnimator.AnimationMode.Billboard);
+                projectile.transform.localScale = Vector3.one * inkScaleMult;
             }
 
             var projScript = projectile.GetComponent<PaintProjectile>();
             if (!projScript) projScript = projectile.AddComponent<PaintProjectile>();
             
             // Inicializa com o Yaw fixo para não girar/tremer (igual ao Archer)
-            projScript.Init(inkDamage, hitMask, spawnRot.eulerAngles.y, paintColors[Random.Range(0, paintColors.Length)], inkUseGravity, vfxGenericPrefab);
+            projScript.Init(inkDamage, hitMask, spawnRot.eulerAngles.y, randomColor, inkUseGravity, vfxGenericPrefab);
             
-            projScript.puddleFrames = puddleAnimationFrames;
-            projScript.puddleFPS = puddleFPS;
-            projScript.puddleScale = puddleScale;
-            projScript.puddleRotationY = puddleRotationY;
+            projScript.puddleScaleMult = puddleScaleMult;
             projScript.puddleLifetime = puddleLifetime;
         }
 
@@ -214,11 +193,7 @@ namespace Geneforge.Gameplay.Characters.Enemies.Eras.Roman
             // Usamos a mesma lógica de Init, mandando 'true' para a gravidade do balde
             projScript.Init(bucketDamage, hitMask, bucket.transform.eulerAngles.y, paintColor, true, vfxGenericPrefab);
 
-            // Passamos a animação da poça
-            projScript.puddleFrames = puddleAnimationFrames;
-            projScript.puddleFPS = puddleFPS;
-            projScript.puddleScale = puddleScale;
-            projScript.puddleRotationY = puddleRotationY;
+            projScript.puddleScaleMult = puddleScaleMult;
             projScript.puddleLifetime = puddleLifetime;
 
             Rigidbody rb = bucket.GetComponent<Rigidbody>();

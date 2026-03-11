@@ -55,55 +55,35 @@ namespace Geneforge.Gameplay.Characters.Enemies.Eras.Roman
         }
 
         /// <summary>
-        /// Wrapper público para o SpawnVFXLayer.
+        /// Wrapper público para o SpawnVFX.
         /// </summary>
-        public GameObject SpawnVFXLayer_Public(string vfxName, Vector3 pos, Vector3 scale, Sprite[] frames, float fps, Color color, float scaleMult = 1f, float rotationRange = 0f, float fadeStart = 0.7f, bool pulse = false, Transform parent = null, Visuals.SpriteSheetAnimator.AnimationMode animationMode = Visuals.SpriteSheetAnimator.AnimationMode.Billboard, bool loop = false)
+        public GameObject SpawnVFX_Public(GameObject prefab, Vector3 pos, Quaternion rot, Transform parent = null, float scale = 1f)
         {
-            return SpawnVFXLayer(vfxName, pos, scale, frames, fps, color, scaleMult, rotationRange, fadeStart, pulse, parent, animationMode, loop);
+            return SpawnVFX(prefab, pos, rot, parent, scale);
         }
 
         /// <summary>
-        /// Cria uma camada de VFX profissional usando pooling e animação procedural.
+        /// Spawna um prefab de VFX usando pooling se disponível.
         /// </summary>
-        protected GameObject SpawnVFXLayer(string vfxName, Vector3 pos, Vector3 scale, Sprite[] frames, float fps, Color color, float scaleMult = 1f, float rotationRange = 0f, float fadeStart = 0.7f, bool pulse = false, Transform parent = null, Visuals.SpriteSheetAnimator.AnimationMode animationMode = Visuals.SpriteSheetAnimator.AnimationMode.Billboard, bool loop = false, bool useSpawnScale = true)
+        protected GameObject SpawnVFX(GameObject prefab, Vector3 pos, Quaternion rot, Transform parent = null, float scale = 1f)
         {
-            if (frames == null || frames.Length == 0) return null;
+            if (prefab == null) return null;
 
             GameObject vfx = null;
-
-            if (PoolManager.Instance != null && vfxGenericPrefab != null)
+            if (PoolManager.Instance != null)
             {
-                vfx = PoolManager.Instance.Spawn(vfxGenericPrefab, pos, Quaternion.identity, null);
-                vfx.name = vfxName;
-                vfx.transform.localScale = scale;
-                if (parent != null) vfx.transform.SetParent(parent, true);
+                vfx = PoolManager.Instance.Spawn(prefab, pos, rot, parent);
             }
             else
             {
-                vfx = new GameObject(vfxName);
-                vfx.transform.position = pos;
-                vfx.transform.localScale = scale;
-                if (parent != null) vfx.transform.SetParent(parent);
-                vfx.AddComponent<SpriteRenderer>();
+                vfx = Instantiate(prefab, pos, rot, parent);
             }
 
-            var sr = vfx.GetComponent<SpriteRenderer>();
-            sr.sortingOrder = (animationMode == Visuals.SpriteSheetAnimator.AnimationMode.Floor) ? 50 : 55; 
+            if (vfx != null && scale != 1f)
+            {
+                vfx.transform.localScale = Vector3.one * scale;
+            }
 
-            var animator = vfx.GetComponent<Visuals.SpriteSheetAnimator>();
-            if (animator == null) animator = vfx.AddComponent<Visuals.SpriteSheetAnimator>();
-            
-            animator.tintColor = color;
-            animator.useSpawnScale = useSpawnScale;
-            animator.usePulse = pulse;
-            animator.useFadeOut = !loop; 
-            animator.fadeStartTime = fadeStart;
-            animator.scaleMultiplier = Vector3.one * scaleMult;
-            animator.randomRotationRange = rotationRange;
-            animator.loop = loop;
-
-            animator.Initialize(frames, fps, animationMode);
-            
             return vfx;
         }
     }
