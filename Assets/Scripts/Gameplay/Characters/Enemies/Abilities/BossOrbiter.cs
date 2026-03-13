@@ -27,16 +27,52 @@ namespace Geneforge.Gameplay.Characters.Enemies.Abilities
 
         private List<BossOrb> _activeOrbs = new List<BossOrb>();
         private float _angleOffset;
+        private EnemyCore _core;
+
+        private bool _initializedThisLife = false;
+
+        private void Awake()
+        {
+            _core = GetComponentInParent<EnemyCore>();
+        }
+
+        private void OnEnable()
+        {
+            _initializedThisLife = false; // Reset quando o boss sai do pool
+            if (_core != null)
+            {
+                _core.OnIntroFinished -= HandleIntroFinished;
+                _core.OnIntroFinished += HandleIntroFinished;
+            }
+        }
+
+        private void OnDisable()
+        {
+            if (_core != null)
+            {
+                _core.OnIntroFinished -= HandleIntroFinished;
+            }
+        }
+
+        private void HandleIntroFinished()
+        {
+            if (_initializedThisLife) return;
+            
+            Debug.Log($"[BossOrbiter] Intro finished on {_core.name}. First time initialization.");
+            InitializeOrbs();
+        }
 
         private void Start()
         {
-            // Wait for PoolManager to be ready if needed, or just spawn
-            InitializeOrbs();
+            // Vazio
         }
 
         public void InitializeOrbs()
         {
-            // Clear if already exists (e.g. on reset)
+            if (_initializedThisLife) return;
+            _initializedThisLife = true;
+
+            // Limpeza de segurança
             foreach (var orb in _activeOrbs)
             {
                 if (orb != null && orb.gameObject.activeInHierarchy)

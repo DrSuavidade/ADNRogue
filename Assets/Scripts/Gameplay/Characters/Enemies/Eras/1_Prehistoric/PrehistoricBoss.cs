@@ -3,7 +3,6 @@ using UnityEngine.UI;
 using Geneforge.Gameplay.Characters.Enemies;
 using Geneforge.Gameplay.Characters.Enemies.Config;
 using Geneforge.Gameplay.Characters.Enemies.AI;
-using Geneforge.Gameplay.Characters.Enemies.Abilities;
 
 namespace Geneforge.Gameplay.Characters.Enemies.Eras.Prehistoric
 {
@@ -101,6 +100,8 @@ namespace Geneforge.Gameplay.Characters.Enemies.Eras.Prehistoric
         // MELEE 2 (E.g. heavy slam, 1 hit or multiple)
         // ==========================================
 
+        private int _melee2Count = 0;
+
         public void AnimEvent_Melee2_1() { ExecuteMelee2(1); }
         public void AnimEvent_Melee2_2() { ExecuteMelee2(2); }
         public void AnimEvent_Melee2_3() { ExecuteMelee2(3); }
@@ -111,67 +112,26 @@ namespace Geneforge.Gameplay.Characters.Enemies.Eras.Prehistoric
             var bossConfig = _config.Archetype.boss;
 
             float radius = bossConfig.melee2HitRadius;
-            // Strike 3 has increased radius in phase 2
             if (strikeIndex == 3 && _brain != null && _brain.CurrentPhase >= 2) radius *= 2f;
 
-            // Always a wave for Melee 2
             float damage = _brain != null && _brain.CurrentPhase >= 2 ? bossConfig.melee2Damage * 1.3f : bossConfig.melee2Damage;
 
-            DealDamageToPlayer(damage, radius);
+            // Fúria suave com limite (cap)
+            if (strikeIndex == 1) _melee2Count++;
+            float speedMult = Mathf.Min(1.0f + (_melee2Count * 0.05f), 1.5f); 
 
-            // Spawn visual
+            // Spawn de uma ÚNICA onda por cada evento de animação
+            // O ritmo agora é controlado 100% pelos teos AnimEvents
             GameObject prefab = melee2VFXPrefab != null ? melee2VFXPrefab : meleeAoEPrefab;
             if (prefab != null)
             {
-                // Position at feet
                 Vector3 spawnPos = transform.position + Vector3.up * 0.05f;
-
-                // Find player if reference is lost
-                if (target == null)
-                {
-                    var player = Object.FindAnyObjectByType<Geneforge.Gameplay.Characters.Player.PlayerHealth>();
-                    if (player != null) target = player.transform;
-                }
-
-                // Direction towards the player
-                Vector3 direction = transform.forward;
-                if (target != null)
-                {
-                    direction = (target.position - transform.position);
-                    direction.y = 0;
-                    if (direction.sqrMagnitude > 0.001f) direction.Normalize();
-                    else direction = transform.forward;
-                }
-                else
-                {
-                    Debug.LogWarning("Boss Melee2: Target (Player) not found! Using Boss forward.");
-                }
-
-                // Instantiate with the PREFAB's default rotation first.
-                var obj = Instantiate(prefab, spawnPos, prefab.transform.rotation);
+                var obj = Instantiate(prefab, spawnPos, transform.rotation);
                 
-                var mover = obj.GetComponent<Geneforge.Gameplay.Characters.Enemies.Abilities.BossMovingEffect>();
-                if (mover == null) mover = obj.AddComponent<Geneforge.Gameplay.Characters.Enemies.Abilities.BossMovingEffect>();
+                var wave = obj.GetComponent<Geneforge.Gameplay.Characters.Enemies.Abilities.BossMeleeWave>();
+                if (wave == null) wave = obj.AddComponent<Geneforge.Gameplay.Characters.Enemies.Abilities.BossMeleeWave>();
                 
-                mover.flatOnGround = false;
-                
-                // Se o teu prefab precisa de estar rodado (ex: -180 ou 90) para estar "de frente", 
-                // passamos essa rotação original como offset para o mover.
-                mover.rotationOffset = prefab.transform.rotation.eulerAngles;
-                
-                // Prevent the Boss from being pushed/dragged by the VFX physics
-                var bossColliders = GetComponentsInChildren<Collider>();
-                var vfxColliders = obj.GetComponentsInChildren<Collider>();
-                foreach (var bc in bossColliders)
-                {
-                    foreach (var vc in vfxColliders)
-                    {
-                        vc.isTrigger = true; // Prevents player from climbing/walking on crystals
-                        Physics.IgnoreCollision(bc, vc);
-                    }
-                }
-                
-                mover.Init(direction, 12f, 0.7f);
+                wave.Init(radius, strikeIndex, speedMult, damage);
             }
         }
 
@@ -330,10 +290,10 @@ namespace Geneforge.Gameplay.Characters.Enemies.Eras.Prehistoric
             GameObject prefab = isSlash ? meleeSlashPrefab : meleeAoEPrefab;
             if (prefab == null) return;
             
-            // Spawn at feet with slight Y offset to avoid Z-fighting
-            Vector3 spawnPos = transform.position + Vector3.up * 0.05f;
+            // Spawn no nível do chão (0.01f) para evitar que o efeito flutue
+            Vector3 spawnPos = new Vector3(transform.position.x, 0.01f, transform.position.z);
             
-            // If it's a slash, move it forward 0.5m to match the scythe reach
+            // Se for um slash, move o ponto de spawn para frente para alinhar com o alcance
             if (isSlash) spawnPos += transform.forward * 0.5f;
 
             var obj = Instantiate(prefab, spawnPos, transform.rotation);

@@ -356,8 +356,8 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   meleeAoEPrefab: {fileID: 3927554631983690912, guid: 082def56bf9a2c049a8701fe5437407f, type: 3}
-  meleeSlashPrefab: {fileID: 3927554631983690912, guid: e332dfebb08d6c645a1b576d363a4c87, type: 3}
-  melee2VFXPrefab: {fileID: 3156866507962234106, guid: 645ebd7cef59b7b40b27c29bf3e99cf2, type: 3}
+  meleeSlashPrefab: {fileID: 6445826192643391251, guid: 46251c357a645f04c85bb9ee5cde4d37, type: 3}
+  melee2VFXPrefab: {fileID: 1403079217042836450, guid: beb36c22beca03c49b92b2017445fcd6, type: 3}
   range1ProjectilePrefab: {fileID: 7314526620251459061, guid: a48e7c1460c41dc4db56c9351ca04e81, type: 3}
   range2ProjectilePrefab: {fileID: 7314526620251459061, guid: a48e7c1460c41dc4db56c9351ca04e81, type: 3}
   teleportVFXPrefab: {fileID: 7761031033666763820, guid: 1eb833340b41fb444b576c4dced8d4dc, type: 3}
